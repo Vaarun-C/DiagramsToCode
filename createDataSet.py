@@ -2,7 +2,7 @@ import os
 import shutil
 from collections import Counter
 
-path = "icons/Architecture-Service-Icons_06072024"
+path = "./icons/Architecture-Service-Icons_06072024"
 categories = os.listdir(path)
 chosen_dimensions = 64
 num_classes = 0
@@ -56,7 +56,7 @@ else:
     print("No duplicate class names found.")
 
 # Print missing folders for debugging
-class_folders = os.listdir("/Users/varun/base/projects/DiagramsToCode/train")
+class_folders = os.listdir("./train")
 print("Total number of folders:", len(class_folders))
 missing_folders = set(class_name[:-4] for class_name in class_names) - set(class_folders)
 if missing_folders:
