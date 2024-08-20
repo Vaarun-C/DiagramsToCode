@@ -2,9 +2,8 @@ from PIL import Image, ImageDraw
 import random
 import os
 from collections import defaultdict
-import numpy as np
 
-background_size = (1600, 800)
+background_size = (1000, 1000)
 image_size = (80, 80)
 class_usage = defaultdict(int)
 
@@ -31,17 +30,11 @@ def create_image(image_num=0, output_folder="output"):
 
     # Paste randomly chosen images from ./augmented folder onto the background and also create the annotation file based on the point positions
     augmented_folder = "./augmented"
-    categories = []
-    chosen_categories = []
-
-    with open("class_names.txt", "r") as file:
-        categories = file.read().split("\n")
     
-    assert len(categories) != 0, "No categories found in class_names.txt"
-
+    chosen_categories = []
     os.makedirs(output_folder, exist_ok=True)
-    os.makedirs(output_folder+"/images", exist_ok=True)
-    os.makedirs(output_folder+"/labels", exist_ok=True)
+    os.makedirs(output_folder + "/images", exist_ok=True)
+    os.makedirs(output_folder + "/labels", exist_ok=True)
 
     with open(f"{output_folder}/labels/image{image_num}.txt", "w") as file:
         for point in points:
@@ -111,7 +104,13 @@ def validate_output():
 
 if __name__ == "__main__":
     
-    number_of_images_train = 500
+    categories = []
+    with open("class_names.txt", "r") as file:
+        categories = file.read().split("\n")
+    assert len(categories) != 0, "No categories found in class_names.txt"
+    categories = categories[:5]
+
+    number_of_images_train = 1
     number_of_images_val = int(0.2 * number_of_images_train)
 
     for i in range(number_of_images_train):
