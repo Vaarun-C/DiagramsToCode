@@ -164,3 +164,6 @@ train/
 del_now/
 *.zip
 .idea
+/augmented
+/augmented__
+icons
