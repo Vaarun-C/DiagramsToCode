@@ -7,12 +7,14 @@ background_size = (1000, 1000)
 image_size = (80, 80)
 class_usage = defaultdict(int)
 
-def create_image(image_num=0, output_folder="output"):
+def create_image(image_num=0, output_folder="output", imp_categories=[]):
     background = Image.new("RGB", background_size, "white")
 
     # Choose a random set of non-overlapping points on the background
-    num_points = random.randint(10, 25)
+    num_points = random.randint(25, 35)
     points = set()
+
+    num_of_wrong_classes = int(0.5 * num_points)
 
     while len(points) < num_points:
         x = random.randint(0, background_size[0] - image_size[0])
@@ -40,13 +42,20 @@ def create_image(image_num=0, output_folder="output"):
         for point in points:
             x, y = point
 
-            min_usage = min(class_usage.values()) if class_usage else 0
-            least_used_classes = [cat for cat in categories if class_usage[cat] == min_usage]
-            category = random.choice(least_used_classes)
+            if num_of_wrong_classes > 0:
+                category = random.choice(list(set(categories)-set(imp_categories)))
+                num_of_wrong_classes -= 1
+            else:
+                try:
+                    min_usage = min(class_usage.values()) if class_usage else 0
+                    least_used_classes = [cat for cat in imp_categories if class_usage[cat] == min_usage]
+                    category = random.choice(least_used_classes)
+                    class_usage[category] += 1
+                except Exception as e:
+                    print(min_usage, category, least_used_classes, imp_categories)
+                    raise e
 
             chosen_categories.append(category)
-            class_usage[category] += 1
-
             folder_path = os.path.join(augmented_folder, category)
             images = os.listdir(folder_path)
             image_name = random.choice(images)
@@ -55,7 +64,9 @@ def create_image(image_num=0, output_folder="output"):
             image = image.resize(image_size)
 
             width, height = image_size
-            file.write(f"{categories.index(category)} {(x+width/2)/background_size[0]} {(y+height/2)/background_size[1]} {width/background_size[0]} {height/background_size[1]}\n")
+
+            if(category in imp_categories):
+                file.write(f"{imp_categories.index(category)} {(x+width/2)/background_size[0]} {(y+height/2)/background_size[1]} {width/background_size[0]} {height/background_size[1]}\n")
             background.paste(image, (x, y))
 
             # Write the distribution of the categories to a file
@@ -69,21 +80,21 @@ def create_image(image_num=0, output_folder="output"):
     return chosen_categories
 
 def validate_output():
-    number_of_images = len(os.listdir("output/images"))
-    number_of_labels = len(os.listdir("output/labels"))
+    number_of_images = len(os.listdir("output/train/images"))
+    number_of_labels = len(os.listdir("output/train/labels"))
 
     assert number_of_images == number_of_labels, f"Number of images and labels do not match: {number_of_images} images, {number_of_labels} labels"
 
     # Draw a bounding box on the image for each label
     for i in range(number_of_images):
-        image_path = f"output/images/image{i}.png"
-        label_path = f"output/labels/image{i}.txt"
+        image_path = f"output/train/images/image{i}.png"
+        label_path = f"output/train/labels/image{i}.txt"
         image = Image.open(image_path)
         draw = ImageDraw.Draw(image)
 
         with open(label_path, "r") as file:
             for line in file:
-                category, x, y, w, h = line.split(",")
+                category, x, y, w, h = line.split()
                 x, y, w, h = float(x), float(y), float(w), float(h)
                 x1, y1 = x - w/2, y - h/2
                 x2, y2 = x + w/2, y + h/2
@@ -100,7 +111,7 @@ def validate_output():
 
                 draw.text((x1, y2), category_name, fill="red")
 
-        # image.show()
+        image.show()
 
 if __name__ == "__main__":
     
@@ -108,14 +119,22 @@ if __name__ == "__main__":
     with open("class_names.txt", "r") as file:
         categories = file.read().split("\n")
     assert len(categories) != 0, "No categories found in class_names.txt"
-    categories = categories[:5]
 
-    number_of_images_train = 1
+    important_categories = []
+    with open("class_names_imp.txt", "r") as file:
+        important_categories = file.read().split("\n")
+    assert len(important_categories) != 0, "No categories found in class_names_imp.txt"
+
+    number_of_images_train = 1000
     number_of_images_val = int(0.2 * number_of_images_train)
 
     for i in range(number_of_images_train):
-        create_image(i, "output/train")
+        create_image(i, "output/train", important_categories)
+        print(f"Generated image for training {i+1}/{number_of_images_train}", end="\r")
     
     for i in range(number_of_images_val):
-        create_image(i, "output/val")
+        create_image(i, "output/val", important_categories)
+        print(f"Generated image for validation {i+1}/{number_of_images_val}", end="\r")
+
+    # validate_output()
     
