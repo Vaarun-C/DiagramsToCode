@@ -167,3 +167,6 @@ del_now/
 /augmented
 /augmented__
 icons
+credentials.json
+Mycredentials.json
+token.json

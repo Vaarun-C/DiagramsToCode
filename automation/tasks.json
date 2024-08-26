@@ -1,0 +1,39 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "StartingLive",
+      "type": "process",
+      "command": "${command:liveshare.start}",
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    },
+    {
+      "label": "SendingLive",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        ".\\automation\\SendLiveShareMail.py"
+      ],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "dependsOn": "StartingLive"
+    },
+    {
+      "label": "LiveTerminal1",
+      "type": "shell",
+      "command": "C:\\Program Files\\AutoHotkey\\AutoHotkey.exe",
+      "args": [
+          ".\\automation\\terminus.ahk"
+      ],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "dependsOn": "SendingLive"
+    },
+  ]
+}
