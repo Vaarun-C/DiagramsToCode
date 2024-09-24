@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Simple AWS ParallelCluster Setup
+
+Resources:
+  MyParallelCluster:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: 'https://s3.amazonaws.com/parallelcluster/templates/parallelcluster.yaml'
+      Parameters:
+        ClusterName: MyParallelCluster #could be anything really
+        # Region: !Ref 'AWS::Region'
+        # VpcId: !Ref MyVpc
+        MasterInstanceType: t2.micro
+        HeadNodeType: t2.micro
+        ComputeInstanceType: t2.micro
+        # InitialQueueSize: 1
+        # MaximumQueueSize: 10
