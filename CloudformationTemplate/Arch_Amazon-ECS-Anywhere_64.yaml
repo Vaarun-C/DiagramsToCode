@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up Amazon ECS Anywhere
+
+Parameters:
+  ClusterName:
+    Description: The name of the ECS Anywhere cluster
+    Type: String
+    Default: MyECSAnywhereCluster
+
+  ContainerInstanceName:
+    Description: The name of the container instance to register
+    Type: String
+    Default: MyContainerInstance
+
+  SSMDocumentName:
+    Description: The name of the SSM document for the container instance
+    Type: String
+    Default: MySSMDocument
+
+Resources:
+
+  # ECS Cluster
+  MyECSCluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: !Ref ClusterName
+
+  # IAM Role for ECS Anywhere
+  ECSAnywhereRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub "${ClusterName}-ECSAnywhereRole"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "ecs.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: !Sub "${ClusterName}-ECSAnywherePolicy"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ecs:CreateCluster"
+                  - "ecs:RegisterContainerInstance"
+                  - "ecs:DeregisterContainerInstance"
+                  - "ecs:ListClusters"
+                  - "ecs:ListContainerInstances"
+                Resource: "*"
+
+  # SSM Document for ECS Anywhere
+  MySSMDocument:
+    Type: 'AWS::SSM::Document'
+    Properties:
+      DocumentType: "Command"
+      Content:
+        schemaVersion: "2.2"
+        description: "Document to register ECS Anywhere container instances"
+        mainSteps:
+          - action: "aws:runCommand"
+            name: "registerECS"
+            inputs:
+              DocumentName: !Ref SSMDocumentName
+              Parameters:
+                Cluster: !Ref MyECSCluster
+                ContainerInstanceName: !Ref ContainerInstanceName
+
+# Outputs:
+#   ClusterNameOutput:
+#     Description: The name of the created ECS Anywhere cluster
+#     Value: !Ref MyECSCluster
+
+#   ECSAnywhereRoleArn:
+#     Description: The ARN of the IAM role for ECS Anywhere
+#     Value: !GetAtt ECSAnywhereRole.Arn
