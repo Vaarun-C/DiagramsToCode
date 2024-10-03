@@ -1,0 +1,131 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up AWS Batch
+
+Parameters:
+  ComputeEnvironmentName:
+    Description: Name of the AWS Batch Compute Environment
+    Type: String
+    Default: MyBatchComputeEnv
+
+  JobQueueName:
+    Description: Name of the AWS Batch Job Queue
+    Type: String
+    Default: MyBatchJobQueue
+
+  JobDefinitionName:
+    Description: Name of the AWS Batch Job Definition
+    Type: String
+    Default: MyBatchJobDefinition
+
+  InstanceType:
+    Description: EC2 instance type for the compute environment
+    Type: String
+    Default: m5.large
+    AllowedValues:
+      - m5.large
+      - m5.xlarge
+      - c5.large
+      - c5.xlarge
+
+  DesiredvCPUs:
+    Description: Desired number of vCPUs for the compute environment
+    Type: Number
+    Default: 2
+
+Resources:
+
+  # Compute Environment
+  MyComputeEnvironment:
+    Type: 'AWS::Batch::ComputeEnvironment'
+    Properties:
+      ComputeEnvironmentName: !Ref ComputeEnvironmentName
+      Type: "MANAGED"
+      ComputeResources:
+        Type: "EC2"
+        MinvCpus: 0
+        DesiredvCpus: !Ref DesiredvCPUs
+        MaxvCpus: 10
+        InstanceTypes:
+          - !Ref InstanceType
+        Subnets: 
+          - subnet-xxxxxx  # Replace with your subnet IDs
+        SecurityGroupIds:
+          - sg-xxxxxx      # Replace with your security group ID
+        Ec2KeyPair: your-key-pair # Replace with your key pair name
+      ServiceRole: !GetAtt BatchServiceRole.Arn
+
+  # Job Queue
+  MyJobQueue:
+    Type: 'AWS::Batch::JobQueue'
+    Properties:
+      JobQueueName: !Ref JobQueueName
+      Priority: 1
+      ComputeEnvironmentOrder:
+        - Order: 1
+          ComputeEnvironment: !Ref MyComputeEnvironment
+
+  # Job Definition
+  MyJobDefinition:
+    Type: 'AWS::Batch::JobDefinition'
+    Properties:
+      JobDefinitionName: !Ref JobDefinitionName
+      Type: "container"
+      ContainerProperties:
+        Image: "amazonlinux"  # Replace with your Docker image
+        Vcpus: 1
+        Memory: 1024
+        Command:
+          - "/bin/bash"
+          - "-c"
+          - "echo Hello, AWS Batch!"
+      RetryStrategy:
+        Attempts: 1
+
+  # IAM Role for AWS Batch
+  BatchServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: batch.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: BatchServiceRolePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:Describe*
+                  - ecs:CreateCluster
+                  - ecs:DeregisterContainerInstance
+                  - ecs:RegisterContainerInstance
+                  - ecs:UpdateContainerInstancesState
+                  - ecs:SubmitTaskStateChange
+                  - ecs:Poll
+                  - elasticloadbalancing:DescribeLoadBalancers
+                  - elasticloadbalancing:DescribeTargetGroups
+                  - elasticloadbalancing:RegisterTargets
+                  - elasticloadbalancing:DeregisterTargets
+                  - elasticloadbalancing:DescribeTargetGroupHealth
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - iam:PassRole
+                Resource: "*"
+
+Outputs:
+  ComputeEnvironmentArn:
+    Description: ARN of the AWS Batch Compute Environment
+    Value: !GetAtt MyComputeEnvironment.Arn
+
+  JobQueueArn:
+    Description: ARN of the AWS Batch Job Queue
+    Value: !GetAtt MyJobQueue.Arn
+
+  JobDefinitionArn:
+    Description: ARN of the AWS Batch Job Definition
+    Value: !GetAtt MyJobDefinition.Arn
