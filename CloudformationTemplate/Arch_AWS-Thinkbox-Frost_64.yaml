@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up AWS Thinkbox Frost
+
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+
+  InstanceType:
+    Description: EC2 instance type for Thinkbox Frost
+    Type: String
+    Default: m5.large
+    AllowedValues:
+      - m5.large
+      - m5.xlarge
+      - g4dn.xlarge
+    ConstraintDescription: Must be a valid EC2 instance type.
+
+  InstanceImage:
+    Description: AMI ID for the EC2 instance (Windows required for Frost)
+    Type: String
+    Default: ami-0abcdef1234567890  # Replace with a valid Windows AMI ID
+
+  S3BucketName:
+    Description: Name of the S3 bucket to store particle simulation data
+    Type: String
+
+Resources:
+
+  # IAM Role for EC2 Instance
+  ThinkboxFrostRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ThinkboxFrostPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub "arn:aws:s3:::${S3BucketName}"
+                  - !Sub "arn:aws:s3:::${S3BucketName}/*"
+
+  # Security Group
+  FrostSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Allow SSH access
+      VpcId: !Ref MyVPC  # Reference to an existing VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: '0.0.0.0/0'  # Adjust for better security
+
+  # EC2 Instance for Thinkbox Frost
+  FrostInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: !Ref InstanceImage
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !Ref FrostSecurityGroup
+      IamInstanceProfile: !Ref ThinkboxFrostRole
+
+  # S3 Bucket for Particle Simulation Data
+  SimulationDataBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref S3BucketName
+
+Outputs:
+  FrostInstanceId:
+    Description: The Instance ID of the Thinkbox Frost EC2 instance
+    Value: !Ref FrostInstance
+
+  S3BucketArn:
+    Description: The ARN of the S3 bucket for particle simulations
+    Value: !GetAtt SimulationDataBucket.Arn
