@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up AWS Backup
+
+Parameters:
+  BackupVaultName:
+    Description: The name of the backup vault
+    Type: String
+    Default: MyBackupVault
+
+  BackupPlanName:
+    Description: The name of the backup plan
+    Type: String
+    Default: MyBackupPlan
+
+  BackupSchedule:
+    Description: The backup schedule in cron format (e.g., "cron(0 12 * * ? *)" for daily at noon)
+    Type: String
+    Default: "cron(0 12 * * ? *)"
+
+Resources:
+
+  # Backup Vault
+  MyBackupVault:
+    Type: 'AWS::Backup::BackupVault'
+    Properties:
+      BackupVaultName: !Ref BackupVaultName
+      BackupVaultEvents:
+        - BACKUP_JOB_STARTED
+        - BACKUP_JOB_COMPLETED
+        - BACKUP_JOB_FAILED
+      Tags:
+        - Key: Name
+          Value: !Ref BackupVaultName
+
+  # Backup Plan
+  MyBackupPlan:
+    Type: 'AWS::Backup::BackupPlan'
+    Properties:
+      BackupPlan:
+        BackupPlanName: !Ref BackupPlanName
+        Rules:
+          - RuleName: DailyBackup
+            TargetBackupVault: !Ref MyBackupVault
+            ScheduleExpression: !Ref BackupSchedule
+            Lifecycle:
+              DeleteAfterDays: 30  # Retain backups for 30 days
+            RecoveryPointTags:
+              Environment: Production
+
+# Outputs:
+#   BackupVaultArn:
+#     Description: The ARN of the created backup vault
+#     Value: !GetAtt MyBackupVault.BackupVaultArn
+
+#   BackupPlanId:
+#     Description: The ID of the created backup plan
+#     Value: !Ref MyBackupPlan
