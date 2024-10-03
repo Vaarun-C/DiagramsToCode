@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an Amazon FSx for NetApp ONTAP file system
+
+Parameters:
+  FileSystemName:
+    Description: The name of the FSx for NetApp ONTAP file system
+    Type: String
+    Default: MyONTAPFileSystem
+
+  StorageCapacity:
+    Description: The storage capacity of the file system in GiB (minimum 1024 GiB, maximum 524288 GiB)
+    Type: Number
+    Default: 1024
+    MinValue: 1024
+    MaxValue: 524288
+
+  # SubnetId:
+  #   Description: The ID of the subnet in which to create the file system
+  #   Type: AWS::EC2::Subnet::Id
+
+  # SecurityGroupIds:
+  #   Description: The security group IDs for the file system
+  #   Type: List<AWS::EC2::SecurityGroup::Id>
+
+  OntapVersion:
+    Description: The version of ONTAP to use for the file system
+    Type: String
+    Default: "9.9.1"  # Example version
+
+Resources:
+
+  # Amazon FSx for NetApp ONTAP File System
+  MyONTAPFileSystem:
+    Type: 'AWS::FSx::FileSystem'
+    Properties:
+      FileSystemType: "ONTAP"
+      StorageCapacity: !Ref StorageCapacity
+      # SubnetId: !Ref SubnetId
+      # SecurityGroupIds: !Ref SecurityGroupIds
+      OntapConfiguration:
+        DeploymentType: "MULTI_AZ_1"  # Options: MULTI_AZ_1, SINGLE_AZ_1
+        EndpointType: "INTERNET"  # Options: INTERNET, VPC
+        OntapVersion: !Ref OntapVersion
+        ThroughputCapacity: 128  # Adjust as needed (minimum is 128)
+
+# Outputs:
+#   OntapFileSystemId:
+#     Description: The ID of the created FSx for NetApp ONTAP file system
+#     Value: !Ref MyONTAPFileSystem
+
+#   OntapFileSystemArn:
+#     Description: The ARN of the created FSx for NetApp ONTAP file system
+#     Value: !GetAtt MyONTAPFileSystem.Arn
