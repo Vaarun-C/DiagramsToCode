@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an Amazon S3 bucket
+
+Parameters:
+  BucketName:
+    Description: The name of the S3 bucket
+    Type: String
+
+  VersioningEnabled:
+    Description: Enable versioning on the bucket
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+
+  PublicAccessBlock:
+    Description: Block public access settings for the bucket
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+
+Resources:
+
+  # Amazon S3 Bucket
+  MyS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketName
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabled 
+          - "Enabled" 
+          - "Suspended"
+      
+  # Block Public Access Settings
+  MyS3BucketPublicAccessBlock:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyS3Bucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyS3Bucket.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+
+# Outputs:
+#   S3BucketName:
+#     Description: The name of the created S3 bucket
+#     Value: !Ref MyS3Bucket
+
+#   S3BucketArn:
+#     Description: The ARN of the created S3 bucket
+#     Value: !GetAtt MyS3Bucket.Arn
