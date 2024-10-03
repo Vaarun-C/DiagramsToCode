@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Simple CloudFormation Template for AWS Serverless Application
+
+Resources:
+
+  # IAM Role for Lambda Function
+  LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecution
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+
+  # Lambda Function
+  MyFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MyServerlessFunction
+      Handler: index.handler
+      # Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+              return {
+                  'statusCode': 200,
+                  'body': 'Hello from Lambda!'
+              }
+      Runtime: python3.9
+      Timeout: 10
+
+  # API Gateway
+  ApiGateway:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: MyApi
+      Description: API for my serverless application
+
+  # Resource for the API
+  # ApiResource:
+  #   Type: 'AWS::ApiGateway::Resource'
+  #   Properties:
+  #     ParentId: !GetAtt ApiGateway.RootResourceId
+  #     RestApiId: !Ref ApiGateway
+  #     PathPart: hello
+
+  # Method for the resource
+  # ApiMethod:
+  #   Type: 'AWS::ApiGateway::Method'
+  #   Properties:
+  #     HttpMethod: GET
+  #     ResourceId: !Ref ApiResource
+  #     RestApiId: !Ref ApiGateway
+  #     AuthorizationType: NONE
+  #     Integration:
+  #       Type: AWS_PROXY
+  #       IntegrationHttpMethod: POST
+  #       Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction.Arn}/invocations
+  #     MethodResponses:
+  #       - StatusCode: 200
+
+  # Lambda Permission for API Gateway
+  ApiGatewayInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      # FunctionName: !Ref MyFunction
+      Principal: apigateway.amazonaws.com
