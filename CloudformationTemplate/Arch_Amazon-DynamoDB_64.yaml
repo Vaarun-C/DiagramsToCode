@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up Amazon DynamoDB
+
+Parameters:
+  TableName:
+    Description: The name of the DynamoDB table
+    Type: String
+    Default: MyDynamoDBTable
+
+  PartitionKey:
+    Description: The partition key for the DynamoDB table
+    Type: String
+    Default: id
+
+  SortKey:
+    Description: The sort key for the DynamoDB table (leave blank if not needed)
+    Type: String
+    Default: ''
+
+  ReadCapacityUnits:
+    Description: Read capacity units for the table (for provisioned mode)
+    Type: Number
+    Default: 5
+
+  WriteCapacityUnits:
+    Description: Write capacity units for the table (for provisioned mode)
+    Type: Number
+    Default: 5
+
+Resources:
+
+  # DynamoDB Table
+  MyDynamoDBTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: !Ref TableName
+      AttributeDefinitions:
+        - AttributeName: !Ref PartitionKey
+          AttributeType: S  # String type
+        - !If
+          - HasSortKey
+          - AttributeName: !Ref SortKey
+          - !Ref "AWS::NoValue"
+          AttributeType: S  # String type for sort key
+      KeySchema:
+        - AttributeName: !Ref PartitionKey
+          KeyType: HASH  # Partition key
+        - !If
+          - HasSortKey
+          - AttributeName: !Ref SortKey
+          - !Ref "AWS::NoValue"
+          KeyType: RANGE  # Sort key
+      ProvisionedThroughput:
+        ReadCapacityUnits: !Ref ReadCapacityUnits
+        WriteCapacityUnits: !Ref WriteCapacityUnits
+      BillingMode: PAY_PER_REQUEST  # Change to 'PROVISIONED' if using capacity units
+
+Conditions:
+  HasSortKey: !Not [!Equals [!Ref SortKey, ""]]
+
+# Outputs:
+#   TableArn:
+#     Description: The ARN of the created DynamoDB table
+#     Value: !GetAtt MyDynamoDBTable.Arn
+
+#   TableNameOutput:
+#     Description: The name of the created DynamoDB table
+#     Value: !Ref MyDynamoDBTable
