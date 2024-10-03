@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an EC2 instance in an AWS Local Zone
+
+Resources:
+
+  # VPC
+  MyVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: '10.0.0.0/16'
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+  # Subnet in Local Zone
+  MyLocalZoneSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      # VpcId: !Ref MyVPC
+      CidrBlock: '10.0.1.0/24'
+      AvailabilityZone: "us-west-2-lax-1a"  # Replace with your Local Zone identifier
+
+  # Security Group
+  MySecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Allow SSH access
+      VpcId: !Ref MyVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: '0.0.0.0/0'  # Adjust for security
+
+  # EC2 Instance in Local Zone
+  MyLocalZoneInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: 't3.micro'  # Choose an instance type compatible with your needs
+      ImageId: 'ami-0abcdef1234567890'  # Replace with a valid AMI ID in your region
+      # SubnetId: !Ref MyLocalZoneSubnet
+      SecurityGroupIds:
+        - !Ref MySecurityGroup
+      KeyName: my-key-pair  # Replace with your key pair name Varun
+
+Outputs:
+  InstanceId:
+    Description: The Instance ID
+    # Value: !Ref MyLocalZoneInstance
+
+  PublicIP:
+    Description: Public IP of the instance
+    Value: !GetAtt MyLocalZoneInstance.PublicIp
