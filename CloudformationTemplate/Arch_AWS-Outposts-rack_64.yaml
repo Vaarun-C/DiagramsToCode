@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create resources in an AWS Outposts rack.
+
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance.
+    Type: AWS::EC2::KeyPair::KeyName
+
+  InstanceType:
+    Description: EC2 instance type for the Outpost rack.
+    Type: String
+    Default: m5.large
+    AllowedValues:
+      - m5.large
+      - m5.xlarge
+      - c5.large
+      - c5.xlarge
+    ConstraintDescription: Must be a valid EC2 instance type.
+
+  OutpostArn:
+    Description: The ARN of the Outposts rack where the resources will be deployed.
+    Type: String
+
+Resources:
+
+  # Security Group
+  OutpostSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable SSH access
+      VpcId: !Ref MyVPC  # Reference to an existing VPC in your Outpost
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: '0.0.0.0/0'  # Adjust for better security
+
+  # EC2 Instance in Outposts Rack
+  OutpostInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: ami-0abcdef1234567890  # Replace with a valid AMI ID for your region
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !Ref OutpostSecurityGroup
+      Placement:
+        AvailabilityZone: !Select [0, !GetAZs '']
+        GroupName: !Ref OutpostArn
+
+Outputs:
+  InstanceId:
+    Description: The Instance ID of the EC2 instance in the Outposts rack
+    Value: !Ref OutpostInstance
