@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up an Amazon Timestream database and table
+
+Parameters:
+  DatabaseName:
+    Description: The name of the Timestream database
+    Type: String
+    Default: MyTimestreamDatabase
+
+  TableName:
+    Description: The name of the Timestream table
+    Type: String
+    Default: MyTimestreamTable
+
+Resources:
+
+  # Amazon Timestream Database
+  TimestreamDatabase:
+    Type: 'AWS::Timestream::Database'
+    Properties:
+      DatabaseName: !Ref DatabaseName
+
+  # Amazon Timestream Table
+  TimestreamTable:
+    Type: 'AWS::Timestream::Table'
+    Properties:
+      DatabaseName: !Ref DatabaseName
+      TableName: !Ref TableName
+      RetentionProperties:
+        MemoryStoreRetentionPeriodInDays: 7   # Retain data in memory store for 7 days
+        MagneticStoreRetentionPeriodInDays: 365  # Retain data in magnetic store for 365 days
+
+# Outputs:
+#   TimestreamDatabaseArn:
+#     Description: The ARN of the Timestream database
+#     Value: !GetAtt TimestreamDatabase.Arn
+
+#   TimestreamTableArn:
+#     Description: The ARN of the Timestream table
+#     Value: !GetAtt TimestreamTable.Arn
