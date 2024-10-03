@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up AWS Elastic Disaster Recovery
+
+Parameters:
+  SourceInstanceId:
+    Description: The ID of the source EC2 instance to protect
+    Type: AWS::EC2::Instance::Id
+
+  RecoveryInstanceType:
+    Description: The instance type for the recovery instance
+    Type: String
+    Default: t2.micro
+
+  RecoveryAvailabilityZone:
+    Description: The availability zone for the recovery instance
+    Type: String
+    Default: us-east-1a  # Change as necessary
+
+Resources:
+
+  # AWS Elastic Disaster Recovery - Source Server
+  MySourceServer:
+    Type: 'AWS::Drs::SourceServer'
+    Properties:
+      SourceServerID: !Ref SourceInstanceId
+
+  # Recovery Instance
+  MyRecoveryInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref RecoveryInstanceType
+      ImageId: ami-0c55b159cbfafe01e  # Replace with a valid AMI ID
+      AvailabilityZone: !Ref RecoveryAvailabilityZone
+      KeyName: your-key-pair  # Replace with your key pair name
+      # SecurityGroupIds:
+      #   - !Ref MySecurityGroup
+
+  # Security Group for the Recovery Instance
+  # MySecurityGroup:
+  #   Type: 'AWS::EC2::SecurityGroup'
+  #   Properties:
+  #     GroupDescription: Allow SSH access
+  #     VpcId: your-vpc-id  # Replace with your VPC ID
+  #     SecurityGroupIngress:
+  #       - IpProtocol: tcp
+  #         FromPort: 22
+  #         ToPort: 22
+  #         CidrIp: 0.0.0.0/0  # Allow SSH access from anywhere
+
+# Outputs:
+#   SourceServerID:
+#     Description: The ID of the source server being protected
+#     Value: !Ref MySourceServer
+
+#   RecoveryInstanceId:
+#     Description: The ID of the recovery instance
+#     Value: !Ref MyRecoveryInstance
