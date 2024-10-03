@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create resources for AWS Snowball Edge
+
+Parameters:
+  BucketName:
+    Description: The name of the S3 bucket (must be globally unique)
+    Type: String
+
+Resources:
+
+  # S3 Bucket for Snowball Edge
+  SnowballEdgeBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketName
+      VersioningConfiguration:
+        Status: Enabled  # Enable versioning for better data management
+
+  # IAM Role for Snowball Edge
+  SnowballEdgeRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: snowball.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: SnowballEdgePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                # Resource:
+                #   - !Sub '${SnowballEdgeBucket.Arn}'
+                #   - !Sub '${SnowballEdgeBucket.Arn}/*'
+
+# Outputs:
+#   SnowballEdgeBucketArn:
+#     Description: The ARN of the created S3 bucket
+#     Value: !GetAtt SnowballEdgeBucket.Arn
+
+#   SnowballEdgeRoleArn:
+#     Description: The ARN of the Snowball Edge IAM role
+#     Value: !GetAtt SnowballEdgeRole.Arn
