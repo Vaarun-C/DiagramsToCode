@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an Amazon S3 bucket with Glacier storage
+
+Parameters:
+  BucketName:
+    Description: The name of the S3 bucket (must be globally unique)
+    Type: String
+
+Resources:
+
+  # S3 Bucket
+  MyGlacierBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketName
+      LifecycleConfiguration:
+        Rules:
+          - Id: MoveToGlacier
+            Status: Enabled
+            Prefix: ''  # Apply to all objects
+            Transitions:
+              - TransitionInDays: 30  # Transition objects to Glacier after 30 days
+                StorageClass: GLACIER
+            ExpirationInDays: 365  # Optional: Delete objects after 1 year
+
+  # Bucket Policy to allow Glacier access
+  BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyGlacierBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+            Resource: !Sub '${MyGlacierBucket.Arn}/*'
+
+# Outputs:
+#   GlacierBucketName:
+#     Description: The name of the created S3 bucket
+#     Value: !Ref MyGlacierBucket
+
+#   GlacierBucketArn:
+#     Description: The ARN of the created S3 bucket
+#     Value: !GetAtt MyGlacierBucket.Arn
