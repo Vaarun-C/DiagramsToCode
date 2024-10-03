@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up Amazon Aurora
+
+Parameters:
+  DBClusterIdentifier:
+    Description: The name of the Aurora DB cluster
+    Type: String
+    Default: my-aurora-cluster
+
+  DBInstanceIdentifier:
+    Description: The identifier for the DB instance
+    Type: String
+    Default: my-aurora-instance
+
+  DBInstanceClass:
+    Description: The instance class for the Aurora DB instance
+    Type: String
+    Default: db.r5.large
+    AllowedValues:
+      - db.r5.large
+      - db.r5.xlarge
+      - db.r5.2xlarge
+      - db.r5.4xlarge
+    ConstraintDescription: Must be a valid DB instance class.
+
+  # DBSubnetGroupName:
+  #   Description: The name of the DB subnet group
+  #   Type: String
+  #   Default: my-db-subnet-group
+
+  # VPCId:
+  #   Description: The VPC ID where the DB cluster will be deployed
+  #   Type: AWS::EC2::VPC::Id
+
+  # SubnetIds:
+  #   Description: Comma-separated list of subnet IDs for the DB cluster
+  #   Type: List<AWS::EC2::Subnet::Id>
+
+  MasterUsername:
+    Description: The master username for the DB instance
+    Type: String
+    Default: admin
+
+  MasterUserPassword:
+    Description: The master password for the DB instance
+    Type: String
+    NoEcho: true
+
+Resources:
+
+  # DB Subnet Group
+  # MyDBSubnetGroup:
+  #   Type: 'AWS::RDS::DBSubnetGroup'
+  #   Properties:
+  #     DBSubnetGroupDescription: Subnet group for Aurora
+  #     DBSubnetGroupName: !Ref DBSubnetGroupName
+  #     SubnetIds: !Ref SubnetIds
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Ref DBSubnetGroupName
+
+  # Aurora DB Cluster
+  MyDBCluster:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      DBClusterIdentifier: !Ref DBClusterIdentifier
+      Engine: aurora  # Use "aurora-mysql" for Aurora MySQL or "aurora-postgresql" for Aurora PostgreSQL
+      MasterUsername: !Ref MasterUsername
+      MasterUserPassword: !Ref MasterUserPassword
+      # DBSubnetGroupName: !Ref MyDBSubnetGroup
+      # VpcSecurityGroupIds: !Ref DBSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Ref DBClusterIdentifier
+
+  # Aurora DB Instance
+  MyDBInstance:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceIdentifier
+      DBInstanceClass: !Ref DBInstanceClass
+      Engine: aurora  # Use "aurora-mysql" or "aurora-postgresql" as needed
+      DBClusterIdentifier: !Ref MyDBCluster
+      AllocatedStorage: 100
+      Tags:
+        - Key: Name
+          Value: !Ref DBInstanceIdentifier
+
+  # Security Group for Aurora
+  DBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable access to Aurora DB
+      # VpcId: !Ref VPCId
+      # SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306  # Change based on your DB engine
+          ToPort: 3306
+          CidrIp: '0.0.0.0/0'  # Adjust for security
+
+# Outputs:
+#   DBClusterEndpoint:
+#     Description: The endpoint of the Aurora DB cluster
+#     Value: !GetAtt MyDBCluster.Endpoint.Address
+
+#   DBInstanceEndpoint:
+#     Description: The endpoint of the Aurora DB instance
+#     Value: !GetAtt MyDBInstance.Endpoint.Address
+
+#   DBClusterArn:
+#     Description: The ARN of the Aurora DB cluster
+#     Value: !GetAtt MyDBCluster.Arn
