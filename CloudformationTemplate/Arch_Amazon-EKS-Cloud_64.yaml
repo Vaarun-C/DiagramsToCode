@@ -1,0 +1,222 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up an Amazon EKS Cluster
+
+Parameters:
+  ClusterName:
+    Description: The name of the EKS cluster
+    Type: String
+    Default: MyEKSCluster
+
+  # VpcCidr:
+  #   Description: CIDR block for the VPC
+  #   Type: String
+  #   Default: 10.0.0.0/16
+
+  # PublicSubnet1Cidr:
+  #   Description: CIDR block for the first public subnet
+  #   Type: String
+  #   Default: 10.0.1.0/24
+
+  # PublicSubnet2Cidr:
+  #   Description: CIDR block for the second public subnet
+  #   Type: String
+  #   Default: 10.0.2.0/24
+
+  NodeInstanceType:
+    Description: EC2 instance type for EKS nodes
+    Type: String
+    Default: t3.medium
+
+  NodeGroupMinSize:
+    Description: Minimum size of the node group
+    Type: Number
+    Default: 1
+
+  NodeGroupMaxSize:
+    Description: Maximum size of the node group
+    Type: Number
+    Default: 3
+
+  NodeGroupDesiredSize:
+    Description: Desired size of the node group
+    Type: Number
+    Default: 2
+
+  KeyName:
+    Description: EC2 Key Pair for SSH access
+    Type: AWS::EC2::KeyPair::KeyName
+
+Resources:
+
+  # VPC
+  # MyVPC:
+  #   Type: 'AWS::EC2::VPC'
+  #   Properties:
+  #     CidrBlock: !Ref VpcCidr
+  #     EnableDnsSupport: true
+  #     EnableDnsHostnames: true
+
+  # Public Subnet 1
+  # PublicSubnet1:
+  #   Type: 'AWS::EC2::Subnet'
+  #   Properties:
+  #     VpcId: !Ref MyVPC
+  #     CidrBlock: !Ref PublicSubnet1Cidr
+  #     AvailabilityZone: !Select [ 0, !GetAZs 'us-west-2' ]
+  #     MapPublicIpOnLaunch: true
+
+  # Public Subnet 2
+  # PublicSubnet2:
+  #   Type: 'AWS::EC2::Subnet'
+  #   Properties:
+  #     VpcId: !Ref MyVPC
+  #     CidrBlock: !Ref PublicSubnet2Cidr
+  #     AvailabilityZone: !Select [ 1, !GetAZs 'us-west-2' ]
+  #     MapPublicIpOnLaunch: true
+
+  # Internet Gateway
+  MyInternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+
+  # Attach Internet Gateway to VPC
+  AttachGateway:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      # VpcId: !Ref MyVPC
+      InternetGatewayId: !Ref MyInternetGateway
+
+  # Route Table for Public Subnets
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      # VpcId: !Ref MyVPC
+
+  # Route for Internet Access
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref MyInternetGateway
+
+  # Associate Public Subnet 1 with Route Table
+  # PublicSubnetRouteTableAssociation1:
+  #   Type: 'AWS::EC2::SubnetRouteTableAssociation'
+  #   Properties:
+  #    SubnetId: !Ref PublicSubnet1
+  #     RouteTableId: !Ref PublicRouteTable
+
+  # Associate Public Subnet 2 with Route Table
+  # PublicSubnetRouteTableAssociation2:
+  #   Type: 'AWS::EC2::SubnetRouteTableAssociation'
+  #   Properties:
+  #     SubnetId: !Ref PublicSubnet2
+  #     RouteTableId: !Ref PublicRouteTable
+
+  # EKS Role
+  EKSRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: eks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: EKSClusterPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "eks:CreateCluster"
+                  - "eks:DescribeCluster"
+                  - "eks:UpdateClusterConfig"
+                  - "eks:DeleteCluster"
+                  - "eks:ListClusters"
+                  - "ec2:DescribeVpcs"
+                  - "ec2:DescribeSubnets"
+                  - "ec2:DescribeSecurityGroups"
+                Resource: "*"
+
+  # EKS Cluster
+  MyEKSCluster:
+    Type: 'AWS::EKS::Cluster'
+    Properties:
+      Name: !Ref ClusterName
+      RoleArn: !GetAtt EKSRole.Arn
+      ResourcesVpcConfig:
+        # SubnetIds:
+        #   - !Ref PublicSubnet1
+        #   - !Ref PublicSubnet2
+        EndpointPublicAccess: true
+        EndpointPrivateAccess: false
+
+  # Node Group Role
+  NodeGroupRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: eks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: EKSWorkerNodePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ec2:DescribeInstances"
+                  - "ec2:DescribeSecurityGroups"
+                  - "ec2:DescribeSubnets"
+                  - "ec2:DescribeVpcs"
+                  - "ec2:CreateNetworkInterface"
+                  - "ec2:DeleteNetworkInterface"
+                  - "ec2:DescribeNetworkInterfaces"
+                  - "ec2:AttachNetworkInterface"
+                  - "ec2:DetachNetworkInterface"
+                Resource: "*"
+
+  # Node Group
+  MyEKSNodeGroup:
+    Type: 'AWS::EKS::Nodegroup'
+    Properties:
+      ClusterName: !Ref MyEKSCluster
+      NodegroupName: !Sub "${ClusterName}-NodeGroup"
+      NodeRole: !GetAtt NodeGroupRole.Arn
+      ScalingConfig:
+        DesiredSize: !Ref NodeGroupDesiredSize
+        MaxSize: !Ref NodeGroupMaxSize
+        MinSize: !Ref NodeGroupMinSize
+      # Subnets:
+      #   - !Ref PublicSubnet1
+      #   - !Ref PublicSubnet2
+      InstanceTypes:
+        - !Ref NodeInstanceType
+
+# Outputs:
+#   EKSClusterName:
+#     Description: The name of the created EKS cluster
+#     Value: !Ref MyEKSCluster
+
+#   NodeGroupName:
+#     Description: The name of the created EKS node group
+#     Value: !Ref MyEKSNodeGroup
+
+#   VPCId:
+#     Description: The ID of the created VPC
+#     Value: !Ref MyVPC
+
+#   PublicSubnet1Id:
+#     Description: The ID of the first public subnet
+#     Value: !Ref PublicSubnet1
+
+#   PublicSubnet2Id:
+#     Description: The ID of the second public subnet
+#     Value: !Ref PublicSubnet2
