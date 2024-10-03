@@ -1,0 +1,100 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up an Amazon RDS instance
+
+Parameters:
+  DBInstanceIdentifier:
+    Description: Unique identifier for the DB instance
+    Type: String
+    Default: mydbinstance
+
+  DBInstanceClass:
+    Description: The compute and memory capacity of the DB instance
+    Type: String
+    Default: db.t3.micro
+    AllowedValues:
+      - db.t3.micro
+      - db.t3.small
+      - db.t3.medium
+      - db.t3.large
+    ConstraintDescription: Must be a valid DB instance class.
+
+  DBEngine:
+    Description: The database engine to use
+    Type: String
+    Default: MySQL
+    AllowedValues:
+      - MySQL
+      - postgres
+      - sqlserver-express
+      - oracle-se2
+    ConstraintDescription: Must be a valid database engine.
+
+  DBName:
+    Description: The name of the database to create
+    Type: String
+    Default: mydatabase
+
+  MasterUsername:
+    Description: The master username for the database
+    Type: String
+    Default: admin
+
+  MasterUserPassword:
+    Description: The master password for the database
+    Type: String
+    NoEcho: true
+
+  # VpcId:
+  #   Description: VPC ID for the RDS instance
+  #   Type: AWS::EC2::VPC::Id
+
+  # SubnetIds:
+  #   Description: Comma-separated list of subnet IDs for the RDS subnet group
+  #   Type: List<AWS::EC2::Subnet::Id>
+
+Resources:
+
+  # Security Group for RDS
+  RdsSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable access to the RDS instance
+      # VpcId: !Ref VpcId
+      # SecurityGroupIngress:
+      #   - IpProtocol: tcp
+      #     FromPort: 3306  # Default MySQL port
+      #     ToPort: 3306
+      #     CidrIp: '0.0.0.0/0'  # Adjust for better security
+
+  # RDS Subnet Group
+  # RdsSubnetGroup:
+  #   Type: 'AWS::RDS::DBSubnetGroup'
+  #   Properties:
+  #     DBSubnetGroupDescription: Subnet group for RDS
+  #     DBSubnetGroupName: !Sub "${DBInstanceIdentifier}-subnet-group"
+  #     SubnetIds: !Ref SubnetIds
+
+  # RDS Database Instance
+  # RDSInstance:
+  #   Type: 'AWS::RDS::DBInstance'
+  #   Properties:
+  #     DBInstanceIdentifier: !Ref DBInstanceIdentifier
+  #     DBInstanceClass: !Ref DBInstanceClass
+  #     Engine: !Ref DBEngine
+  #     DBName: !Ref DBName
+  #     MasterUsername: !Ref MasterUsername
+  #     MasterUserPassword: !Ref MasterUserPassword
+  #     # VPCSecurityGroups:
+  #       - !Ref RdsSecurityGroup
+  #     # DBSubnetGroupName: !Ref RdsSubnetGroup
+  #     AllocatedStorage: '20'  # Adjust storage as needed
+  #     StorageType: gp2  # General Purpose SSD
+
+# Outputs:
+#   DBInstanceEndpoint:
+#     Description: The endpoint of the RDS database instance
+#     Value: !GetAtt RDSInstance.Endpoint.Address
+
+#   RdsSecurityGroupId:
+#     Description: The ID of the security group for the RDS instance
+#     Value: !Ref RdsSecurityGroup
