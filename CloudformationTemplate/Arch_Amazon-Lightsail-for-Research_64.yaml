@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an Amazon Lightsail instance for research
+
+Parameters:
+  KeyPairName:
+    Description: Name of an existing Lightsail Key Pair to enable SSH access to the instance
+    Type: String
+
+  InstanceName:
+    Description: Name of the Lightsail instance
+    Type: String
+    Default: ResearchInstance
+
+  InstancePlan:
+    Description: The plan for the Lightsail instance
+    Type: String
+    Default: "nano_2_0"  # Choose from: nano_2_0, micro_2_0, etc.
+    AllowedValues:
+      - nano_2_0
+      - micro_2_0
+      - small_2_0
+      - medium_2_0
+      - large_2_0
+
+  InstanceBlueprint:
+    Description: The blueprint for the Lightsail instance (OS image)
+    Type: String
+    Default: "ubuntu_20_04"
+    AllowedValues:
+      - ubuntu_20_04
+      - ubuntu_18_04
+      - amazon_linux
+      - windows_server_2019
+
+Resources:
+
+  # Lightsail Instance
+  MyResearchInstance:
+    Type: 'AWS::Lightsail::Instance'
+    Properties:
+      InstanceName: !Ref InstanceName
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]  # Select the first availability zone
+      BlueprintId: !Ref InstanceBlueprint
+      BundleId: !Ref InstancePlan
+      KeyPairName: !Ref KeyPairName
+
+Outputs:
+  InstanceName:
+    Description: Name of the Lightsail instance
+    Value: !Ref MyResearchInstance
+
+  InstanceArn:
+    Description: ARN of the Lightsail instance
+    Value: !GetAtt MyResearchInstance.Arn
+
+  InstancePublicIp:
+    Description: Public IP of the Lightsail instance
+    Value: !GetAtt MyResearchInstance.PublicIpAddress
