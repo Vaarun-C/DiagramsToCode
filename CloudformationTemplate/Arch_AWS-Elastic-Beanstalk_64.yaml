@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Simple CloudFormation Template for AWS Elastic Beanstalk
+
+Resources:
+
+  # Elastic Beanstalk Application
+  MyElasticBeanstalkApplication:
+    Type: 'AWS::ElasticBeanstalk::Application'
+    Properties:
+      ApplicationName: MySampleApp
+      Description: A sample Elastic Beanstalk application
+
+  # Elastic Beanstalk Application Version
+  MyApplicationVersion:
+    Type: 'AWS::ElasticBeanstalk::ApplicationVersion'
+    Properties:
+      # ApplicationName: !Ref MyElasticBeanstalkApplication
+      VersionLabel: v1
+      SourceBundle:
+        S3Bucket: my-s3-bucket  # Replace with S3 bucket name
+        S3Key: sample-app.zip     # Replace with the key of application zip file
+
+  # Elastic Beanstalk Environment
+  MyElasticBeanstalkEnvironment:
+    Type: 'AWS::ElasticBeanstalk::Environment'
+    Properties:
+      # ApplicationName: !Ref MyElasticBeanstalkApplication
+      EnvironmentName: MySampleAppEnv
+      # VersionLabel: !Ref MyApplicationVersion
+      SolutionStackName: "64bit Amazon Linux 2 v5.4.0 running Python 3.8"  # Change according to stack
+      OptionSettings:
+        - Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: MY_ENV_VAR
+          Value: "Hello, Elastic Beanstalk!" #whatever, doesnt matter really
+
+Outputs:
+  ApplicationURL:
+    Description: URL of the Elastic Beanstalk application
+    # Value: !Sub "http://${MyElasticBeanstalkEnvironment}.elasticbeanstalk.com"
