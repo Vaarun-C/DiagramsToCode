@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an Amazon EFS file system
+
+Parameters:
+  FileSystemName:
+    Description: The name of the EFS file system
+    Type: String
+    Default: MyEFS
+
+  # VpcId:
+  #   Description: The ID of the VPC where the EFS will be created
+  #   Type: AWS::EC2::VPC::Id
+
+  # SubnetIds:
+  #   Description: Comma-separated list of subnet IDs for the mount targets
+  #   Type: CommaDelimitedList
+
+  # SecurityGroupId:
+  #   Description: The ID of the security group to associate with the EFS mount targets
+  #   Type: AWS::EC2::SecurityGroup::Id
+
+Resources:
+
+  # Amazon EFS File System
+  MyEFS:
+    Type: 'AWS::EFS::FileSystem'
+    Properties:
+      FileSystemTags:
+        - Key: Name
+          Value: !Ref FileSystemName
+
+  # EFS Mount Targets
+  MyEFSMountTargets:
+    Type: 'AWS::EFS::MountTarget'
+    Properties:
+      FileSystemId: !Ref MyEFS
+      # SubnetId: !Select [0, !Ref SubnetIds]  # Create a mount target in the first subnet
+      # SecurityGroups:
+      #   - !Ref SecurityGroupId
+
+  MyEFSMountTarget2:
+    Type: 'AWS::EFS::MountTarget'
+    Properties:
+      FileSystemId: !Ref MyEFS
+      # SubnetId: !Select [1, !Ref SubnetIds]  # Create a mount target in the second subnet
+      # SecurityGroups:
+      #   - !Ref SecurityGroupId
+
+# Outputs:
+#   EFSFileSystemId:
+#     Description: The ID of the created EFS file system
+#     Value: !Ref MyEFS
+
+#   EFSFileSystemArn:
+#     Description: The ARN of the created EFS file system
+#     Value: !GetAtt MyEFS.Arn
