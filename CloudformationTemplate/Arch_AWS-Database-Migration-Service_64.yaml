@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up AWS Database Migration Service
+
+Parameters:
+  ReplicationInstanceIdentifier:
+    Description: The identifier for the DMS replication instance
+    Type: String
+    Default: my-dms-replication-instance
+
+  ReplicationInstanceClass:
+    Description: The instance class for the DMS replication instance
+    Type: String
+    Default: dms.r5.large
+    AllowedValues:
+      - dms.r5.large
+      - dms.r5.xlarge
+      - dms.r5.2xlarge
+    ConstraintDescription: Must be a valid DMS instance class.
+
+  # VpcId:
+  #   Description: The VPC ID where the DMS instance will be deployed
+  #   Type: AWS::EC2::VPC::Id
+
+  # SubnetIds:
+  #   Description: Comma-separated list of subnet IDs for the DMS replication instance
+  #   Type: List<AWS::EC2::Subnet::Id>
+
+  SourceDBEndpointIdentifier:
+    Description: Identifier for the source database endpoint
+    Type: String
+    Default: my-source-db-endpoint
+
+  TargetDBEndpointIdentifier:
+    Description: Identifier for the target database endpoint
+    Type: String
+    Default: my-target-db-endpoint
+
+  SourceDBEndpoint:
+    Description: Connection string for the source database
+    Type: String
+
+  TargetDBEndpoint:
+    Description: Connection string for the target database
+    Type: String
+
+Resources:
+
+  # DMS Replication Instance
+  DMSReplicationInstance:
+    Type: 'AWS::DMS::ReplicationInstance'
+    Properties:
+      ReplicationInstanceIdentifier: !Ref ReplicationInstanceIdentifier
+      ReplicationInstanceClass: !Ref ReplicationInstanceClass
+      AllocatedStorage: 100
+      # VpcSecurityGroupIds: 
+      #   - !Ref DMSecurityGroup
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]  # Select first availability zone
+
+  # Source Database Endpoint
+  SourceDBEndpoint:
+    Type: 'AWS::DMS::Endpoint'
+    Properties:
+      EndpointIdentifier: !Ref SourceDBEndpointIdentifier
+      EndpointType: "source"
+      EngineName: "mysql"  # Specify your source DB engine
+      Username: "your_username"  # Replace with actual username
+      Password: "your_password"  # Replace with actual password
+      ServerName: !Sub "${SourceDBEndpoint}"
+      DatabaseName: "your_database"  # Replace with actual DB name
+      Port: 3306  # Replace with actual port
+
+  # Target Database Endpoint
+  TargetDBEndpoint:
+    Type: 'AWS::DMS::Endpoint'
+    Properties:
+      EndpointIdentifier: !Ref TargetDBEndpointIdentifier
+      EndpointType: "target"
+      EngineName: "postgres"  # Specify your target DB engine
+      Username: "your_username"  # Replace with actual username
+      Password: "your_password"  # Replace with actual password
+      ServerName: !Sub "${TargetDBEndpoint}"
+      DatabaseName: "your_database"  # Replace with actual DB name
+      Port: 5432  # Replace with actual port
+
+  # Security Group for DMS
+  DMSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Allow access to the DMS replication instance
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306  # Change based on your source DB port
+          ToPort: 3306
+          CidrIp: '0.0.0.0/0'  # Adjust for security
+        - IpProtocol: tcp
+          FromPort: 5432  # Change based on your target DB port
+          ToPort: 5432
+          CidrIp: '0.0.0.0/0'  # Adjust for security
+
+Outputs:
+  ReplicationInstanceEndpoint:
+    Description: The endpoint of the DMS replication instance
+    Value: !GetAtt DMSReplicationInstance.Endpoint
+
+  SourceDBEndpointArn:
+    Description: The ARN of the source database endpoint
+    Value: !GetAtt SourceDBEndpoint.EndpointArn
+
+  TargetDBEndpointArn:
+    Description: The ARN of the target database endpoint
+    Value: !GetAtt TargetDBEndpoint.EndpointArn
