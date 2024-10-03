@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an Amazon FSx for Lustre file system
+
+Parameters:
+  FileSystemName:
+    Description: The name of the FSx for Lustre file system
+    Type: String
+    Default: MyLustreFileSystem
+
+  StorageCapacity:
+    Description: The storage capacity of the file system in GiB (minimum 120 GiB, maximum 1,000,000 GiB)
+    Type: Number
+    Default: 120
+    MinValue: 120
+    MaxValue: 1000000
+
+  # SubnetId:
+  #   Description: The ID of the subnet in which to create the file system
+  #   Type: AWS::EC2::Subnet::Id
+
+  # SecurityGroupIds:
+  #   Description: The security group IDs for the file system
+  #   Type: List<AWS::EC2::SecurityGroup::Id>
+
+  AutoImportPolicy:
+    Description: The auto-import policy for the file system
+    Type: String
+    Default: "NONE"
+    AllowedValues:
+      - "NONE"
+      - "NEW"
+      - "NEW_AND_CHANGED"
+
+  WeeklyMaintenanceStartTime:
+    Description: The preferred time to perform weekly maintenance
+    Type: String
+    Default: "1:00"  # Format: HH:MM in UTC
+
+Resources:
+
+  # Amazon FSx for Lustre File System
+  MyLustreFileSystem:
+    Type: 'AWS::FSx::FileSystem'
+    Properties:
+      FileSystemType: LUSTRE
+      StorageCapacity: !Ref StorageCapacity
+      # SubnetId: !Ref SubnetId
+      # SecurityGroupIds: !Ref SecurityGroupIds
+      LustreConfiguration:
+        DeploymentType: PERSISTENT  # Choose PERSISTENT or SCRATCH
+        AutoImportPolicy: !Ref AutoImportPolicy
+        WeeklyMaintenanceStartTime: !Ref WeeklyMaintenanceStartTime
+        PerUnitStorageThroughput: 200  # Configure throughput per GB of storage
+
+# Outputs:
+#   LustreFileSystemId:
+#     Description: The ID of the created FSx for Lustre file system
+#     Value: !Ref MyLustreFileSystem
+
+#   LustreFileSystemArn:
+#     Description: The ARN of the created FSx for Lustre file system
+#     Value: !GetAtt MyLustreFileSystem.Arn
