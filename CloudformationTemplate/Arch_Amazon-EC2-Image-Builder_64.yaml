@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an Amazon EC2 Image Builder pipeline
+
+Resources:
+
+  # Image Recipe
+  MyImageRecipe:
+    Type: 'AWS::ImageBuilder::ImageRecipe'
+    Properties:
+      Name: MyImageRecipe
+      Version: '1.0.0'
+      Components:
+        - ComponentArn: !Ref MyComponent  # Reference to the component
+      ParentImage: "arn:aws:imagebuilder:us-west-2:aws:image/amazon-linux-2-x86_64-gp2"  # Replace with your base image ARN
+      Tags:
+        Environment: Production
+
+  # Component
+  MyComponent:
+    Type: 'AWS::ImageBuilder::Component'
+    Properties:
+      Name: MyComponent
+      Version: '1.0.0'
+      Description: Install packages and perform configurations
+      Platform: "Linux"
+      Data:
+        Content: |
+          name: MyComponent
+          version: 1.0.0
+          phases:
+            build:
+              commands:
+                - yum install -y httpd
+
+  # Infrastructure Configuration
+  MyInfrastructureConfiguration:
+    Type: 'AWS::ImageBuilder::InfrastructureConfiguration'
+    Properties:
+      Name: MyInfrastructureConfiguration
+      InstanceTypes:
+        - t2.micro  # Choose an instance type as per your needs
+      # SecurityGroupIds:
+        # - sg-0123456789abcdef0  # Replace with your security group ID
+      # SubnetId: subnet-0123456789abcdef0  # Replace with your subnet ID
+      Tags:
+        Environment: Production
+
+  # Image Pipeline
+  MyImagePipeline:
+    Type: 'AWS::ImageBuilder::ImagePipeline'
+    Properties:
+      Name: MyImagePipeline
+      ImageRecipeArn: !Ref MyImageRecipe
+      InfrastructureConfigurationArn: !Ref MyInfrastructureConfiguration
+      Status: "ENABLED"
+      Schedule:
+        ScheduleExpression: "rate(1 day)"  # Adjust as needed for your build frequency
+      Tags:
+        Environment: Production
+
+Outputs:
+  ImagePipelineArn:
+    Description: ARN of the Image Builder Pipeline
+    Value: !Ref MyImagePipeline
