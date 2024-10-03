@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an Amazon EBS volume and attach it to an EC2 instance
+
+Parameters:
+  InstanceId:
+    Description: The ID of the EC2 instance to attach the EBS volume
+    Type: AWS::EC2::Instance::Id
+
+  VolumeSize:
+    Description: The size of the EBS volume in GiB (minimum 1 GiB)
+    Type: Number
+    Default: 8
+    MinValue: 1
+    MaxValue: 16384  # Maximum size for gp2 and gp3 volumes
+
+  VolumeType:
+    Description: The type of EBS volume
+    Type: String
+    Default: "gp2"  # General Purpose SSD
+    AllowedValues:
+      - "gp2"  # General Purpose SSD
+      - "gp3"  # General Purpose SSD
+      - "io1"  # Provisioned IOPS SSD
+      - "io2"  # Provisioned IOPS SSD
+      - "st1"  # Throughput Optimized HDD
+      - "sc1"  # Cold HDD
+      - "standard"  # Magnetic
+
+Resources:
+
+  # Amazon EBS Volume
+  MyEBSVolume:
+    Type: 'AWS::EC2::Volume'
+    Properties:
+      Size: !Ref VolumeSize
+      VolumeType: !Ref VolumeType
+      AvailabilityZone: !GetAtt MyEC2Instance.AvailabilityZone
+
+  # EC2 Instance (for demonstration purposes)
+  MyEC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0c55b159cbfafe01e  # Replace with a valid AMI ID
+      KeyName: your-key-pair  # Replace with your key pair name
+      # SecurityGroupIds:
+      #   - !Ref MySecurityGroup
+
+  # Security Group for the EC2 instance
+  # MySecurityGroup:
+  #   Type: 'AWS::EC2::SecurityGroup'
+  #   Properties:
+  #     GroupDescription: Enable SSH access
+  #     VpcId: your-vpc-id  # Replace with your VPC ID
+  #     SecurityGroupIngress:
+  #       - IpProtocol: tcp
+  #         FromPort: 22
+  #         ToPort: 22
+  #         CidrIp: 0.0.0.0/0  # Allow SSH access from anywhere
+
+  # Attach the EBS Volume to the EC2 Instance
+  MyEBSVolumeAttachment:
+    Type: 'AWS::EC2::VolumeAttachment'
+    Properties:
+      InstanceId: !Ref InstanceId
+      VolumeId: !Ref MyEBSVolume
+      Device: /dev/sdf  # Specify the device name
+
+# Outputs:
+#   EBSVolumeId:
+#     Description: The ID of the created EBS volume
+#     Value: !Ref MyEBSVolume
+
+#   EC2InstanceId:
+#     Description: The ID of the EC2 instance
+#     Value: !Ref MyEC2Instance
