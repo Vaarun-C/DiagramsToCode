@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an AWS App Runner service
+
+Parameters:
+  ServiceName:
+    Description: Name of the App Runner service
+    Type: String
+    Default: MyAppRunnerService
+
+  SourceRepository:
+    Description: The URL of the source repository (GitHub or CodeCommit)
+    Type: String
+
+  SourceBranch:
+    Description: The branch of the source repository to deploy
+    Type: String
+    Default: main
+
+Resources:
+
+  # App Runner Service
+  MyAppRunnerService:
+    Type: 'AWS::AppRunner::Service'
+    Properties:
+      ServiceName: !Ref ServiceName
+      SourceConfiguration:
+        ImageRepository:
+          ImageIdentifier: !Sub "${SourceRepository}:${SourceBranch}"
+          ImageRepositoryType: "GITHUB"  # Change to "CODECOMMIT" if using CodeCommit
+        AutoDeploymentsEnabled: true
+        CodeConfiguration:
+          ConfigurationSource: "API"
+          CodeRepository:
+            RepositoryUrl: !Ref SourceRepository
+            SourceCodeVersion:
+              Type: "BRANCH"
+              Value: !Ref SourceBranch
+            CodeRepositoryType: "GITHUB"  # Change to "CODECOMMIT" if using CodeCommit
+      InstanceConfiguration:
+        Cpu: "1024"  # 1 vCPU
+        Memory: "2048"  # 2 GB RAM
+
+Outputs:
+  ServiceUrl:
+    Description: URL of the App Runner service
+    Value: !GetAtt MyAppRunnerService.ServiceUrl
