@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up Amazon ECS
+
+Parameters:
+  ClusterName:
+    Description: The name of the ECS cluster
+    Type: String
+    Default: MyECSCluster
+
+  ServiceName:
+    Description: The name of the ECS service
+    Type: String
+    Default: MyECSService
+
+  TaskDefinitionName:
+    Description: The name of the ECS task definition
+    Type: String
+    Default: MyTaskDefinition
+
+  ContainerName:
+    Description: The name of the container
+    Type: String
+    Default: MyContainer
+
+  ContainerImage:
+    Description: The Docker image to use for the container
+    Type: String
+    Default: amazon/amazon-ecs-sample
+
+  ContainerPort:
+    Description: The port on which the container listens
+    Type: Number
+    Default: 80
+
+  DesiredCount:
+    Description: The desired number of tasks to run in the service
+    Type: Number
+    Default: 1
+
+Resources:
+
+  # ECS Cluster
+  MyECSCluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: !Ref ClusterName
+
+  # Task Definition
+  MyTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskDefinitionName
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Ref ContainerName
+          Image: !Ref ContainerImage
+          PortMappings:
+            - ContainerPort: !Ref ContainerPort
+          Memory: 512
+          Cpu: 256
+
+  # Security Group for ECS Service
+  ECSServiceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable access to ECS service
+      # VpcId: !Ref VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref ContainerPort
+          ToPort: !Ref ContainerPort
+          CidrIp: '0.0.0.0/0'  # Adjust for security
+
+  # ECS Service
+  MyECSService:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      Cluster: !Ref MyECSCluster
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref MyTaskDefinition
+      LaunchType: FARGATE  # Change to EC2 if using EC2 launch type
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          # Subnets: !Ref SubnetIds
+          # SecurityGroups:
+          #   - !Ref ECSServiceSecurityGroup
+          AssignPublicIp: ENABLED
+
+# Outputs:
+#   ClusterNameOutput:
+#     Description: The name of the created ECS cluster
+#     Value: !Ref MyECSCluster
+
+#   ServiceNameOutput:
+#     Description: The name of the created ECS service
+#     Value: !Ref MyECSService
