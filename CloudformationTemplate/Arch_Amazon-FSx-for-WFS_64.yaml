@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an Amazon FSx for Windows File Server
+
+Parameters:
+  FileSystemName:
+    Description: The name of the FSx for Windows File Server
+    Type: String
+    Default: MyWindowsFileServer
+
+  StorageCapacity:
+    Description: The storage capacity of the file system in GiB (minimum 300 GiB, maximum 524288 GiB)
+    Type: Number
+    Default: 300
+    MinValue: 300
+    MaxValue: 524288
+
+  # SubnetId:
+  #   Description: The ID of the subnet in which to create the file system
+  #   Type: AWS::EC2::Subnet::Id
+
+  # SecurityGroupIds:
+  #   Description: The security group IDs for the file system
+  #   Type: List<AWS::EC2::SecurityGroup::Id>
+
+  ActiveDirectoryId:
+    Description: The ID of the Active Directory to use with the FSx file system
+    Type: String
+
+Resources:
+
+  # Amazon FSx for Windows File Server
+  MyWindowsFileServer:
+    Type: 'AWS::FSx::FileSystem'
+    Properties:
+      FileSystemType: WINDOWS
+      StorageCapacity: !Ref StorageCapacity
+      # SubnetId: !Ref SubnetId
+      # SecurityGroupIds: !Ref SecurityGroupIds
+      WindowsConfiguration:
+        ActiveDirectoryId: !Ref ActiveDirectoryId
+        AutomaticBackupRetentionDays: 7  # Number of days to retain backups
+        DailyAutomaticBackupStartTime: "04:00"  # Time to start daily backups (UTC)
+        MultiAZ: true  # Set to true for high availability
+        # SelfManagedActiveDirectoryConfiguration: 
+          # Optional: Add this if using a self-managed AD
+          # Name: "example.com"
+          # OrganizationalUnitDistinguishedName: "OU=exampleOU,DC=example,DC=com"
+          # UserName: "admin"
+          # Password: "Password123"  # Specify a password here or manage via parameters
+
+# Outputs:
+#   WindowsFileSystemId:
+#     Description: The ID of the created FSx for Windows File Server
+#     Value: !Ref MyWindowsFileServer
+
+#   WindowsFileSystemArn:
+#     Description: The ARN of the created FSx for Windows File Server
+#     Value: !GetAtt MyWindowsFileServer.Arn
