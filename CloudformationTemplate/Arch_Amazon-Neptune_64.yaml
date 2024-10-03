@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up an Amazon Neptune Cluster
+
+Parameters:
+  NeptuneClusterIdentifier:
+    Description: The identifier for the Neptune cluster
+    Type: String
+    Default: my-neptune-cluster
+
+  NeptuneInstanceClass:
+    Description: The instance type for the Neptune cluster
+    Type: String
+    Default: db.r5.large
+    AllowedValues:
+      - db.r5.large
+      - db.r5.xlarge
+      - db.r5.2xlarge
+      - db.r5.4xlarge
+    ConstraintDescription: Must be a valid Neptune instance type.
+
+  VpcId:
+    Description: The VPC ID where the Neptune cluster will be deployed
+    Type: AWS::EC2::VPC::Id
+
+  SubnetIds:
+    Description: Comma-separated list of subnet IDs for the Neptune cluster
+    Type: List<AWS::EC2::Subnet::Id>
+
+  NeptuneSecurityGroup:
+    Description: The security group for the Neptune cluster
+    Type: AWS::EC2::SecurityGroup::Id
+
+Resources:
+
+  # Neptune Subnet Group
+  # NeptuneSubnetGroup:
+  #   Type: 'AWS::Neptune::DBSubnetGroup'
+  #   Properties:
+  #     DBSubnetGroupDescription: Subnet group for Neptune
+  #     DBSubnetGroupName: !Sub "${NeptuneClusterIdentifier}-subnet-group"
+  #     SubnetIds: !Ref SubnetIds
+
+  # Neptune Cluster
+  NeptuneCluster:
+    Type: 'AWS::Neptune::DBCluster'
+    Properties:
+      DBClusterIdentifier: !Ref NeptuneClusterIdentifier
+      # VpcSecurityGroupIds:
+      #   - !Ref NeptuneSecurityGroup
+      # DBSubnetGroupName: !Ref NeptuneSubnetGroup
+      Engine: neptune
+      StorageEncrypted: true
+
+  # Neptune Cluster Instance
+  NeptuneInstance:
+    Type: 'AWS::Neptune::DBInstance'
+    Properties:
+      DBClusterIdentifier: !Ref NeptuneCluster
+      DBInstanceClass: !Ref NeptuneInstanceClass
+      DBInstanceIdentifier: !Sub "${NeptuneClusterIdentifier}-instance"
+
+# Outputs:
+#   NeptuneClusterEndpoint:
+#     Description: The endpoint of the Neptune cluster
+#     Value: !GetAtt NeptuneCluster.Endpoint
+
+#   NeptuneInstanceEndpoint:
+#     Description: The endpoint of the Neptune instance
+#     Value: !GetAtt NeptuneInstance.Endpoint
