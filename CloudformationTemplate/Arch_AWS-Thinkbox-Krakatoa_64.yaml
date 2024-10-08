@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up an AWS ThinkBox Krakatoa environment
+
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+
+Resources:
+
+  # VPC
+  MyVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: '10.0.0.0/16'
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+  # Subnet
+  MySubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: '10.0.1.0/24'
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+
+  # Security Group
+  MySecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable SSH access
+      VpcId: !Ref MyVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: '0.0.0.0/0'  # Adjust for better security
+
+  # EC2 Instance for Krakatoa
+  MyKrakatoaInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: 'g4dn.xlarge'  # Choose an instance type based on your needs
+      ImageId: 'ami-0abcdef1234567890'  # Replace with an appropriate AMI ID
+      SubnetId: !Ref MySubnet
+      SecurityGroupIds:
+        - !Ref MySecurityGroup
+      KeyName: !Ref KeyName
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          # Install ThinkBox Krakatoa here
+          # Example script to install dependencies
+          yum update -y
+          yum install -y aws-cli
+          # Add commands to download and install Krakatoa
+          # e.g., download from S3 and install
+          # aws s3 cp s3://my-bucket/krakatoa_installer.exe /tmp/
+          # wine /tmp/krakatoa_installer.exe
+
+Outputs:
+  InstanceId:
+    Description: The Instance ID of the Krakatoa instance
+    Value: !Ref MyKrakatoaInstance
+
+  PublicIP:
+    Description: Public IP address of the instance
+    Value: !GetAtt MyKrakatoaInstance.PublicIp

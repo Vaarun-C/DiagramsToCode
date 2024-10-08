@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up infrastructure for Amazon EKS Anywhere
+
+Parameters:
+  ClusterName:
+    Description: The name of the EKS Anywhere cluster
+    Type: String
+    Default: MyEKSAnywhereCluster
+
+  # VpcCidr:
+  #   Description: CIDR block for the VPC
+  #   Type: String
+  #   Default: 10.0.0.0/16
+
+  # PublicSubnet1Cidr:
+  #   Description: CIDR block for the first public subnet
+  #   Type: String
+  #   Default: 10.0.1.0/24
+
+  # PublicSubnet2Cidr:
+  #   Description: CIDR block for the second public subnet
+  #   Type: String
+  #   Default: 10.0.2.0/24
+
+  NodeInstanceType:
+    Description: EC2 instance type for EKS Anywhere nodes
+    Type: String
+    Default: t3.medium
+
+  KeyName:
+    Description: EC2 Key Pair for SSH access
+    Type: AWS::EC2::KeyPair::KeyName
+
+Resources:
+
+  # VPC
+  # MyVPC:
+  #   Type: 'AWS::EC2::VPC'
+  #   Properties:
+  #     CidrBlock: !Ref VpcCidr
+  #     EnableDnsSupport: true
+  #     EnableDnsHostnames: true
+
+  # Public Subnet 1
+  # PublicSubnet1:
+  #   Type: 'AWS::EC2::Subnet'
+  #   Properties:
+  #     VpcId: !Ref MyVPC
+  #     CidrBlock: !Ref PublicSubnet1Cidr
+  #     AvailabilityZone: !Select [ 0, !GetAZs 'us-west-2' ]
+  #     MapPublicIpOnLaunch: true
+
+  # Public Subnet 2
+  # PublicSubnet2:
+  #   Type: 'AWS::EC2::Subnet'
+  #   Properties:
+  #     VpcId: !Ref MyVPC
+  #     CidrBlock: !Ref PublicSubnet2Cidr
+  #     AvailabilityZone: !Select [ 1, !GetAZs 'us-west-2' ]
+  #     MapPublicIpOnLaunch: true
+
+  # Internet Gateway
+  MyInternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+
+  # Attach Internet Gateway to VPC
+  AttachGateway:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      # VpcId: !Ref MyVPC
+      InternetGatewayId: !Ref MyInternetGateway
+
+  # Route Table for Public Subnets
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      # VpcId: !Ref MyVPC
+
+  # Route for Internet Access
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref MyInternetGateway
+
+  # Associate Public Subnet 1 with Route Table
+  # PublicSubnetRouteTableAssociation1:
+  #   Type: 'AWS::EC2::SubnetRouteTableAssociation'
+  #   Properties:
+  #     SubnetId: !Ref PublicSubnet1
+  #     RouteTableId: !Ref PublicRouteTable
+
+  # Associate Public Subnet 2 with Route Table
+  # PublicSubnetRouteTableAssociation2:
+  #   Type: 'AWS::EC2::SubnetRouteTableAssociation'
+  #   Properties:
+  #     SubnetId: !Ref PublicSubnet2
+  #     RouteTableId: !Ref PublicRouteTable
+
+  # Security Group for EKS Anywhere nodes
+  EKSAnywhereSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Allow SSH and all traffic within the VPC
+      # VpcId: !Ref MyVPC
+      # SecurityGroupIngress:
+      #   - IpProtocol: tcp
+      #     FromPort: 22
+      #     ToPort: 22
+      #     CidrIp: 0.0.0.0/0
+      #   - IpProtocol: -1
+      #     FromPort: 0
+      #     ToPort: 0
+      #     CidrIp: !Ref VpcCidr
+
+  # EC2 Instance for EKS Anywhere Control Plane
+  EKSAnywhereControlPlane:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref NodeInstanceType
+      ImageId: ami-0abcdef1234567890  # Replace with a valid AMI for EKS Anywhere
+      KeyName: !Ref KeyName
+      # SubnetId: !Ref PublicSubnet1
+      # SecurityGroupIds:
+      #   - !Ref EKSAnywhereSecurityGroup
+
+  # EC2 Instance for EKS Anywhere Worker Node
+  EKSAnywhereWorkerNode:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref NodeInstanceType
+      ImageId: ami-0abcdef1234567890  # Replace with a valid AMI for EKS Anywhere
+      KeyName: !Ref KeyName
+      # SubnetId: !Ref PublicSubnet2
+      # SecurityGroupIds:
+      #   - !Ref EKSAnywhereSecurityGroup
+
+# Outputs:
+#   VPCId:
+#     Description: The ID of the created VPC
+#     Value: !Ref MyVPC
+
+#   ControlPlaneInstanceId:
+#     Description: The Instance ID of the EKS Anywhere Control Plane
+#     Value: !Ref EKSAnywhereControlPlane
+
+#   WorkerNodeInstanceId:
+#     Description: The Instance ID of the EKS Anywhere Worker Node
+#     Value: !Ref EKSAnywhereWorkerNode

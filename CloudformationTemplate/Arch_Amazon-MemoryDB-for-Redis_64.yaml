@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up an Amazon MemoryDB for Redis Cluster
+
+Parameters:
+  ClusterName:
+    Description: The name of the MemoryDB cluster
+    Type: String
+    Default: my-memorydb-cluster
+
+  NodeType:
+    Description: The node type for the MemoryDB cluster
+    Type: String
+    Default: db.r6g.large
+    AllowedValues:
+      - db.r6g.large
+      - db.r6g.xlarge
+      - db.r6g.2xlarge
+    ConstraintDescription: Must be a valid MemoryDB node type.
+
+  ReplicationFactor:
+    Description: The number of replicas for the cluster
+    Type: Number
+    Default: 1
+    MinValue: 1
+    MaxValue: 5
+
+  # VpcId:
+  #   Description: The VPC ID where the MemoryDB cluster will be deployed
+  #   Type: AWS::EC2::VPC::Id
+
+  # SubnetIds:
+  #   Description: Comma-separated list of subnet IDs for the MemoryDB cluster
+  #   Type: List<AWS::EC2::Subnet::Id>
+
+  # SecurityGroupIds:
+  #   Description: The security group IDs for the MemoryDB cluster
+  #   Type: List<AWS::EC2::SecurityGroup::Id>
+
+Resources:
+
+  # MemoryDB Cluster
+  MemoryDBCluster:
+    Type: 'AWS::MemoryDB::Cluster'
+    Properties:
+      ClusterName: !Ref ClusterName
+      NodeType: !Ref NodeType
+      ReplicationFactor: !Ref ReplicationFactor
+      ShardCount: 1
+      SnapshotRetentionLimit: 0
+      EngineVersion: "6.x"  # Specify the Redis version
+      # SecurityGroupIds: !Ref SecurityGroupIds
+      # SubnetIds: !Ref SubnetIds
+
+# Outputs:
+#   MemoryDBClusterEndpoint:
+#     Description: The endpoint of the MemoryDB cluster
+#     Value: !GetAtt MemoryDBCluster.ClusterEndpoint.Address
+
+#   MemoryDBClusterArn:
+#     Description: The ARN of the MemoryDB cluster
+#     Value: !GetAtt MemoryDBCluster.Arn

@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an Amazon Elastic Container Registry (ECR) Repository
+
+Parameters:
+  RepositoryName:
+    Description: The name of the ECR repository
+    Type: String
+    Default: MyECRRepository
+
+Resources:
+
+  # ECR Repository
+  MyECRRepository:
+    Type: 'AWS::ECR::Repository'
+    Properties:
+      RepositoryName: !Ref RepositoryName
+      LifecyclePolicy:
+        LifecyclePolicyText:
+          Version: '1'
+          Rules:
+            - RulePriority: 1
+              Description: Expire untagged images
+              Selection:
+                TagStatus: "untagged"
+                CountType: "sinceImagePushed"
+                CountUnit: "days"
+                CountNumber: 30
+              Action:
+                Type: "expire"
+      ImageScanningConfiguration:
+        scanOnPush: true
+      Tags:
+        - Key: Name
+          Value: !Ref RepositoryName
+
+# Outputs:
+#   ECRRepositoryUri:
+#     Description: URI of the created ECR repository
+#     Value: !GetAtt MyECRRepository.RepositoryUri

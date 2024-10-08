@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up Amazon ElastiCache Redis Cluster
+
+Parameters:
+  CacheClusterName:
+    Description: Name of the ElastiCache cluster
+    Type: String
+    Default: my-cache-cluster
+
+  CacheNodeType:
+    Description: The instance type for the ElastiCache cluster
+    Type: String
+    Default: cache.t3.micro
+    AllowedValues:
+      - cache.t3.micro
+      - cache.t3.small
+      - cache.t3.medium
+    ConstraintDescription: Must be a valid ElastiCache instance type.
+
+  Engine:
+    Description: The caching engine to be used (Redis or Memcached)
+    Type: String
+    Default: redis
+    AllowedValues:
+      - redis
+      - memcached
+
+  # NumCacheNodes:
+  #   Description: Number of cache nodes (for Redis, typically set to 1)
+  #   Type: Number
+  #   Default: 1
+  #   MinValue: 1
+  #   MaxValue: 6
+
+  # VpcId:
+  #   Description: VPC ID for the ElastiCache subnet group
+  #   Type: AWS::EC2::VPC::Id
+
+  # SubnetIds:
+  #   Description: Comma-separated list of subnet IDs for the ElastiCache subnet group
+  #   Type: List<AWS::EC2::Subnet::Id>
+
+Resources:
+
+  # Security Group for ElastiCache
+  ElastiCacheSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable access to ElastiCache cluster
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379  # Default Redis port
+          ToPort: 6379
+          CidrIp: '0.0.0.0/0'  # Adjust for better security
+
+  # ElastiCache Subnet Group
+  # ElastiCacheSubnetGroup:
+  #   Type: 'AWS::ElastiCache::SubnetGroup'
+  #   Properties:
+  #     CacheSubnetGroupDescription: Subnet group for ElastiCache
+  #     CacheSubnetGroupName: !Sub "${CacheClusterName}-subnet-group"
+  #     SubnetIds: !Ref SubnetIds
+
+  # ElastiCache Redis Cluster
+  ElastiCacheCluster:
+    Type: 'AWS::ElastiCache::CacheCluster'
+    Properties:
+      CacheClusterId: !Ref CacheClusterName
+      CacheNodeType: !Ref CacheNodeType
+      Engine: !Ref Engine
+      # NumCacheNodes: !Ref NumCacheNodes
+      # VpcSecurityGroupIds:
+      #   - !Ref ElastiCacheSecurityGroup
+      # CacheSubnetGroupName: !Ref ElastiCacheSubnetGroup
+
+# Outputs:
+#   CacheClusterId:
+#     Description: The ID of the ElastiCache cluster
+#     Value: !Ref ElastiCacheCluster
+
+#   SecurityGroupId:
+#     Description: The ID of the security group for the ElastiCache cluster
+#     Value: !Ref ElastiCacheSecurityGroup

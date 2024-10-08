@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up an Amazon DocumentDB Cluster
+
+Parameters:
+  DocumentDBClusterIdentifier:
+    Description: The identifier for the DocumentDB cluster
+    Type: String
+    Default: my-documentdb-cluster
+
+  DocumentDBInstanceClass:
+    Description: The instance type for the DocumentDB cluster
+    Type: String
+    Default: db.r5.large
+    AllowedValues:
+      - db.r5.large
+      - db.r5.xlarge
+      - db.r5.2xlarge
+    ConstraintDescription: Must be a valid DocumentDB instance type.
+
+  VpcId:
+    Description: The VPC ID where the DocumentDB cluster will be deployed
+    Type: AWS::EC2::VPC::Id
+
+  SubnetIds:
+    Description: Comma-separated list of subnet IDs for the DocumentDB cluster
+    Type: List<AWS::EC2::Subnet::Id>
+
+  DocumentDBSecurityGroup:
+    Description: The security group for the DocumentDB cluster
+    Type: AWS::EC2::SecurityGroup::Id
+
+Resources:
+
+  # DocumentDB Subnet Group
+  # DocumentDBSubnetGroup:
+  #   Type: 'AWS::DocDB::DBSubnetGroup'
+  #   Properties:
+      # DBSubnetGroupDescription: Subnet group for DocumentDB
+      # DBSubnetGroupName: !Sub "${DocumentDBClusterIdentifier}-subnet-group"
+      # SubnetIds: !Ref SubnetIds
+
+  # DocumentDB Cluster
+  DocumentDBCluster:
+    Type: 'AWS::DocDB::DBCluster'
+    Properties:
+      DBClusterIdentifier: !Ref DocumentDBClusterIdentifier
+      # VpcSecurityGroupIds:
+        # - !Ref DocumentDBSecurityGroup
+      # DBSubnetGroupName: !Ref DocumentDBSubnetGroup
+      Engine: docdb
+      StorageEncrypted: true
+
+  # DocumentDB Cluster Instance
+  DocumentDBInstance:
+    Type: 'AWS::DocDB::DBInstance'
+    Properties:
+      DBClusterIdentifier: !Ref DocumentDBCluster
+      DBInstanceClass: !Ref DocumentDBInstanceClass
+      DBInstanceIdentifier: !Sub "${DocumentDBClusterIdentifier}-instance"
+
+# Outputs:
+#   DocumentDBClusterEndpoint:
+#     Description: The endpoint of the DocumentDB cluster
+#     Value: !GetAtt DocumentDBCluster.Endpoint
+
+#   DocumentDBInstanceEndpoint:
+#     Description: The endpoint of the DocumentDB instance
+#     Value: !GetAtt DocumentDBInstance.Endpoint

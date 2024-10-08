@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up Amazon Keyspaces for Apache Cassandra
+
+Parameters:
+  KeyspaceName:
+    Description: The name of the Keyspace
+    Type: String
+    Default: MyKeyspace
+
+  ProvisionedThroughputReadCapacityUnits:
+    Description: Read capacity units for the keyspace
+    Type: Number
+    Default: 5
+
+  ProvisionedThroughputWriteCapacityUnits:
+    Description: Write capacity units for the keyspace
+    Type: Number
+    Default: 5
+
+Resources:
+
+  # IAM Role for Keyspaces Access
+  KeyspacesAccessRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub "${KeyspaceName}-KeyspacesAccessRole"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "cassandra.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: !Sub "${KeyspaceName}-KeyspacesPolicy"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "keyspaces:CreateTable"
+                  - "keyspaces:DeleteTable"
+                  - "keyspaces:UpdateTable"
+                  - "keyspaces:DescribeTable"
+                  - "keyspaces:ListTables"
+                Resource: "*"
+
+  # Keyspace
+  MyKeyspace:
+    Type: 'AWS::Keyspaces::Keyspace'
+    Properties:
+      KeyspaceName: !Ref KeyspaceName
+      Tags:
+        - Key: Name
+          Value: !Ref KeyspaceName
+
+# Outputs:
+#   KeyspaceNameOutput:
+#     Description: The name of the created Keyspace
+#     Value: !Ref MyKeyspace
+
+#   KeyspacesAccessRoleArn:
+#     Description: The ARN of the IAM role for Keyspaces access
+#     Value: !GetAtt KeyspacesAccessRole.Arn

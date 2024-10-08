@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Simple NICE DCV Setup
+
+Resources:
+  DcvInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      # Roles:
+      #   - !Ref DcvRole
+
+  DcvRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 'ec2.amazonaws.com'
+            Action: 'sts:AssumeRole'
+
+  DcvInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: 't3.medium'  # Choose an appropriate instance type
+      # ImageId: !Ref LatestAmiId
+      IamInstanceProfile: !Ref DcvInstanceProfile
+      # SecurityGroupIds: 
+      #   - !Ref DcvSecurityGroup
+      # SubnetId: !Ref SubnetId
+      # UserData:
+      #   Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          yum install -y dcvserver
+          systemctl enable dcvserver
+          systemctl start dcvserver
+
+  DcvSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: "NICE DCV Security Group"
+      # VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: "tcp"
+          FromPort: 8443
+          ToPort: 8443
+          CidrIp: "0.0.0.0/0"  # Allow access to NICE DCV, adjust as needed

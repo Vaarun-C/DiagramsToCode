@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Simple AWS Compute Optimizer Setup
+
+Resources:
+  ComputeOptimizerService:
+    Type: 'AWS::ComputeOptimizer::Service'
+    Properties:
+      # Minimal properties for the service can be defined here if needed.
+      # Compute Optimizer doesn't have required properties for a service.
+      # We need IAM permissions to interact with it.
+      RoleArn: !GetAtt ComputeOptimizerRole.Arn
+
+  ComputeOptimizerRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 'compute-optimizer.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'ComputeOptimizerPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'compute-optimizer:*'
+                Resource: '*'

@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Simple CloudFormation Template to set up an EFA-enabled EC2 instance
+
+Resources:
+
+  # Create a VPC
+  MyVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: '10.0.0.0/16'
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+  # Create a Subnet
+  # MySubnet:
+  #   Type: 'AWS::EC2::Subnet'
+  #   Properties:
+  #     VpcId: !Ref MyVPC
+  #     CidrBlock: '10.0.1.0/24'
+  #     AvailabilityZone: !Select [ 0, !GetAZs '' ]
+
+  # Create a Security Group
+  # MySecurityGroup:
+  #   Type: 'AWS::EC2::SecurityGroup'
+  #   Properties:
+  #     GroupDescription: Allow SSH access
+  #     VpcId: !Ref MyVPC
+  #     SecurityGroupIngress:
+  #       - IpProtocol: tcp
+  #         FromPort: 22
+  #         ToPort: 22
+  #         CidrIp: '0.0.0.0/0'  # Change this for more restrictive access
+
+  # Create an EC2 Instance with EFA
+  MyEC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: 'c5n.large'  # EFA-compatible instance type
+      ImageId: 'ami-0abcdef1234567890'  # Replace with a valid AMI ID in your region, whoever is testing- replace this with the right ami
+      # SubnetId: !Ref MySubnet
+      # SecurityGroupIds:
+      #   - !Ref MySecurityGroup
+      EbsOptimized: true
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: 'true'
+          DeviceIndex: '0'
+          # SubnetId: !Ref MySubnet
+          # Groups:
+          #   - !Ref MySecurityGroup
+          EfaEnabled: true  # Enable EFA

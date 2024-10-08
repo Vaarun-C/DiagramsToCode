@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up AWS Thinkbox Sequoia
+
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+
+  InstanceType:
+    Description: EC2 instance type for Thinkbox Sequoia
+    Type: String
+    Default: g4dn.xlarge  # GPU instance recommended for rendering tasks
+    AllowedValues:
+      - m5.large
+      - m5.xlarge
+      - g4dn.xlarge
+      - g4dn.2xlarge
+    ConstraintDescription: Must be a valid EC2 instance type.
+
+  InstanceImage:
+    Description: AMI ID for the EC2 instance (Windows recommended for Sequoia)
+    Type: String
+    Default: ami-0abcdef1234567890  # Replace with a valid Windows AMI ID
+
+  S3BucketName:
+    Description: Name of the S3 bucket to store simulation data
+    Type: String
+
+Resources:
+
+  # IAM Role for EC2 Instance
+  SequoiaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: SequoiaPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub "arn:aws:s3:::${S3BucketName}"
+                  - !Sub "arn:aws:s3:::${S3BucketName}/*"
+
+  # Security Group
+  SequoiaSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable SSH access
+      VpcId: !Ref MyVPC  # Reference to an existing VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: '0.0.0.0/0'  # Adjust for better security
+
+  # EC2 Instance for Thinkbox Sequoia
+  SequoiaInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: !Ref InstanceImage
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !Ref SequoiaSecurityGroup
+      IamInstanceProfile: !Ref SequoiaRole
+
+  # S3 Bucket for Simulation Data
+  SimulationDataBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref S3BucketName
+
+Outputs:
+  SequoiaInstanceId:
+    Description: The Instance ID of the Thinkbox Sequoia EC2 instance
+    Value: !Ref SequoiaInstance
+
+  S3BucketArn:
+    Description: The ARN of the S3 bucket for simulation data
+    Value: !GetAtt SimulationDataBucket.Arn

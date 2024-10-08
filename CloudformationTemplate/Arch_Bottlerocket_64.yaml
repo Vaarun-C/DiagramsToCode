@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Minimal setup for AWS Bottlerocket with ECS
+
+Resources:
+  # ECS Cluster
+  MyECSCluster:
+    Type: AWS::ECS::Cluster
+
+  # IAM Role for EC2 Instance
+  BottlerocketRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+
+  # Bottlerocket Instance
+  MyBottlerocketInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro  # Change as needed
+      ImageId: ami-0a2e95f2d6d4f8d2c  # Update to the latest Bottlerocket AMI
+      # SubnetId: !Ref MySubnet
+      # IamInstanceProfile: !Ref BottlerocketRole
+

@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an AWS Storage Gateway
+
+Parameters:
+  GatewayName:
+    Description: The name of the Storage Gateway
+    Type: String
+    Default: MyStorageGateway
+
+  BucketName:
+    Description: The name of the S3 bucket (must be globally unique)
+    Type: String
+
+Resources:
+
+  # S3 Bucket for Storage Gateway
+  MyStorageBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketName
+
+  # IAM Role for Storage Gateway
+  StorageGatewayRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: storagegateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: StorageGatewayPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub '${MyStorageBucket.Arn}'
+                  - !Sub '${MyStorageBucket.Arn}/*'
+
+  # Storage Gateway
+  MyStorageGateway:
+    Type: 'AWS::StorageGateway::Gateway'
+    Properties:
+      GatewayName: !Ref GatewayName
+      GatewayType: FILE_S3  # Specify the gateway type (File Gateway)
+      ActivationKey: !Ref ActivationKey  # Needs to be provided during manual activation
+
+# Outputs:
+#   StorageBucketArn:
+#     Description: The ARN of the created S3 bucket
+#     Value: !GetAtt MyStorageBucket.Arn
+
+#   StorageGatewayId:
+#     Description: The ID of the created Storage Gateway
+#     Value: !Ref MyStorageGateway

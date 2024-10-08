@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create resources for AWS Snowcone
+
+Parameters:
+  BucketName:
+    Description: The name of the S3 bucket (must be globally unique)
+    Type: String
+
+Resources:
+
+  # S3 Bucket for Snowcone
+  SnowconeBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketName
+      VersioningConfiguration:
+        Status: Enabled  # Enable versioning for data management
+
+  # IAM Role for Snow Family
+  SnowFamilyRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: snowball.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: SnowFamilyPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub '${SnowconeBucket.Arn}'
+                  - !Sub '${SnowconeBucket.Arn}/*'
+
+# Outputs:
+#   SnowconeBucketArn:
+#     Description: The ARN of the created S3 bucket
+#     Value: !GetAtt SnowconeBucket.Arn
+
+#   SnowFamilyRoleArn:
+#     Description: The ARN of the Snow Family IAM role
+#     Value: !GetAtt SnowFamilyRole.Arn

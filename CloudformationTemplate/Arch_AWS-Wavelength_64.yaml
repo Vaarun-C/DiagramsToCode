@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Simple Setup for AWS Wavelength
+
+Resources:
+  WavelengthRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 'ec2.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'WavelengthPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+             
+
+  WavelengthInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+
+  WavelengthSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: "Wavelength Security Group"
+     
+    
+  WavelengthInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: 't3.medium'  # Choose an appropriate instance type
+      

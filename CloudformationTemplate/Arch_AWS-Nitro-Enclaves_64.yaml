@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Simple AWS Nitro Enclaves Setup
+
+Resources:
+  NitroEnclaveInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      # Roles:
+      #   - !Ref NitroEnclaveRole
+
+  NitroEnclaveRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 'ec2.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'NitroEnclavePolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ec2:RunInstances'
+                  - 'ec2:DescribeInstances'
+                  - 'ec2:TerminateInstances'
+                Resource: '*'
+
+  NitroEnclaveInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: 't3.micro' # Choose a Nitro-compatible instance type
+      # ImageId: !Ref LatestAmiId
+      IamInstanceProfile: !Ref NitroEnclaveInstanceProfile
+      # SecurityGroupIds: 
+      #   - !Ref EnclaveSecurityGroup
+      # SubnetId: !Ref SubnetId
+      # UserData:
+      #   Fn::Base64: !Sub |
+      #     #!/bin/bash
+      #     yum install -y nitro-enclaves-cli
+
+  EnclaveSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: "Enable access to Nitro Enclaves"
+      # VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: "tcp"
+          FromPort: 22
+          ToPort: 22
+          CidrIp: "0.0.0.0/0"  # Allow SSH access, adjust as needed
+
+Parameters:
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/al2-ami-kernel-default-x86_64-gp2'

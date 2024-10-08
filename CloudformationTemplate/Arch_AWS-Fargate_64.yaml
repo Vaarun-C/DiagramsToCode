@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up AWS Fargate
+
+Parameters:
+  ClusterName:
+    Description: The name of the ECS cluster
+    Type: String
+    Default: MyFargateCluster
+
+  ServiceName:
+    Description: The name of the ECS service
+    Type: String
+    Default: MyFargateService
+
+  TaskDefinitionName:
+    Description: The name of the ECS task definition
+    Type: String
+    Default: MyFargateTaskDefinition
+
+  ContainerName:
+    Description: The name of the container
+    Type: String
+    Default: MyContainer
+
+  ContainerImage:
+    Description: The Docker image to use for the container
+    Type: String
+    Default: amazon/amazon-ecs-sample
+
+  ContainerPort:
+    Description: The port on which the container listens
+    Type: Number
+    Default: 80
+
+  DesiredCount:
+    Description: The desired number of tasks to run in the service
+    Type: Number
+    Default: 1
+
+  # VpcId:
+  #   Description: The VPC ID for the Fargate tasks
+  #   Type: AWS::EC2::VPC::Id
+
+  # SubnetIds:
+  #   Description: A comma-separated list of subnet IDs for the Fargate tasks
+  #   Type: List<AWS::EC2::Subnet::Id>
+
+  # SecurityGroupIds:
+  #   Description: A comma-separated list of security group IDs
+  #   Type: List<AWS::EC2::SecurityGroup::Id>
+
+Resources:
+
+  # ECS Cluster
+  MyFargateCluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: !Ref ClusterName
+
+  # Task Definition
+  MyFargateTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskDefinitionName
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Ref ContainerName
+          Image: !Ref ContainerImage
+          PortMappings:
+            - ContainerPort: !Ref ContainerPort
+          Memory: 512  # Adjust as needed
+          Cpu: 256     # Adjust as needed
+
+  # ECS Service
+  MyFargateService:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      Cluster: !Ref MyFargateCluster
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref MyFargateTaskDefinition
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          # Subnets: !Ref SubnetIds
+          # SecurityGroups: !Ref SecurityGroupIds
+          AssignPublicIp: ENABLED  # Change to DISABLED if not needed
+
+# Outputs:
+#   ClusterNameOutput:
+#     Description: The name of the created ECS cluster
+#     Value: !Ref MyFargateCluster
+
+#   ServiceNameOutput:
+#     Description: The name of the created ECS service
+#     Value: !Ref MyFargateService

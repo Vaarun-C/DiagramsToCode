@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Simple AWS ThinkBox Deadline Setup
+
+Resources:
+  DeadlineRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 'ec2.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'DeadlinePolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                # Action:
+                #   - 'logs:*'  # Basic logging permissions
+                # Resource: '*'
+
+  DeadlineInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    # Properties:
+    #   Roles:
+    #     - !Ref DeadlineRole
+
+  DeadlineInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: 't3.medium'  # Choose an appropriate instance type
+      # ImageId: !Ref LatestAmiId
+      # IamInstanceProfile: !Ref DeadlineInstanceProfile
+      # SecurityGroupIds:
+      #   - !Ref DeadlineSecurityGroup
+      # SubnetId: !Ref SubnetId
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          # Placeholder for Deadline setup
+          echo "Setting up AWS ThinkBox Deadline..."
+
+  DeadlineSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: "ThinkBox Deadline Security Group"
+      # VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: "tcp"
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: "0.0.0.0/0"  # Adjust based on security needs
+
+Parameters:
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/al2-ami-kernel-default-x86_64-gp2'
+
+  # SubnetId:
+  #   Type: String
+  #   Description: 'Subnet ID for the instance'
+
+  # VpcId:
+  #   Type: String
+  #   Description: 'VPC ID for the instance'
+
+# Outputs:
+#   InstanceId:
+#     Description: 'The Instance ID of the ThinkBox Deadline Instance'
+#     Value: !Ref DeadlineInstance

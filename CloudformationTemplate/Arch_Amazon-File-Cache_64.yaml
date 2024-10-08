@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an Amazon File Cache
+
+Parameters:
+  CacheName:
+    Description: The name of the Amazon File Cache
+    Type: String
+    Default: MyFileCache
+
+  CacheSize:
+    Description: The size of the file cache in GiB (minimum 1 GiB, maximum 524288 GiB)
+    Type: Number
+    Default: 100
+    MinValue: 1
+    MaxValue: 524288
+
+  S3Bucket:
+    Description: The S3 bucket to use with the file cache (must be globally unique)
+    Type: String
+
+  # VpcId:
+  #   Description: The ID of the VPC where the cache will be created
+  #   Type: AWS::EC2::VPC::Id
+
+  # SubnetId:
+  #   Description: The ID of the subnet where the cache will be created
+  #   Type: AWS::EC2::Subnet::Id
+
+  # SecurityGroupIds:
+  #   Description: The security group IDs for the file cache
+  #   Type: List<AWS::EC2::SecurityGroup::Id>
+
+Resources:
+
+  # Amazon File Cache
+  MyFileCache:
+    Type: 'AWS::Cache::FileCache'
+    Properties:
+      Name: !Ref CacheName
+      Size: !Ref CacheSize
+      Location: !Ref S3Bucket
+      # VpcId: !Ref VpcId
+      # SubnetId: !Ref SubnetId
+      # SecurityGroupIds: !Ref SecurityGroupIds
+
+# Outputs:
+#   FileCacheId:
+#     Description: The ID of the created Amazon File Cache
+#     Value: !Ref MyFileCache
+
+#   FileCacheArn:
+#     Description: The ARN of the created Amazon File Cache
+#     Value: !GetAtt MyFileCache.Arn
