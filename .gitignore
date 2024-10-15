@@ -167,3 +167,7 @@ del_now/
 /augmented
 /augmented__
 icons
+
+scriptingVenv
+yolov5
+geckodriver.exe
