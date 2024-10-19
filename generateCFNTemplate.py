@@ -48,8 +48,6 @@ for i, result in enumerate(results):
         # Add the class name to the list of detected classes
         detected_classes.append(class_name)
 
-    print(detected_classes)
-
     # Write template
     data = {
         "AWSTemplateFormatVersion": '2010-09-09',
@@ -63,8 +61,8 @@ for i, result in enumerate(results):
         # Remove '_64'
         cls_name = cls_name.replace('_64', '')
         service_template = {}
-        print(f"CURRENT CLASS: {cls_name}\tCOUNT: {count_of_classes}")
         icon_template = icons_collection.find_one({"name": cls_name})
+        
         if icon_template:
 
             cleaned_name = cls_name.replace('-', '').replace('_', '').replace('ArchAmazon', '')
