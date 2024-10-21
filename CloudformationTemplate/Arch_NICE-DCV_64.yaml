@@ -4,7 +4,11 @@ Description: Simple NICE DCV Setup
 Resources:
   DcvInstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
+<<<<<<< HEAD
     Properties: {}
+=======
+    Properties:
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb
       # Roles:
       #   - !Ref DcvRole
 
@@ -24,13 +28,18 @@ Resources:
     Properties:
       InstanceType: 't3.medium'  # Choose an appropriate instance type
       # ImageId: !Ref LatestAmiId
+<<<<<<< HEAD
       #IamInstanceProfile: !Ref DcvInstanceProfile
+=======
+      IamInstanceProfile: !Ref DcvInstanceProfile
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb
       # SecurityGroupIds: 
       #   - !Ref DcvSecurityGroup
       # SubnetId: !Ref SubnetId
       # UserData:
       #   Fn::Base64: !Sub |
           #!/bin/bash
+<<<<<<< HEAD
           # yum update -y
           # yum install -y dcvserver
           # systemctl enable dcvserver
@@ -46,3 +55,20 @@ Resources:
   #         FromPort: 8443
   #         ToPort: 8443
   #         CidrIp: "0.0.0.0/0"  # Allow access to NICE DCV, adjust as needed
+=======
+          yum update -y
+          yum install -y dcvserver
+          systemctl enable dcvserver
+          systemctl start dcvserver
+
+  DcvSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: "NICE DCV Security Group"
+      # VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: "tcp"
+          FromPort: 8443
+          ToPort: 8443
+          CidrIp: "0.0.0.0/0"  # Allow access to NICE DCV, adjust as needed
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb

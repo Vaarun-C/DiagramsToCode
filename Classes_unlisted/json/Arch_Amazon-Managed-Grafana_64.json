@@ -1,0 +1,14 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon Managed Grafana Workspace",
+  "Resources": {
+    "GrafanaWorkspace": {
+      "Type": "AWS::Grafana::Workspace",
+      "Properties": {
+        "AccountAccessType": "CURRENT_ACCOUNT",  // Options: CURRENT_ACCOUNT, ALL_ACCOUNTS
+        "PermissionType": "SERVICE_MANAGED",  // Options: SERVICE_MANAGED, CUSTOMER_MANAGED
+        "WorkspaceName": "MyGrafanaWorkspace"
+      }
+    }
+  }
+}

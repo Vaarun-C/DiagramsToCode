@@ -1,0 +1,14 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS IoT TwinMaker Workspace",
+  "Resources": {
+    "TwinMakerWorkspace": {
+      "Type": "AWS::IoTTwinMaker::Workspace",
+      "Properties": {
+        "WorkspaceId": "MyTwinMakerWorkspace",  // Customize the workspace ID as needed //Remove this line
+        "Description": "My first IoT TwinMaker workspace",
+        "RoleArn": "arn:aws:iam::account-id:role/role-name"  // Replace with your IAM role ARN //Remove this line
+      }
+    }
+  }
+}

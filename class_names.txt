@@ -15,7 +15,7 @@ Arch_AWS-Ground-Station_64
 Arch_Amazon-EventBridge_64
 Arch_Amazon-ECS-Anywhere_64
 Arch_AWS-AppFabric_64
-Arch_NICE-EnginFrame_64
+//Arch_NICE-EnginFrame_64
 Arch_Amazon-EKS-Distro_64
 Arch_AWS-Cloud-Development-Kit_64
 Arch_AWS-Thinkbox-Stoke_64
@@ -36,7 +36,7 @@ Arch_Amazon-Cloud-Directory_64
 Arch_Amazon-FSx-for-OpenZFS_64
 Arch_Amazon-Corretto_64
 Arch_AWS-HealthScribe_64
-Arch_AWS-SimSpace-Weaver_64
+//Arch_AWS-SimSpace-Weaver_64
 Arch_AWS-Elemental-MediaConnect_64
 Arch_Amazon-FSx-for-Lustre_64
 Arch_AWS-Migration-Evaluator_64
@@ -54,7 +54,6 @@ Arch_AWS-Launch-Wizard_64
 Arch_Amazon-EFS_64
 Arch_AWS-RoboMaker_64
 Arch_AWS-Storage-Gateway_64
-Arch_Amazon-Pinpoint_64
 Arch_Apache-MXNet-on-AWS_64
 Arch_AWS-Cost-Explorer_64
 Arch_AWS-DataSync_64
@@ -77,7 +76,6 @@ Arch_AWS-Local-Zones_64
 Arch_Amazon-WorkMail_64
 Arch_AWS-Outposts-servers_64
 Arch_AWS-Elemental-Server_64
-Arch_AWS-Elemental-Conductor_64
 Arch_AWS-IoT-Button_64
 Arch_AWS-Network-Firewall_64
 Arch_AWS-Snowball_64
@@ -105,9 +103,8 @@ Arch_AWS-Command-Line-Interface_64
 Arch_AWS-HealthOmics_64
 Arch_Amazon-GameLift_64
 Arch_Amazon-Quantum-Ledger-Database_64
-Arch_AWS-Parallel-Cluster_64
+//Arch_AWS-Parallel-Cluster_64
 Arch_Amazon-EC2-Image-Builder_64
-Arch_Amazon-WorkDocs_64
 Arch_AWS-Glue-DataBrew_64
 Arch_AWS-Private-5G_64
 Arch_Amazon-Kendra_64
@@ -127,12 +124,10 @@ Arch_AWS-App-Runner_64
 Arch_Amazon-Lookout-for-Equipment_64
 Arch_AWS-CodeStar_64
 Arch_AWS-IoT-Device-Defender_64
-Arch_TensorFlow-on-AWS_64
 Arch_AWS-Outposts-family_64
 Arch_Amazon-Keyspaces_64
 Arch_AWS-Global-Accelerator_64
 Arch_Amazon-Bedrock_64
-Arch_AWS-Marketplace_Dark_64
 Arch_AWS-Firewall-Manager_64
 Arch_Amazon-Polly_64
 Arch_Amazon-Elastic-Inference_64
@@ -140,7 +135,7 @@ Arch_Amazon-Neptune_64
 Arch_AWS-Deadline-Cloud_64
 Arch_AWS-IoT-RoboRunner_64
 Arch_AWS-rePost-Private_64
-Arch_NICE-DCV_64
+//Arch_NICE-DCV_64
 Arch_AWS-Snowcone_64
 Arch_AWS-Deep-Learning-AMIs_64
 Arch_AWS-Tools-and-SDKs_64
@@ -150,17 +145,16 @@ Arch_AWS-Organizations_64
 Arch_AWS-Outposts-rack_64
 Arch_AWS-Backint-Agent_64
 Arch_Amazon-Chime_64
-Arch_AWS-Thinkbox-Deadline_64
+//Arch_AWS-Thinkbox-Deadline_64
 Arch_Amazon-Managed-Blockchain_64
 Arch_Amazon-AppFlow_64
-Arch_AWS-Elemental-Live_64
-Arch_Bottlerocket_64
+//Arch_Bottlerocket_64
 Arch_Amazon-Simple-Storage-Service-Glacier_64
 Arch_AWS-Key-Management-Service_64
 Arch_Amazon-Managed-Service-for-Apache-Flink_64
 Arch_AWS-WAF_64
 Arch_AWS-Cloud-Control-API_64
-Arch_AWS-Compute-Optimizer_64
+//Arch_AWS-Compute-Optimizer_64
 Arch_AWS-Supply-Chain_64
 Arch_AWS-Activate_64
 Arch_AWS-Deep-Learning-Containers_64
@@ -194,7 +188,7 @@ Arch_Amazon-ElastiCache_64
 Arch_AWS-IoT-Events_64
 Arch_AWS-Shield_64
 Arch_AWS-IoT-SiteWise_64
-Arch_AWS-Nitro-Enclaves_64
+//Arch_AWS-Nitro-Enclaves_64
 Arch_AWS-Health-Dashboard_64
 Arch_Amazon-Simple-Email-Service_64
 Arch_Amazon-API-Gateway_64
@@ -203,7 +197,6 @@ Arch_AWS-Snowball-Edge_64
 Arch_Amazon-WorkSpaces-Thin-Client_64
 Arch_AWS-Mainframe-Modernization_64
 Arch_AWS-Direct-Connect_64
-Arch_AWS-Marketplace_Light_64
 Arch_AWS-Application-Composer_64
 Arch_Amazon-GuardDuty_64
 Arch_AWS-IQ_64
@@ -213,7 +206,6 @@ Arch_Amazon-Macie_64
 Arch_Amazon-Elastic-Block-Store_64
 Arch_AWS-Elemental-MediaTailor_64
 Arch_AWS-Wickr_64
-Arch_AWS-Elemental-Delta_64
 Arch_Amazon-Timestream_64
 Arch_Amazon-SageMaker-Studio-Lab_64
 Arch_Amazon-Cognito_64
@@ -253,7 +245,6 @@ Arch_PyTorch-on-AWS_64
 Arch_AWS-Elemental-Link_64
 Arch_Amazon-GameSparks_64
 Arch_Amazon-Kinesis-Video-Streams_64
-Arch_Amazon-WorkDocs-SDK_64
 Arch_AWS-DeepLens_64
 Arch_Amazon-Comprehend-Medical_64
 Arch_AWS-Budgets_64
@@ -270,7 +261,6 @@ Arch_Amazon-Virtual-Private-Cloud_64
 Arch_AWS-Data-Exchange_64
 Arch_AWS-Thinkbox-XMesh_64
 Arch_Amazon-Data-Firehose_64
-Arch_Amazon-Pinpoint-APIs_64
 Arch_AWS-App-Mesh_64
 Arch_Amazon-Security-Lake_64
 Arch_AWS-Thinkbox-Krakatoa_64
@@ -305,5 +295,4 @@ Arch_Amazon-Lex_64
 Arch_Amazon-SageMaker-Ground-Truth_64
 Arch_Amazon-MemoryDB-for-Redis_64
 Arch_Amazon-CloudFront_64
-Arch_AWS-Elemental-Appliances-&-Software_64
 Arch_Amazon-Nimble-Studio_64

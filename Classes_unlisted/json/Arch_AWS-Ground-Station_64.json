@@ -1,0 +1,13 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Ground Station",
+  "Resources": {
+    "GroundStation": {
+      "Type": "AWS::GroundStation::GroundStation",
+      "Properties": {
+        "GroundStationName": "MyGroundStation",  // Customize the ground station name as needed 
+        "Region": "us-west-2"  // Specify the AWS region for the ground station //remove
+      }
+    }
+  }
+}

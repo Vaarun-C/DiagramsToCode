@@ -1,0 +1,13 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Cloud9 Environment",
+  "Resources": {
+    "Cloud9Environment": {
+      "Type": "AWS::Cloud9::EnvironmentEC2",
+      "Properties": {
+        "Name": "MyCloud9Environment",
+        "InstanceType": "t2.micro",
+      }
+    }
+  }
+}

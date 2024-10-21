@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Simple Amazon Fraud Detector Model
+
+Resources:
+  FraudDetector:
+    Type: AWS::FraudDetector::Model
+    Properties:
+      Name: MyFraudDetectorModel
+      EventType: MyEventType  # Replace with oour actual event type
+      InputDataConfig:
+        - DataSource: "S3"
+          DataSchema: "YOUR_DATA_SCHEMA"  # Define our schema
+      OutputDataConfig:
+        S3OutputPath: "s3://your-output-bucket/"  # Replace with your S3 bucket
