@@ -47,7 +47,7 @@ Resources:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: Enable access to ElastiCache cluster
-      VpcId: !Ref VpcId
+      # VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 6379  # Default Redis port

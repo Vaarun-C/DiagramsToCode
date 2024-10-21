@@ -24,7 +24,7 @@ Resources:
 
   SimSpaceWeaverInstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
-    Properties:
+    Properties: {}
       # Roles:
       #   - !Ref SimSpaceWeaverRole
 

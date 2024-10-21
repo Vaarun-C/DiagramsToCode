@@ -33,7 +33,7 @@ Resources:
           OptionName: MY_ENV_VAR
           Value: "Hello, Elastic Beanstalk!" #whatever, doesnt matter really
 
-Outputs:
-  ApplicationURL:
-    Description: URL of the Elastic Beanstalk application
+Outputs: {}
+  # ApplicationURL:
+  #   Description: URL of the Elastic Beanstalk application
     # Value: !Sub "http://${MyElasticBeanstalkEnvironment}.elasticbeanstalk.com"

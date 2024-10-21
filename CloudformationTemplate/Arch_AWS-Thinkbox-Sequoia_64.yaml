@@ -56,14 +56,14 @@ Resources:
   # Security Group
   SequoiaSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: Enable SSH access
-      VpcId: !Ref MyVPC  # Reference to an existing VPC
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: '0.0.0.0/0'  # Adjust for better security
+    Properties: {}
+      # GroupDescription: Enable SSH access
+      # VpcId: !Ref MyVPC  # Reference to an existing VPC
+      # SecurityGroupIngress:
+      #   - IpProtocol: tcp
+      #     FromPort: 22
+      #     ToPort: 22
+      #     CidrIp: '0.0.0.0/0'  # Adjust for better security
 
   # EC2 Instance for Thinkbox Sequoia
   SequoiaInstance:

@@ -4,7 +4,7 @@ Description: Simple AWS ThinkBox Stoke Setup
 Resources:
   StokeRole:
     Type: 'AWS::IAM::Role'
-    Properties:
+    Properties: 
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -24,7 +24,7 @@ Resources:
 
   StokeInstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
-    Properties:
+    Properties: {}
       # Roles:
       #   - !Ref StokeRole
 

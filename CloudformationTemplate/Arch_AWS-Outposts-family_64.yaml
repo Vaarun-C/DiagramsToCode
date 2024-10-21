@@ -28,7 +28,7 @@ Resources:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: Enable SSH access
-      VpcId: !Ref MyVPC  # Reference to an existing VPC in your Outpost
+      # VpcId: !Ref MyVPC  # Reference to an existing VPC in your Outpost
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22

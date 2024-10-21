@@ -18,9 +18,9 @@ Parameters:
   #   Description: The ID of the subnet in which to create the file system
   #   Type: AWS::EC2::Subnet::Id
 
-  # SecurityGroupIds:
-  #   Description: The security group IDs for the file system
-  #   Type: List<AWS::EC2::SecurityGroup::Id>
+  SecurityGroupIds:
+    Description: The security group IDs for the file system
+    Type: List<AWS::EC2::SecurityGroup::Id>
 
 Resources:
 
@@ -34,7 +34,7 @@ Resources:
       SecurityGroupIds: !Ref SecurityGroupIds
       OpenZFSConfiguration:
         RootVolumeConfiguration:
-          OriginSnapshotId: !Ref SnapshotId  # Optionally specify a snapshot to restore from
+          # OriginSnapshotId: !Ref SnapshotId  # Optionally specify a snapshot to restore from
           DataCompressionType: NONE
           CopyTagsToSnapshots: true
           NfsExports:

@@ -4,7 +4,7 @@ Description: Simple AWS Nitro Enclaves Setup
 Resources:
   NitroEnclaveInstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
-    Properties:
+    Properties: {}
       # Roles:
       #   - !Ref NitroEnclaveRole
 
