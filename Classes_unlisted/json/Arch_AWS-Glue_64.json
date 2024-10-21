@@ -1,0 +1,15 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Glue Database and Crawler",
+  "Resources": {
+    "GlueDatabase": {
+      "Type": "AWS::Glue::Database",
+      "Properties": {
+        "DatabaseInput": {
+          "Name": "MyGlueDatabase",
+          "Description": "A simple Glue database"
+        }
+      }
+    }
+  }
+}
