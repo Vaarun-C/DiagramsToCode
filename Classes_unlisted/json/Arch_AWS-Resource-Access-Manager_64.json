@@ -1,0 +1,12 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Resource Access Manager Resource Share",
+  "Resources": {
+    "ResourceShare": {
+      "Type": "AWS::RAM::ResourceShare",
+      "Properties": {
+        "Name": "MyResourceShare"
+      }
+    }
+  }
+}
