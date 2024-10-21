@@ -2,6 +2,97 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: CloudFormation Template to set up networking for Amazon RDS on VMware
 
 # Parameters:
+<<<<<<< HEAD
+#   VpcName:
+#     Description: Name for the VPC
+#     Type: String
+#     Default: MyVPC
+
+#   VpcCIDR:
+#     Description: CIDR block for the VPC
+#     Type: String
+#     Default: 10.0.0.0/16
+
+#   Subnet1CIDR:
+#     Description: CIDR block for the first subnet
+#     Type: String
+#     Default: 10.0.1.0/24
+
+#   Subnet2CIDR:
+#     Description: CIDR block for the second subnet
+#     Type: String
+#     Default: 10.0.2.0/24
+
+#   SecurityGroupName:
+#     Description: Name for the security group
+#     Type: String
+#     Default: MyRDSecurityGroup
+
+Resources:
+#   # VPC
+#   MyVPC:
+#     Type: 'AWS::EC2::VPC'
+#     Properties:
+#       CidrBlock: !Ref VpcCIDR
+#       EnableDnsSupport: true
+#       EnableDnsHostnames: true
+#       Tags:
+#         - Key: Name
+#           Value: !Ref VpcName
+
+#   # Subnet 1
+#   Subnet1:
+#     Type: 'AWS::EC2::Subnet'
+#     Properties:
+#       VpcId: !Ref MyVPC
+#       CidrBlock: !Ref Subnet1CIDR
+#       AvailabilityZone: !Select [0, !GetAZs '']
+#       MapPublicIpOnLaunch: true
+#       Tags:
+#         - Key: Name
+#           Value: Subnet1
+
+#   # Subnet 2
+#   Subnet2:
+#     Type: 'AWS::EC2::Subnet'
+#     Properties:
+#       VpcId: !Ref MyVPC
+#       CidrBlock: !Ref Subnet2CIDR
+#       AvailabilityZone: !Select [1, !GetAZs '']
+#       MapPublicIpOnLaunch: true
+#       Tags:
+#         - Key: Name
+#           Value: Subnet2
+
+  # Security Group for RDS
+  MyRDSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable access to RDS on VMware
+      # VpcId: !Ref MyVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306  # MySQL port; change based on your DB engine
+          ToPort: 3306
+          CidrIp: '0.0.0.0/0'  # Adjust for security; restrict to specific IPs
+
+Outputs: {}
+  # VPCId:
+  #   Description: The ID of the created VPC
+  #   Value: !Ref MyVPC
+
+  # Subnet1Id:
+  #   Description: The ID of the first subnet
+  #   Value: !Ref Subnet1
+
+  # Subnet2Id:
+  #   Description: The ID of the second subnet
+  #   Value: !Ref Subnet2
+
+  # SecurityGroupId:
+  #   Description: The ID of the security group
+  #   Value: !Ref MyRDSecurityGroup
+=======
   # VpcName:
   #   Description: Name for the VPC
   #   Type: String
@@ -92,3 +183,4 @@ Description: CloudFormation Template to set up networking for Amazon RDS on VMwa
 #   SecurityGroupId:
 #     Description: The ID of the security group
 #     Value: !Ref MyRDSecurityGroup
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb

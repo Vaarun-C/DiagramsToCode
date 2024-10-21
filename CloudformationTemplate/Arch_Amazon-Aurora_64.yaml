@@ -92,11 +92,11 @@ Resources:
     Properties:
       GroupDescription: Enable access to Aurora DB
       # VpcId: !Ref VPCId
-      # SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 3306  # Change based on your DB engine
-          ToPort: 3306
-          CidrIp: '0.0.0.0/0'  # Adjust for security
+      SecurityGroupIngress:
+        IpProtocol: tcp
+        FromPort: 3306  # Change based on your DB engine
+        ToPort: 3306
+        CidrIp: '0.0.0.0/0'  # Adjust for security
 
 # Outputs:
 #   DBClusterEndpoint:

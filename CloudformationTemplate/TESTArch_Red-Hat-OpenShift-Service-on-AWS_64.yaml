@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to set up infrastructure for Red Hat OpenShift on AWS
+
+Parameters:
+  ClusterName:
+    Description: The name of the OpenShift cluster
+    Type: String
+    Default: MyOpenShiftCluster
+
+Resources:
+  MyInternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    

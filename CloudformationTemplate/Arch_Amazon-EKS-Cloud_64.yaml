@@ -88,7 +88,11 @@ Resources:
   # Route Table for Public Subnets
   PublicRouteTable:
     Type: 'AWS::EC2::RouteTable'
+<<<<<<< HEAD
+    Properties: {}
+=======
     Properties:
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb
       # VpcId: !Ref MyVPC
 
   # Route for Internet Access

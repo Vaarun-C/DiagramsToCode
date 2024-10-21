@@ -17,6 +17,51 @@ Parameters:
   #   Type: String
   #   Default: 10.0.0.0/16
 
+<<<<<<< HEAD
+  # PublicSubnet1Name:
+  #   Description: Name of the first public subnet
+  #   Type: String
+  #   Default: MyPublicSubnet1
+
+  # PublicSubnet1Cidr:
+  #   Description: CIDR block for the first public subnet
+  #   Type: String
+  #   Default: 10.0.1.0/24
+
+  # PublicSubnet2Name:
+  #   Description: Name of the second public subnet
+  #   Type: String
+  #   Default: MyPublicSubnet2
+
+  # PublicSubnet2Cidr:
+  #   Description: CIDR block for the second public subnet
+  #   Type: String
+  #   Default: 10.0.2.0/24
+
+  # NodeInstanceType:
+  #   Description: EC2 instance type for OpenShift nodes
+  #   Type: String
+  #   Default: t3.medium
+
+  # NodeGroupMinSize:
+  #   Description: Minimum size of the node group
+  #   Type: Number
+  #   Default: 2
+
+  # NodeGroupMaxSize:
+  #   Description: Maximum size of the node group
+  #   Type: Number
+  #   Default: 3
+
+  # NodeGroupDesiredSize:
+  #   Description: Desired size of the node group
+  #   Type: Number
+  #   Default: 2
+
+  # KeyName:
+  #   Description: EC2 Key Pair for SSH access
+  #   Type: AWS::EC2::KeyPair::KeyName
+=======
   PublicSubnet1Name:
     Description: Name of the first public subnet
     Type: String
@@ -60,6 +105,7 @@ Parameters:
   KeyName:
     Description: EC2 Key Pair for SSH access
     Type: AWS::EC2::KeyPair::KeyName
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb
 
 Resources:
 
@@ -103,6 +149,111 @@ Resources:
     Type: 'AWS::EC2::InternetGateway'
     Properties: {}
 
+<<<<<<< HEAD
+  # # Attach Internet Gateway to VPC
+  # AttachGateway:
+  #   Type: 'AWS::EC2::VPCGatewayAttachment'
+  #   Properties:
+  #     VpcId: !Ref MyVPC
+  #     InternetGatewayId: !Ref MyInternetGateway
+
+  # # Route Table for Public Subnet 1
+  # PublicRouteTable1:
+  #   Type: 'AWS::EC2::RouteTable'
+  #   Properties:
+  #     # VpcId: !Ref MyVPC
+  #     Tags:
+  #       - Key: Name
+  #         Value: PublicRouteTable1
+
+  # # Route for Internet Access
+  # PublicRoute1:
+  #   Type: 'AWS::EC2::Route'
+  #   Properties:
+  #     RouteTableId: !Ref PublicRouteTable1
+  #     DestinationCidrBlock: 0.0.0.0/0
+  #     GatewayId: !Ref MyInternetGateway
+
+  # # Associate Public Subnet 1 with Route Table
+  # PublicSubnetRouteTableAssociation1:
+  #   Type: 'AWS::EC2::SubnetRouteTableAssociation'
+  #   Properties:
+  #     # SubnetId: !Ref PublicSubnet1
+  #     RouteTableId: !Ref PublicRouteTable1
+
+  # # Route Table for Public Subnet 2
+  # PublicRouteTable2:
+  #   Type: 'AWS::EC2::RouteTable'
+  #   Properties:
+  #     # VpcId: !Ref MyVPC
+  #     Tags:
+  #       - Key: Name
+  #         Value: PublicRouteTable2
+
+  # # Route for Internet Access for Subnet 2
+  # PublicRoute2:
+  #   Type: 'AWS::EC2::Route'
+  #   Properties:
+  #     RouteTableId: !Ref PublicRouteTable2
+  #     DestinationCidrBlock: 0.0.0.0/0
+  #     GatewayId: !Ref MyInternetGateway
+
+  # # Associate Public Subnet 2 with Route Table
+  # PublicSubnetRouteTableAssociation2:
+  #   Type: 'AWS::EC2::SubnetRouteTableAssociation'
+  #   Properties:
+  #     # SubnetId: !Ref PublicSubnet2
+  #     RouteTableId: !Ref PublicRouteTable2
+
+  # # IAM Role for OpenShift Nodes
+  # NodeRole:
+  #   Type: 'AWS::IAM::Role'
+  #   Properties:
+  #     AssumeRolePolicyDocument:
+  #       Version: '2012-10-17'
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal:
+  #             Service: ec2.amazonaws.com
+  #           Action: sts:AssumeRole
+  #     Policies:
+  #       - PolicyName: OpenShiftNodePolicy
+  #         PolicyDocument:
+  #           Version: '2012-10-17'
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - "ec2:DescribeInstances"
+  #                 - "ec2:DescribeSecurityGroups"
+  #                 - "ec2:DescribeSubnets"
+  #                 - "ec2:DescribeVpcs"
+  #                 - "ec2:RunInstances"
+  #                 - "ec2:TerminateInstances"
+  #               Resource: "*"
+
+  # # Launch Configuration for OpenShift Nodes
+  # OpenShiftLaunchConfiguration:
+  #   Type: 'AWS::AutoScaling::LaunchConfiguration'
+  #   Properties:
+  #     ImageId: ami-0abcdef1234567890  # Replace with your OpenShift-compatible AMI
+  #     InstanceType: !Ref NodeInstanceType
+  #     KeyName: !Ref KeyName
+  #     IamInstanceProfile: !Ref NodeRole
+  #     # SecurityGroups:
+  #     #   - !Ref OpenShiftSecurityGroup
+
+  # # Auto Scaling Group for OpenShift Nodes
+  # OpenShiftAutoScalingGroup:
+  #   Type: 'AWS::AutoScaling::AutoScalingGroup'
+  #   Properties:
+  #     LaunchConfigurationName: !Ref OpenShiftLaunchConfiguration
+  #     MinSize: !Ref NodeGroupMinSize
+  #     MaxSize: !Ref NodeGroupMaxSize
+  #     DesiredCapacity: !Ref NodeGroupDesiredSize
+  #     # VPCZoneIdentifier:
+  #     #   - !Ref PublicSubnet1
+  #     #   - !Ref PublicSubnet2
+=======
   # Attach Internet Gateway to VPC
   AttachGateway:
     Type: 'AWS::EC2::VPCGatewayAttachment'
@@ -206,6 +357,7 @@ Resources:
       # VPCZoneIdentifier:
       #   - !Ref PublicSubnet1
       #   - !Ref PublicSubnet2
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb
 
 # Outputs:
 #   VPCId:
@@ -221,5 +373,10 @@ Resources:
 #     Value: !Ref PublicSubnet2
 
 #   NodeRoleArn:
+<<<<<<< HEAD
+    # Description: The ARN of the IAM role for OpenShift nodes
+    # Value: !GetAtt NodeRole.Arn
+=======
     Description: The ARN of the IAM role for OpenShift nodes
     Value: !GetAtt NodeRole.Arn
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb

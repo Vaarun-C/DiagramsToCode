@@ -57,7 +57,7 @@ Resources:
       AvailabilityZone: !Select [ 0, !GetAZs '' ]  # Select first availability zone
 
   # Source Database Endpoint
-  SourceDBEndpoint:
+  SourceDBEndpoints:
     Type: 'AWS::DMS::Endpoint'
     Properties:
       EndpointIdentifier: !Ref SourceDBEndpointIdentifier
@@ -70,7 +70,7 @@ Resources:
       Port: 3306  # Replace with actual port
 
   # Target Database Endpoint
-  TargetDBEndpoint:
+  TargetDBEndpoints:
     Type: 'AWS::DMS::Endpoint'
     Properties:
       EndpointIdentifier: !Ref TargetDBEndpointIdentifier
@@ -87,7 +87,7 @@ Resources:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: Allow access to the DMS replication instance
-      VpcId: !Ref VpcId
+      #VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 3306  # Change based on your source DB port
@@ -105,8 +105,8 @@ Outputs:
 
   SourceDBEndpointArn:
     Description: The ARN of the source database endpoint
-    Value: !GetAtt SourceDBEndpoint.EndpointArn
+    Value: !GetAtt SourceDBEndpoints.EndpointArn
 
   TargetDBEndpointArn:
     Description: The ARN of the target database endpoint
-    Value: !GetAtt TargetDBEndpoint.EndpointArn
+    Value: !GetAtt TargetDBEndpoints.EndpointArn
