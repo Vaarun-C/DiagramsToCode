@@ -1,0 +1,13 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Proton Service and Template",
+  "Resources": {
+    "ProtonServiceTemplate": {
+      "Type": "AWS::Proton::ServiceTemplate",
+      "Properties": {
+        "Name": "MyServiceTemplate",
+        "Description": "My first AWS Proton service template"
+      }
+    }
+  }
+}
