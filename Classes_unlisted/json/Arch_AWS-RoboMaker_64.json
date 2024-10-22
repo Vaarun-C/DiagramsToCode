@@ -1,0 +1,42 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS RoboMaker Setup",
+  "Resources": {
+    "SimulationApplication": {
+      "Type": "AWS::RoboMaker::SimulationApplication",
+      "Properties": {
+        "Name": "MySimulationApplication",
+        "RobotSoftwareSuite": {
+          "Name": "ROS2",
+          "Version": "Dashing"
+        },
+        "RenderingEngine": {
+          "Name": "ROS2",
+          "Version": "Dashing"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MySimulationApplication"
+          }
+        ]
+      }
+    },
+    "RobotApplication": {
+      "Type": "AWS::RoboMaker::RobotApplication",
+      "Properties": {
+        "Name": "MyRobotApplication",
+        "RobotSoftwareSuite": {
+          "Name": "ROS2",
+          "Version": "Dashing"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyRobotApplication"
+          }
+        ]
+      }
+    }
+  }
+}
