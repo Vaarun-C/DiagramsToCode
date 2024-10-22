@@ -1,0 +1,30 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Transit Gateway Setup",
+  "Resources": {
+    "TransitGateway": {
+      "Type": "AWS::EC2::TransitGateway",
+      "Properties": {
+        "Description": "My Transit Gateway",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyTransitGateway"
+          }
+        ]
+      }
+    },
+    "TransitGatewayAttachment": {
+      "Type": "AWS::EC2::TransitGatewayVpcAttachment",
+      "Properties": {
+        "TransitGatewayId": { "Ref": "TransitGateway" }
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyVpcAttachment"
+          }
+        ]
+      }
+    }
+  }
+}
