@@ -1,0 +1,40 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Cost Explorer Setup",
+  "Resources": {
+    "CostAllocationTag": {
+      "Type": "AWS::CostExplorer::CostAllocationTag",
+      "Properties": {
+        "TagKey": "MyCostAllocationTag",  // Replace with your tag key
+        */ "TagValues": [
+          {
+            "Value": "MyTagValue"  // Replace with your tag value
+          }
+        ]
+      }
+    },
+    "CostCategory": {
+      "Type": "AWS::CostExplorer::CostCategory",
+      "Properties": {
+        "Name": "MyCostCategory",  // Replace with your cost category name
+        "Rules": [
+          {
+            "Rule": {
+              "Value": "MyCostCategoryRule",  // Replace with your rule details
+              "MatchOptions": [
+                "MATCH_ANY"
+              ]
+            }
+          }
+        ],
+        "SplitChargeRules": [
+          {
+            "SplitChargeRule": {
+              "Value": "MySplitChargeValue"  // Replace with your split charge value
+            }
+          }
+        ] /*
+      }
+    }
+  }
+}
