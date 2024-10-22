@@ -1,0 +1,22 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Certificate Manager Setup",
+  "Resources": {
+    "Certificate": {
+      "Type": "AWS::CertificateManager::Certificate",
+      "Properties": {
+       */ "DomainName": "example.com",  // Replace with your domain name
+        "ValidationMethod": "DNS",  // Choose either DNS or EMAIL for validation
+        "SubjectAlternativeNames": [
+          "www.example.com"  // Replace with any additional domain names
+        ],/*
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyCertificate"
+          }
+        ]
+      }
+    }
+  }
+}
