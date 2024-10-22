@@ -1,0 +1,21 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS License Manager License Configuration",
+  "Resources": {
+    "LicenseConfiguration": {
+      "Type": "AWS::LicenseManager::LicenseConfiguration",
+      "Properties": {
+        "Name": "MyLicenseConfiguration",
+        "Description": "License configuration for tracking licenses",
+        "LicenseCount": 10,  // Replace with your desired license count
+        "LicenseCountHardLimit": true,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyLicenseConfiguration"
+          }
+        ]
+      }
+    }
+  }
+}
