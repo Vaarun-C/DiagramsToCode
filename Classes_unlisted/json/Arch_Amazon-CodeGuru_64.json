@@ -1,0 +1,25 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon CodeGuru Setup",
+  "Resources": {
+    "CodeGuruReviewer": {
+      "Type": "AWS::CodeGuruReviewer::RepositoryAssociation",
+      "Properties": {
+        "Name": "MyCodeGuruRepoAssociation",  // Replace with any desired association name
+        "Repository": {
+          "CodeCommit": {
+            "Name": "MyCodeCommitRepo"  // Replace with your CodeCommit repository name
+          }
+        },
+        "Owner": "your-github-username",  // Replace with your GitHub username (if using GitHub)
+        "ProviderType": "GitHub",  // Set to CodeCommit for CodeCommit repository
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyCodeGuruReviewer"
+          }
+        ]
+      }
+    }
+  }
+}
