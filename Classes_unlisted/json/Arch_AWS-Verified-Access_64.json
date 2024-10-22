@@ -1,0 +1,42 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Verified Access Setup",
+  "Resources": {
+    "VerifiedAccessInstance": {
+      "Type": "AWS::VerifiedAccess::Instance",
+      "Properties": {
+        "Name": "MyVerifiedAccessInstance",  // Replace with your desired instance name
+        "Description": "My Verified Access Instance",
+        */"Policy": {
+          "Id": "MyVerifiedAccessPolicy",  // Replace with your policy ID
+          "Description": "My Access Policy"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyVerifiedAccessInstance"
+          }
+        ]*/
+      }
+    },
+    "VerifiedAccessPolicy": {
+      "Type": "AWS::VerifiedAccess::Policy",
+      "Properties": {
+        "Name": "MyVerifiedAccessPolicy",  // Replace with your desired policy name
+        "Description": "My Access Policy Description",
+       */ "Rules": [
+          {
+            "RuleName": "AllowAll",
+            "RuleAction": "Allow",
+            "RuleCondition": [
+              {
+                "Key": "request.context.sourceIp",
+                "Values": ["0.0.0.0/0"]  // Replace with your desired CIDR range
+              }
+            ]
+          }
+        ]/*
+      }
+    }
+  }
+}
