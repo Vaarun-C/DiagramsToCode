@@ -1,0 +1,23 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS Billing Conductor Setup",
+  "Resources": {
+    "BillingConductorPricingPlan": {
+      "Type": "AWS::BillingConductor::PricingPlan",
+      "Properties": {
+        "Name": "MyPricingPlan",
+        "PricingPlanArn": "arn:aws:billingconductor:us-east-1:123456789012:pricing-plan/my-pricing-plan",  // Replace with your pricing plan ARN
+        "BillingGroupArn": "arn:aws:billingconductor:us-east-1:123456789012:billing-group/my-billing-group",  // Replace with your billing group ARN
+        "CurrencyCode": "IND"
+      }
+    }
+  },
+  "Outputs": {
+    "PricingPlanArn": {
+      "Description": "ARN of the Billing Conductor Pricing Plan",
+      "Value": {
+        "Ref": "BillingConductorPricingPlan"
+      }
+    }
+  }
+}
