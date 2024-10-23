@@ -1,0 +1,25 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS rePost Setup",
+  "Resources": {
+    "RePostApplication": {
+      "Type": "AWS::rePost::Application",
+      "Properties": {
+        "Name": "MyRePostApp",  // Replace with your desired application name
+        "Description": "This is my AWS rePost application",
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Production"  // Replace with appropriate tag key and value
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "ApplicationArn": {
+      "Description": "ARN of the AWS rePost Application",
+      "Value": { "Fn::GetAtt": ["RePostApplication", "Arn"] }
+    }
+  }
+}
