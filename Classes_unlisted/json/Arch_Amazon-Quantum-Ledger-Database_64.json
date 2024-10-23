@@ -1,0 +1,20 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon QLDB Setup",
+  "Resources": {
+    "QLDBLedger": {
+      "Type": "AWS::QLDB::Ledger",
+      "Properties": {
+        "Name": "MyQLDBLedger",  // Replace with ledger name
+        "PermissionsMode": "ALLOW_ALL",  // Options: ALLOW_ALL or ENFORCE
+        "DeletionProtection": true  // Prevent accidental deletion
+      }
+    }
+  },
+  "Outputs": {
+    "LedgerArn": {
+      "Description": "ARN of the QLDB Ledger",
+      "Value": { "Fn::GetAtt": ["QLDBLedger", "Arn"] }
+    }
+  }
+}
