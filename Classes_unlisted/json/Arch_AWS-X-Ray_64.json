@@ -1,0 +1,40 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS X-Ray Setup",
+  "Resources": {
+    "XRayGroup": {
+      "Type": "AWS::XRay::Group",
+      "Properties": {
+        "GroupName": "MyXRayGroup",  // Replace with your desired group name
+       */ "FilterExpression": "service() = \"my-service\"",  // Customize the filter expression
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyXRayGroup"
+          }
+        ]
+      } /*
+    },
+    "XRaySamplingRule": {
+      "Type": "AWS::XRay::SamplingRule",
+      "Properties": {
+        "RuleName": "MySamplingRule",  // Replace with whatever desired rule name
+        "RuleDefinition": {
+          "FixedRate": 0.05,  // 5% of requests
+          "ReservoirSize": 1,
+          "ServiceName": "*",
+          "HttpMethod": "*",
+          "UrlPath": "*",
+          "Version": 1
+        },
+        "ServiceType": "other",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MySamplingRule"
+          }
+        ]
+      }
+    }
+  }
+}

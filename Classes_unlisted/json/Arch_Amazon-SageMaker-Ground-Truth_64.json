@@ -1,0 +1,76 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon SageMaker Ground Truth Setup",
+  "Resources": {
+    "S3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-ground-truth-bucket"  // Replace with your desired bucket name
+      }
+    },
+    "SageMakerRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "sagemaker.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "SageMakerGroundTruthPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:ListBucket",
+                    "sagemaker:*"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "LabelingJob": {
+      "Type": "AWS::SageMaker::LabelingJob",
+      "Properties": {
+        "LabelingJobName": "MyLabelingJob",  // Replace with your desired labeling job name
+        "LabelAttributeName": "my-label"
+      },
+        "RoleArn": { "Fn::GetAtt": ["SageMakerRole", "Arn"] },
+        "HumanTaskConfig": {
+          "WorkteamArn": { "Ref": "Workteam" },
+          "UiConfig": {
+            "UiTemplate": {
+              "Content": "<html>Your labeling UI</html>"  // Replace with your UI template
+            }
+          },
+          "TaskTitle": "Label Images",
+          "TaskDescription": "Please label the images",
+          "NumberOfHumanWorkersPerDataObject": 1
+        }
+      }
+    },
+    "Workteam": {
+      "Type": "AWS::SageMaker::Workteam",
+      "Properties": {
+        "WorkteamName": "MyWorkteam",  // Replace with your desired workteam name
+       
+      }
+    }
+  }
+}

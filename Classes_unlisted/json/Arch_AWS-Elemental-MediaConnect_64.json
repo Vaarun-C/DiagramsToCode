@@ -1,0 +1,22 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Elemental MediaConnect Flow",
+  "Resources": {
+    "MediaConnectFlow": {
+      "Type": "AWS::MediaConnect::Flow",
+      "Properties": {
+        "Name": "MyMediaConnectFlow",
+        "Source": {
+          "Name": "MySource"
+        }
+      }
+    },
+    "MediaConnectVpcInterface": {
+      "Type": "AWS::MediaConnect::VpcInterface",
+      "Properties": {
+        "Name": "MyVpcInterface",
+        "FlowArn": { "Ref": "MediaConnectFlow" }
+      }
+    }
+  }
+}

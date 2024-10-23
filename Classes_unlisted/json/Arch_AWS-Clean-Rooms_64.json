@@ -1,0 +1,33 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Clean Rooms Setup",
+  "Resources": {
+    "CleanRoom": {
+      "Type": "AWS::CleanRooms::CleanRoom",
+      "Properties": {
+        "CleanRoomName": "MyCleanRoom",
+        "Description": "A clean room for data collaboration",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyCleanRoom"
+          }
+        ]
+      }
+    },
+    "DataSource": {
+      "Type": "AWS::CleanRooms::DataSource",
+      "Properties": {
+        "DataSourceName": "MyDataSource",
+        "Description": "Data source for clean room",
+        "CleanRoomArn": { "Fn::GetAtt": ["CleanRoom", "Arn"] },
+        "DataSourceType": "S3",  // Replace with your data source type (e.g., S3, RDS)
+        "DataSourceConfiguration": {
+          "S3": {
+            "BucketArn": "arn:aws:s3:::your-bucket-name"  // Replace with your S3 bucket ARN
+          }
+        }
+      }
+    }
+  }
+}

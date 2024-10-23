@@ -1,0 +1,21 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Migration Hub Project Setup",
+  "Resources": {
+    "MigrationHub": {
+      "Type": "AWS::MigrationHub::HomeRegion",
+      "Properties": {
+        "HomeRegion": { "Ref": "AWS::Region" }
+      }
+    },
+    "MigrationProject": {
+      "Type": "AWS::MigrationHub::MigrationProject",
+      "Properties": {
+        "ProjectName": "MyMigrationProject",
+        "Description": "Migration project for tracking",
+      //rmv  "RoleArn": "arn:aws:iam::your-account-id:role/your-migration-role",  // Replace with your IAM role ARN
+        "ClientRequestToken": { "Fn::Sub": "${AWS::StackName}-${AWS::Region}-${AWS::AccountId}-${AWS::Timestamp}" }
+      }
+    }
+  }
+}

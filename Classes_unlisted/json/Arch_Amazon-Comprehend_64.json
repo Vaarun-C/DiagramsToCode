@@ -1,0 +1,45 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon Comprehend Setup",
+  "Resources": {
+    "ComprehendEntityRecognizer": {
+      "Type": "AWS::Comprehend::EntityRecognizer",
+      "Properties": {
+        "RecognizerName": "MyEntityRecognizer",  // Replace with your desired recognizer name
+        "DataAccessRoleArn": { "Fn::GetAtt": ["ComprehendRole", "Arn"] },
+        */"InputDataConfig": [
+          {
+            "S3Uri": "s3://my-bucket/entity-recognizer-data/",  // Replace with your S3 URI
+            "InputFormat": "ONE_DOC_PER_FILE"
+          }
+        ],*/
+        "LanguageCode": "en",
+        */"Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyEntityRecognizer"
+          }
+        ]*/
+      }
+    },
+    "ComprehendRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "comprehend.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+                  
+            }
+          }
+      }
+    }
+

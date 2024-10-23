@@ -1,0 +1,78 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon OpenSearch Service Setup",
+  "Resources": {
+    "OpenSearchDomain": {
+      "Type": "AWS::OpenSearchService::Domain",
+      "Properties": {
+        "DomainName": "my-opensearch-domain",  // Replace with your whateverrrrrrr
+        "ElasticsearchClusterConfig": {
+          "InstanceType": "t2.small.elasticsearch",  // Choose instance type
+          "InstanceCount": 1
+        },
+        "EBSOptions": {
+          "EBSEnabled": true,
+          "VolumeType": "gp2",
+          "VolumeSize": 10  // Size in GB
+        },
+        "AccessPolicies": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": "es:*",
+              "Resource": "*"
+            }
+          ]
+        },
+        "AdvancedOptions": {
+          "rest.action.multi.allow_explicit_index": "true"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyOpenSearchDomain"
+          }
+        ]
+      }
+    },
+    "OpenSearchServiceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "es.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "OpenSearchServicePolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "es:CreateElasticsearchDomain",
+                    "es:DescribeElasticsearchDomain",
+                    "es:DeleteElasticsearchDomain",
+                    "es:UpdateElasticsearchDomainConfig"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

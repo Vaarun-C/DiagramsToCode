@@ -1,0 +1,20 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon Cloud Directory",
+  "Resources": {
+    "CloudDirectory": {
+      "Type": "AWS::CloudDirectory::Directory",
+      "Properties": {
+        "Name": "MyCloudDirectory",
+        //remove"SchemaArn": "arn:aws:clouddirectory:us-west-2:123456789012:schema/my-schema",  // Replace with your schema ARN
+        //remove"DirectoryType": "USER",  // Can be USER or ORGANIZATION
+        //remove"Tags": [
+          //rmv{
+            //rmv"Key": "Name",
+            //rmv"Value": "MyCloudDirectory"
+         // }
+        ] 
+      }//
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon CloudFront Setup",
+  "Resources": {
+    "MyS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-example-bucket"  // Replace with whatver bucket name
+      }
+    },
+    "CloudFrontDistribution": {
+      "Type": "AWS::CloudFront::Distribution",
+      "Properties": {
+        "DistributionConfig": {
+          "Origins": [
+            {
+              "Id": "MyS3Origin",
+              "DomainName": { "Fn::GetAtt": ["MyS3Bucket", "DomainName"] },
+              "S3OriginConfig": {
+                "OriginAccessIdentity": { "Fn::Sub": "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}" }
+              }
+            }
+          ],
+          "DefaultCacheBehavior": {
+            "TargetOriginId": "MyS3Origin",
+            "ViewerProtocolPolicy": "redirect-to-https",
+            "AllowedMethods": [
+              "GET",
+              "HEAD"
+            ],
+            "CachedMethods": [
+              "GET",
+              "HEAD"
+            ],
+            "ForwardedValues": {
+              "QueryString": false
+            }
+          },
+          "Enabled": true,
+          "DefaultRootObject": "index.html"
+        }
+      }
+    },
+    "CloudFrontOriginAccessIdentity": {
+      "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+      "Properties": {
+        "CloudFrontOriginAccessIdentityConfig": {
+          "Comment": "My CloudFront Origin Access Identity"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "DistributionDomainName": {
+      "Description": "CloudFront Distribution Domain Name",
+      "Value": { "Fn::GetAtt": ["CloudFrontDistribution", "DomainName"] }
+    }
+  }
+}

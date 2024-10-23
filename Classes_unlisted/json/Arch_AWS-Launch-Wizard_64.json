@@ -1,0 +1,21 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Launch Wizard Setup",
+  "Resources": {
+    "LaunchConfiguration": {
+      "Type": "AWS::LaunchWizard::LaunchConfiguration",
+      "Properties": {
+        "ApplicationName": "MyApplication",  // Replace with your application name
+        //"SolutionStackName": "64bit Amazon Linux 2 v3.4.5 running Python 3.8",  // Replace with your stack name
+        "EnvironmentName": "MyEnvironment",
+        "InstanceType": "t2.micro",  // Choose your instance type
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyLaunchConfiguration"
+          }
+        ]
+      }
+    }
+  }
+}

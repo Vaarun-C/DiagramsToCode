@@ -1,0 +1,33 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Elemental MediaPackage Channel and Endpoint",
+  "Resources": {
+    "MediaPackageChannel": {
+      "Type": "AWS::MediaPackage::Channel",
+      "Properties": {
+        "Id": "MyMediaPackageChannel",
+        "Description": "My first MediaPackage channel"
+      }
+    },
+    "MediaPackageOriginEndpoint": {
+      "Type": "AWS::MediaPackage::OriginEndpoint",
+      "Properties": {
+        "Id": "MyOriginEndpoint",
+        "ChannelId": { "Ref": "MediaPackageChannel" },
+        "Description": "My first MediaPackage origin endpoint",
+        "HlsPackage": {
+          "HlsManifests": [
+            {
+              "ManifestName": "MyHLSManifest",
+              "PlaylistType": "EVENT",
+              "PlaylistWindowSeconds": 60,
+              "ProgramDateTimeIntervalSeconds": 60
+            }
+          ]
+        },
+        "StartoverWindowSeconds": 3600,  // 1 hour
+        "TimeToLiveSeconds": 86400  // 1 day
+      }
+    }
+  }
+}
