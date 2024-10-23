@@ -8,7 +8,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "MyDetectiveGraph"  // Customize the graph name as needed
+            "Value": "MyDetectiveGraph",  
           }
         ]
       }
