@@ -1,0 +1,36 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS Panorama Setup",
+  "Resources": {
+    "PanoramaModelPackage": {
+      "Type": "AWS::Panorama::ModelPackage",
+      "Properties": {
+        "ModelPackageName": "MyModelPackage",
+        "ModelData": {
+          "S3Uri": "s3://your-bucket/path/to/model.tar.gz"  // Replace with your model S3 URI
+        },
+        "Description": "A simple model package for AWS Panorama"
+      }
+    },
+    "PanoramaApplication": {
+      "Type": "AWS::Panorama::Application",
+      "Properties": {
+        "ApplicationName": "MyPanoramaApplication",
+        "ModelPackageVersion": { "Fn::GetAtt": ["PanoramaModelPackage", "ModelPackageVersion"] },
+        "Description": "A simple AWS Panorama application",
+        "Runtime": "1.0",  // Specify your runtime version
+        "ApplicationType": "CAMERA"  // Set your application type
+      }
+    }
+  },
+  "Outputs": {
+    "ModelPackageArn": {
+      "Description": "ARN of the AWS Panorama Model Package",
+      "Value": { "Ref": "PanoramaModelPackage" }
+    },
+    "ApplicationArn": {
+      "Description": "ARN of the AWS Panorama Application",
+      "Value": { "Ref": "PanoramaApplication" }
+    }
+  }
+}
