@@ -1,0 +1,58 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic Elastic Load Balancer Setup",
+  "Resources": {
+    "LoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "Name": "MyApplicationLoadBalancer",
+        "Scheme": "internet-facing"  // Can be "internet-facing" or "internal"
+      }
+    },
+    "TargetGroup": {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "Name": "MyTargetGroup",
+        "Port": 80,
+        "Protocol": "HTTP",
+        "HealthCheckConfiguration": {
+          "HealthyThresholdCount": 2,
+          "IntervalSeconds": 30,
+          "Path": "/",
+          "Protocol": "HTTP",
+          "TimeoutSeconds": 5,
+          "UnhealthyThresholdCount": 2
+        }
+      }
+    },
+    "Listener": {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "LoadBalancerArn": {
+          "Ref": "LoadBalancer"
+        },
+        "Port": 80,
+        "Protocol": "HTTP",
+        "DefaultActions": [
+          {
+            "Type": "forward",
+            "TargetGroupArn": {
+              "Ref": "TargetGroup"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "LoadBalancerDNSName": {
+      "Description": "DNS Name of the Load Balancer",
+      "Value": {
+        "Fn::GetAtt": [
+          "LoadBalancer",
+          "DNSName"
+        ]
+      }
+    }
+  }
+}
