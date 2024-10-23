@@ -5,82 +5,27 @@
     "NimbleStudio": {
       "Type": "AWS::NimbleStudio::Studio",
       "Properties": {
-        "StudioName": "MyNimbleStudio",  // Replace with your desired studio name
-        "AdminRoleArn": { "Fn::GetAtt": ["NimbleAdminRole", "Arn"] },
-        "UserRoleArn": { "Fn::GetAtt": ["NimbleUserRole", "Arn"] },
-    },
-    "NimbleAdminRole": {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "nimble.amazonaws.com"
-              },
-              "Action": "sts:AssumeRole"
-            }
-          ]
-        },
-        "Policies": [
+        "Name": "MyNimbleStudio",  // Replace with your desired studio name
+        "DisplayName": "My Nimble Studio",  // Replace with a display name
+        "StudioAccess": [
           {
-            "PolicyName": "NimbleAdminPolicy",
-            "PolicyDocument": {
-              "Version": "2012-10-17",
-              "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Action": [
-                    "nimble:CreateStudio",
-                    "nimble:DeleteStudio",
-                    "nimble:UpdateStudio",
-                    "nimble:DescribeStudio"
-                  ],
-                  "Resource": "*"
-                }
-              ]
-            }
+            "PrincipalId": "arn:aws:iam::123456789012:role/MyStudioRole"  // Replace with your IAM role ARN
+          }
+        ],
+        "StudioLogoS3Path": "s3://my-nimble-studio-bucket/logo.png",  // Replace with your logo S3 path
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyNimbleStudio"
           }
         ]
       }
-    },
-    "NimbleUserRole": {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "nimble.amazonaws.com"
-              },
-              "Action": "sts:AssumeRole"
-            }
-          ]
-        },
-        "Policies": [
-          {
-            "PolicyName": "NimbleUserPolicy",
-            "PolicyDocument": {
-              "Version": "2012-10-17",
-              "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Action": [
-                    "nimble:GetStudio",
-                    "nimble:ListStudios",
-                    "nimble:StartStreamingSession"
-                  ],
-                  "Resource": "*"
-                }
-              ]
-            }
-          }
-        ]
-      }
+    }
+  },
+  "Outputs": {
+    "StudioId": {
+      "Description": "ID of the Amazon Nimble Studio",
+      "Value": { "Ref": "NimbleStudio" }
     }
   }
 }
