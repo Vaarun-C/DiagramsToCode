@@ -1,0 +1,12 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple EC2 instance using Arch_AWS-Command-Line-Interface_64",
+  "Resources": {
+    "MyEC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t2.micro"
+      }
+    }
+  }
+}
