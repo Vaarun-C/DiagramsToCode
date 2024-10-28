@@ -1,0 +1,26 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for EC2 with Elastic Inference.",
+  "Resources": {
+    "ElasticInferenceAccelerator": {
+      "Type": "AWS::ElasticInference::Accelerator",
+      "Properties": {
+        "AcceleratorType": "eia2.large",
+        "AvailabilityZone": {
+          "Fn::Select": [
+            0,
+            {
+              "Fn::GetAZs": "us-east-1" //change
+            }
+          ]
+        }
+      }
+    },
+    "EC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "p2.xlarge"
+      }
+    }
+  }
+}
