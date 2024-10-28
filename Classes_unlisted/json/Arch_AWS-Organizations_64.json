@@ -1,0 +1,24 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Organizations.",
+  "Resources": {
+    "Organization": {
+      "Type": "AWS::Organizations::Organization",
+      "Properties": {
+        "FeatureSet": "ALL"  // Use 'ALL' or 'CONSOLIDATED_BILLING'
+      }
+    },
+    "OrganizationalUnit": {
+      "Type": "AWS::Organizations::OrganizationalUnit",
+      "Properties": {
+        "Name": "MyOrganizationalUnit",  // Replace with your desired OU name
+        "ParentId": {
+          "Fn::GetAtt": [
+            "Organization",
+            "RootId"
+          ]
+        }
+      }
+    }
+  }
+}
