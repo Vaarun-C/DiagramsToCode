@@ -1,0 +1,20 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "EC2 instance using Arch_Amazon-Elastic-Transcoder_64",
+  "Resources": {
+    "MySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Allow SSH access"
+      }
+    },
+    "MyEC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t2.micro",
+        "ImageId": "ami-0123456789abcdef0",  // Replace with actual Arch_Amazon-Elastic-Transcoder_64 AMI ID
+        "KeyName": "your-key-pair-name",     // Replace with your key pair name
+      }
+    }
+  }
+}
