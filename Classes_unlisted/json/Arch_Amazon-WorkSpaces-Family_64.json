@@ -1,0 +1,32 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon WorkSpaces Family.",
+  "Resources": {
+    "MyWorkSpaceBundle": {
+      "Type": "AWS::WorkSpaces::WorkspaceBundle",
+      "Properties": {
+        "Name": "MyWorkSpaceBundle",  // Replace with your desired bundle name
+        "Description": "Sample WorkSpace bundle",
+        "ImageId": "aws:workspaces:us-west-2:win-10-64",  // Replace with a valid WorkSpaces image ID
+        "BundleType": "REGULAR",  // Options: REGULAR, POWER, GRAPHICS
+        "ComputeType": {
+          "Name": "VALUE"  // Options: VALUE, PERFORMANCE, POWER
+        },
+        "RootVolumeSizeGib": 80,  // Size of the root volume in GiB
+        "UserVolumeSizeGib": 10,  // Size of the user volume in GiB
+        "Windows": {  // Optional, use if creating a Windows bundle
+          "RunningMode": "AUTO_STOP",  // Options: AUTO_STOP, ALWAYS_ON
+          "RunningModeAutoStopTimeoutInMinutes": 60  // Time in minutes to auto-stop
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "WorkSpaceBundleId": {
+      "Description": "The ID of the created WorkSpace bundle.",
+      "Value": {
+        "Ref": "MyWorkSpaceBundle"
+      }
+    }
+  }
+}
