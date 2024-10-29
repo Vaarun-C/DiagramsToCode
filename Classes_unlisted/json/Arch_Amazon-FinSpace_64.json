@@ -1,0 +1,29 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon FinSpace.",
+  "Resources": {
+    "FinSpaceEnvironment": {
+      "Type": "AWS::FinSpace::Environment",
+      "Properties": {
+        "EnvironmentName": "MyFinSpaceEnvironment",
+        "Description": "A sample FinSpace environment for financial data analysis.",
+        "KmsKeyId": "YOUR_KMS_KEY_ID",  // Replace with your KMS key ID
+        "S3BucketName": "YOUR_S3_BUCKET_NAME",  // Replace with your S3 bucket name
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "FinSpace"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "EnvironmentId": {
+      "Description": "ID of the created FinSpace environment.",
+      "Value": {
+        "Ref": "FinSpaceEnvironment"
+      }
+    }
+  }
+}
