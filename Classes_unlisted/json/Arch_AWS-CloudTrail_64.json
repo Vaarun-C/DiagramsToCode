@@ -1,0 +1,42 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS CloudTrail.",
+  "Resources": {
+    "CloudTrailS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-cloudtrail-bucket"  // Replace with a unique bucket name
+      }
+    },
+    "MyCloudTrail": {
+      "Type": "AWS::CloudTrail::Trail",
+      "Properties": {
+        "TrailName": "MyCloudTrail",  // Replace with your desired trail name
+        "S3BucketName": {
+          "Ref": "CloudTrailS3Bucket"
+        },
+        "IncludeGlobalServiceEvents": true,
+        "IsMultiRegionTrail": true,
+        "EnableLogFileValidation": true,
+        "IsOrganizationTrail": false  // Set to true if you want to log events from all accounts in your organization
+      }
+    }
+  },
+  "Outputs": {
+    "CloudTrailS3BucketName": {
+      "Description": "The name of the S3 bucket where CloudTrail logs are stored.",
+      "Value": {
+        "Ref": "CloudTrailS3Bucket"
+      }
+    },
+    "CloudTrailArn": {
+      "Description": "The ARN of the CloudTrail trail.",
+      "Value": {
+        "Fn::GetAtt": [
+          "MyCloudTrail",
+          "Arn"
+        ]
+      }
+    }
+  }
+}
