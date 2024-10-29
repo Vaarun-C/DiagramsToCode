@@ -1,0 +1,67 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create an AWS Budget.",
+  "Resources": {
+    "Budget": {
+      "Type": "AWS::Budgets::Budget",
+      "Properties": {
+        "Budget": {
+          "BudgetName": "MyMonthlyBudget",
+          "BudgetLimit": {
+            "Amount": 1000,
+            "Unit": "USD"
+          },
+          "TimeUnit": "MONTHLY",
+          "BudgetType": "COST",
+          "CostFilters": {},
+          "CostTypes": {
+            "IncludeTax": true,
+            "IncludeSubscription": true,
+            "IncludeUpfront": true,
+            "IncludeRecurring": true,
+            "IncludeOtherSubscription": true,
+            "IncludeSupport": true,
+            "IncludeDiscount": true
+          },
+          "Notification": {
+            "NotificationTypes": [
+              "ACTUAL",
+              "FORECASTED"
+            ],
+            "NotificationsWithSubscribers": [
+              {
+                "Notification": {
+                  "NotificationType": "ACTUAL",
+                  "ComparisonOperator": "GREATER_THAN",
+                  "Threshold": 80
+                },
+                "Subscribers": [
+                  {
+                    "SubscriptionType": "SNS",
+                    "Address": {
+                      "Ref": "BudgetNotificationTopic"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "BudgetNotificationTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "TopicName": "BudgetNotificationTopic"
+      }
+    }
+  },
+  "Outputs": {
+    "BudgetId": {
+      "Description": "The ID of the Budget",
+      "Value": {
+        "Ref": "Budget"
+      }
+    }
+  }
+}
