@@ -1,0 +1,54 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon SageMaker Studio Lab.",
+  "Resources": {
+    "SageMakerRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "SageMakerStudioLabRole",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "sagemaker.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "SageMakerStudioLabPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sagemaker:*",
+                    "s3:*",  // Adjust S3 permissions as necessary
+                    "cloudwatch:*"  // Adjust CloudWatch permissions as necessary
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "RoleArn": {
+      "Description": "The ARN of the created SageMaker role.",
+      "Value": {
+        "Fn::GetAtt": [
+          "SageMakerRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}
