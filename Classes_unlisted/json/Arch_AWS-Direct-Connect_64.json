@@ -1,0 +1,44 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Direct Connect.",
+  "Resources": {
+    "DirectConnectConnection": {
+      "Type": "AWS::DirectConnect::Connection",
+      "Properties": {
+        "ConnectionName": "MyDirectConnectConnection",
+        "Location": "YourDirectConnectLocation",  // Replace with your Direct Connect location
+        "Bandwidth": "1Gbps",  // Choose your desired bandwidth
+        "PartnerName": "YourPartnerName"  // Optional, replace with your partner name if applicable
+      }
+    },
+    "VirtualInterface": {
+      "Type": "AWS::DirectConnect::PublicVirtualInterface",
+      "Properties": {
+        "ConnectionId": {
+          "Ref": "DirectConnectConnection"
+        },
+        "VirtualInterfaceName": "MyPublicVirtualInterface",
+        "Vlan": 101,  // Specify a VLAN ID
+        "Asn": 65000,  // Replace with your ASN
+        "AddressFamily": "ipv4",
+        "AmazonAddress": "192.168.1.1/30",  // Replace with your Amazon address
+        "CustomerAddress": "192.168.1.2/30",  // Replace with your Customer address
+        "VirtualInterfaceType": "public"
+      }
+    }
+  },
+  "Outputs": {
+    "ConnectionId": {
+      "Description": "The ID of the created Direct Connect connection.",
+      "Value": {
+        "Ref": "DirectConnectConnection"
+      }
+    },
+    "VirtualInterfaceId": {
+      "Description": "The ID of the created virtual interface.",
+      "Value": {
+        "Ref": "VirtualInterface"
+      }
+    }
+  }
+}
