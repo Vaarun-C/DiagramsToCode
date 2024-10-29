@@ -1,0 +1,49 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon VPC Lattice.",
+  "Resources": {
+    "Vpc": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "EnableDnsSupport": true,
+        "EnableDnsHostname": true,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyVPC"
+          }
+        ]
+      }
+    },
+    "VpcLatticeService": {
+      "Type": "AWS::VPCLattice::Service",
+      "Properties": {
+        "Name": "MyVpcLatticeService",
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Type": "HTTP",  // Change to "HTTPS" as needed
+        "HealthCheck": {
+          "Protocol": "HTTP",
+          "Path": "/health",
+          "Port": 80
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "VpcId": {
+      "Description": "ID of the created VPC.",
+      "Value": {
+        "Ref": "Vpc"
+      }
+    },
+    "VpcLatticeServiceArn": {
+      "Description": "ARN of the created VPC Lattice service.",
+      "Value": {
+        "Fn::GetAtt": ["VpcLatticeService", "Arn"]
+      }
+    }
+  }
+}
