@@ -1,0 +1,93 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create AWS Glue Elastic Views.",
+  "Resources": {
+    "GlueDatabase": {
+      "Type": "AWS::Glue::Database",
+      "Properties": {
+        "DatabaseInput": {
+          "Name": "MyGlueDatabase",
+          "Description": "My Glue Database for Elastic Views"
+        }
+      }
+    },
+    "GlueElasticView": {
+      "Type": "AWS::Glue::ElasticView",
+      "Properties": {
+        "Name": "MyElasticView",
+        "Source": {
+          "DatabaseName": {
+            "Ref": "GlueDatabase"
+          },
+          "TableName": "MySourceTable"  // Replace with your source table name
+        },
+        "Destination": {
+          "DatabaseName": {
+            "Ref": "GlueDatabase"
+          },
+          "TableName": "MyDestinationTable"  // Replace with your destination table name
+        },
+        "RoleArn": {
+          "Fn::GetAtt": ["GlueRole", "Arn"]
+        }
+      }
+    },
+    "GlueRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "glue.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "GlueElasticViewsPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "glue:GetTable",
+                    "glue:GetTables",
+                    "glue:CreateTable",
+                    "glue:UpdateTable",
+                    "glue:DeleteTable",
+                    "glue:GetDatabase",
+                    "glue:CreateDatabase",
+                    "glue:UpdateDatabase",
+                    "glue:DeleteDatabase",
+                    "glue:StartJobRun"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "GlueDatabaseName": {
+      "Description": "The name of the Glue Database",
+      "Value": {
+        "Ref": "GlueDatabase"
+      }
+    },
+    "ElasticViewName": {
+      "Description": "The name of the Elastic View",
+      "Value": {
+        "Ref": "GlueElasticView"
+      }
+    }
+  }
+}
