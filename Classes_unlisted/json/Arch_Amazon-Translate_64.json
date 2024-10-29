@@ -1,0 +1,31 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon Translate.",
+  "Resources": {
+    "TranslateJob": {
+      "Type": "AWS::Translate::TextTranslationJob",
+      "Properties": {
+        "JobName": "MyTranslateJob",  // Replace with your desired job name
+        "InputDataConfig": {
+          "S3Uri": "s3://my-bucket/input-text.txt",  // Replace with your input text S3 URI
+          "ContentType": "text/plain"  // Adjust if using a different content type
+        },
+        "OutputDataConfig": {
+          "S3Uri": "s3://my-bucket/output-translated/"  // Replace with your output S3 URI
+        },
+        "SourceLanguageCode": "en",  // Replace with your source language code
+        "TargetLanguageCodes": [
+          "es"  // Replace with your target language code
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "TranslateJobName": {
+      "Description": "The name of the created Translate job.",
+      "Value": {
+        "Ref": "TranslateJob"
+      }
+    }
+  }
+}
