@@ -1,0 +1,134 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create an AWS AppSync API with DynamoDB.",
+  "Resources": {
+    "AppSyncGraphQLAPI": {
+      "Type": "AWS::AppSync::GraphQLApi",
+      "Properties": {
+        "Name": "MyAppSyncAPI",
+        "AuthenticationType": "API_KEY"
+      }
+    },
+    "GraphQLSchema": {
+      "Type": "AWS::AppSync::GraphQLSchema",
+      "Properties": {
+        "ApiId": {
+          "Ref": "AppSyncGraphQLAPI"
+        },
+        "Definition": "type Todo {\n  id: ID!\n  content: String!\n  completed: Boolean!\n}\n\ntype Query {\n  getTodo(id: ID!): Todo\n  listTodos: [Todo]\n}\n\ntype Mutation {\n  addTodo(content: String!): Todo\n  updateTodo(id: ID!, content: String!, completed: Boolean!): Todo\n}\n\nschema {\n  query: Query\n  mutation: Mutation\n}"
+      }
+    },
+    "TodoTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "TableName": "Todos",
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 5,
+          "WriteCapacityUnits": 5
+        }
+      }
+    },
+    "TodoDataSource": {
+      "Type": "AWS::AppSync::DataSource",
+      "Properties": {
+        "ApiId": {
+          "Ref": "AppSyncGraphQLAPI"
+        },
+        "Name": "TodoDataSource",
+        "Type": "AMAZON_DYNAMODB",
+        "DynamoDBConfig": {
+          "TableName": {
+            "Ref": "TodoTable"
+          },
+          "AwsRegion": {
+            "Ref": "AWS::Region"
+          }
+        },
+        "ServiceRoleArn": {
+          "GetAtt": ["AppSyncServiceRole", "Arn"]
+        }
+      }
+    },
+    "AppSyncServiceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "AppSyncServiceRole",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "appsync.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "AppSyncDynamoDBPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:PutItem",
+                    "dynamodb:GetItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:Scan"
+                  ],
+                  "Resource": {
+                    "GetAtt": ["TodoTable", "Arn"]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "AddTodoResolver": {
+      "Type": "AWS::AppSync::Resolver",
+      "Properties": {
+        "ApiId": {
+          "Ref": "AppSyncGraphQLAPI"
+        },
+        "TypeName": "Mutation",
+        "FieldName": "addTodo",
+        "DataSourceName": {
+          "Ref": "TodoDataSource"
+        },
+        "RequestMappingTemplate": "{\n  \"version\": \"2018-05-29\",\n  \"operation\": \"PutItem\",\n  \"key\": {\n    \"id\": $util.dynamodb.toDynamoDBJson($context.args.id),\n    \"content\": $util.dynamodb.toDynamoDBJson($context.args.content),\n    \"completed\": $util.dynamodb.toDynamoDBJson(false)\n  }\n}",
+        "ResponseMappingTemplate": "$util.toJson($ctx.result)"
+      }
+    }
+  },
+  "Outputs": {
+    "GraphQLApiId": {
+      "Description": "The ID of the AppSync GraphQL API",
+      "Value": {
+        "Ref": "AppSyncGraphQLAPI"
+      }
+    },
+    "GraphQLApiEndpoint": {
+      "Description": "The endpoint of the AppSync GraphQL API",
+      "Value": {
+        "Fn::GetAtt": ["AppSyncGraphQLAPI", "Urn"]
+      }
+    }
+  }
+}
