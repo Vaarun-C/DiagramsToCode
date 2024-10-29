@@ -1,0 +1,79 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Application Auto Scaling.",
+  "Resources": {
+    "MyEcsCluster": {
+      "Type": "AWS::ECS::Cluster",
+      "Properties": {
+        "ClusterName": "MyEcsCluster"
+      }
+    },
+    "MyEcsService": {
+      "Type": "AWS::ECS::Service",
+      "Properties": {
+        "Cluster": {
+          "Ref": "MyEcsCluster"
+        },
+        "DesiredCount": 1,
+        "LaunchType": "FARGATE",
+        "TaskDefinition": "YOUR_TASK_DEFINITION",  // Replace with your ECS task definition
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": [
+              "YOUR_SUBNET_ID"  // Replace with your subnet ID
+            ],
+            "SecurityGroups": [
+              "YOUR_SECURITY_GROUP_ID"  // Replace with your security group ID
+            ],
+            "AssignPublicIp": "ENABLED"
+          }
+        }
+      }
+    },
+    "ScalableTarget": {
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+      "Properties": {
+        "MaxCapacity": 10,
+        "MinCapacity": 1,
+        "ResourceId": {
+          "Fn::Sub": "service/${MyEcsCluster}/${MyEcsService}"
+        },
+        "RoleARN": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_APPLICATION_AUTO_SCALING_ROLE",  // Replace with your IAM role ARN
+        "ScalableDimension": "ecs:service:DesiredCount",
+        "ServiceNamespace": "ecs"
+      }
+    },
+    "ScalingPolicy": {
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": "MyScalingPolicy",
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "ScalableTarget"
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 50.0,  // Target CPU utilization percentage
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ECSServiceAverageCPUUtilization"
+          },
+          "ScaleOutCooldown": 60,
+          "ScaleInCooldown": 60
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ClusterName": {
+      "Description": "The name of the ECS cluster.",
+      "Value": {
+        "Ref": "MyEcsCluster"
+      }
+    },
+    "ServiceName": {
+      "Description": "The name of the ECS service.",
+      "Value": {
+        "Ref": "MyEcsService"
+      }
+    }
+  }
+}
