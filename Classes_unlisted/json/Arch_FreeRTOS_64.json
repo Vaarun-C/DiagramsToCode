@@ -1,0 +1,52 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon FreeRTOS.",
+  "Resources": {
+    "IoTPolicy": {
+      "Type": "AWS::IoT::Policy",
+      "Properties": {
+        "PolicyName": "FreeRTOSIoTPolicy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "iot:Connect",
+                "iot:Publish",
+                "iot:Subscribe",
+                "iot:Receive"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    },
+    "IoTThing": {
+      "Type": "AWS::IoT::Thing",
+      "Properties": {
+        "ThingName": "MyFreeRTOSThing",
+        "AttributePayload": {
+          "Attributes": {
+            "Key": "Value"  // Optional attributes for the IoT Thing
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ThingArn": {
+      "Description": "ARN of the created IoT Thing.",
+      "Value": {
+        "Fn::GetAtt": ["IoTThing", "Arn"]
+      }
+    },
+    "IoTPolicyArn": {
+      "Description": "ARN of the created IoT Policy.",
+      "Value": {
+        "Fn::GetAtt": ["IoTPolicy", "Arn"]
+      }
+    }
+  }
+}
