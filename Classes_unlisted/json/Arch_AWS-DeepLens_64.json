@@ -1,0 +1,67 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create an AWS DeepLens application.",
+  "Resources": {
+    "DeepLensModel": {
+      "Type": "AWS::DeepLens::Model",
+      "Properties": {
+        "Name": "MyDeepLensModel",
+        "ModelData": {
+          "S3Uri": "s3://your-bucket/path/to/model.zip"
+        },
+        "RoleArn": {
+          "Fn::GetAtt": ["DeepLensRole", "Arn"]
+        }
+      }
+    },
+    "DeepLensRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "deeplens.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "DeepLensPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:ListBucket",
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    "arn:aws:s3:::your-bucket",
+                    "arn:aws:s3:::your-bucket/*"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "DeepLensModelName": {
+      "Description": "The name of the DeepLens model",
+      "Value": {
+        "Ref": "DeepLensModel"
+      }
+    }
+  }
+}
