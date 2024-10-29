@@ -1,0 +1,31 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon Connect.",
+  "Resources": {
+    "ConnectInstance": {
+      "Type": "AWS::Connect::Instance",
+      "Properties": {
+        "InstanceAlias": "MyConnectInstance",
+        "IdentityManagementType": "CONNECT_MANAGED",  // Use CONNECT_MANAGED or SAML
+        "InboundCallsEnabled": true,
+        "OutboundCallsEnabled": true,
+        "AutoAcceptEnabled": true,
+        "Description": "A sample Amazon Connect instance for handling calls."
+      }
+    }
+  },
+  "Outputs": {
+    "ConnectInstanceId": {
+      "Description": "ID of the created Amazon Connect instance.",
+      "Value": {
+        "Ref": "ConnectInstance"
+      }
+    },
+    "ConnectInstanceArn": {
+      "Description": "ARN of the created Amazon Connect instance.",
+      "Value": {
+        "Fn::GetAtt": ["ConnectInstance", "Arn"]
+      }
+    }
+  }
+}
