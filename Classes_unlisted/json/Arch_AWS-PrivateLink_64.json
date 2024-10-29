@@ -1,0 +1,14 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS PrivateLink.",
+  "Resources": {
+    "MyNLB": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "Name": "MyNLB",
+        "Scheme": "internal",
+        "Type": "network"
+      }
+    }   
+    }
+  }
