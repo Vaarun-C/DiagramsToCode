@@ -1,0 +1,49 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS CloudShell.",
+  "Resources": {
+    "CloudShellUser": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "UserName": "CloudShellUser"
+      }
+    },
+    "CloudShellPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CloudShellAccessPolicy",
+        "Users": [
+          {
+            "Ref": "CloudShellUser"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+                "s3:CreateBucket",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:GetObject"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "CloudShellUserArn": {
+      "Description": "ARN of the created CloudShell user.",
+      "Value": {
+        "Fn::GetAtt": ["CloudShellUser", "Arn"]
+      }
+    }
+  }
+}
