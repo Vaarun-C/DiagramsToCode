@@ -1,0 +1,28 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon AppFlow.",
+  "Resources": {
+    "AppFlowFlow": {
+      "Type": "AWS::AppFlow::Flow",
+      "Properties": {
+        "FlowName": "MyAppFlow",  // Replace with your desired flow name
+        "SourceFlowConfig": {
+          "ConnectorType": "Salesforce",  // Replace with your source connector type
+          "SourceConnectorProperties": {
+            "Object": "Account"  // Replace with your source object
+          }
+        },
+        "DestinationFlowConfig": {
+          "ConnectorType": "S3",  // Replace with your destination connector type
+          "DestinationConnectorProperties": {
+            "BucketName": "my-s3-bucket",  // Replace with your S3 bucket name
+            "BucketPrefix": "appflow-data/"  // Optional: Specify a prefix for S3 objects
+          }
+        },
+        "TriggerConfig": {
+          "TriggerType": "OnDemand"  // Options: OnDemand, Scheduled
+        }
+      }
+    }
+  }
+}
