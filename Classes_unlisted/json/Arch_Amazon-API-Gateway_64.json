@@ -1,0 +1,71 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon API Gateway.",
+  "Resources": {
+    "MyApi": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Name": "MyApi",
+        "Description": "Simple API for demonstration purposes."
+      }
+    },
+    "MyResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "MyApi",
+            "RootResourceId"
+          ]
+        },
+        "RestApiId": {
+          "Ref": "MyApi"
+        },
+        "PathPart": "myresource"
+      }
+    },
+    "MyMethod": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "ResourceId": {
+          "Ref": "MyResource"
+        },
+        "RestApiId": {
+          "Ref": "MyApi"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "GET",
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{ \"statusCode\": 200 }"
+          },
+          "Responses": {
+            "200": {
+              "StatusCode": "200"
+            }
+          }
+        }
+      }
+    },
+    "MyDeployment": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "MyApi"
+        },
+        "StageName": "v1"
+      },
+      "DependsOn": "MyMethod"
+    }
+  },
+  "Outputs": {
+    "ApiUrl": {
+      "Description": "The URL of the deployed API.",
+      "Value": {
+        "Fn::Sub": "https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/v1/myresource"
+      }
+    }
+  }
+}
