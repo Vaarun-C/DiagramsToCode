@@ -1,0 +1,44 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon Managed Blockchain.",
+  "Resources": {
+    "BlockchainNetwork": {
+      "Type": "AWS::ManagedBlockchain::Network",
+      "Properties": {
+        "Name": "MyBlockchainNetwork",  // Replace with your desired network name
+        "Framework": "HYPERLEDGER_FABRIC",
+        "FrameworkVersion": "1.4",  // Choose your desired framework version
+        "VotingPolicy": {
+          "ApprovalThresholdPolicy": {
+            "ThresholdPercentage": 50,
+            "ProposalCount": 2
+          }
+        }
+      }
+    },
+    "BlockchainMember": {
+      "Type": "AWS::ManagedBlockchain::Member",
+      "Properties": {
+        "NetworkId": {
+          "Ref": "BlockchainNetwork"
+        },
+        "Name": "MyMember",  // Replace with your desired member name
+        "FrameworkAttributes": {
+          "Fabric": {
+            "AdminUsername": "admin",
+            "AdminPassword": {
+              "Ref": "AdminPassword"  // Use a parameter for sensitive data
+            }
+          }
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "AdminPassword": {
+      "Type": "String",
+      "NoEcho": true,
+      "Description": "Admin password for the Hyperledger Fabric member."
+    }
+  }
+}
