@@ -1,0 +1,74 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create an Amazon Comprehend Medical entity recognizer.",
+  "Resources": {
+    "MedicalEntityRecognizer": {
+      "Type": "AWS::ComprehendMedical::EntityRecognizer",
+      "Properties": {
+        "RecognizerName": "MyMedicalEntityRecognizer",
+        "LanguageCode": "en",
+        "DataAccessRoleArn": {
+          "Fn::GetAtt": ["ComprehendMedicalRole", "Arn"]
+        },
+        "InputDataConfig": [
+          {
+            "S3Uri": "s3://your-bucket/path/to/training-data/",
+            "InputFormat": "AUGMENTED"
+          }
+        ],
+        "ModelKmsKeyId": {
+          "Ref": "KmsKeyId"  // Optional, if using KMS
+        }
+      }
+    },
+    "ComprehendMedicalRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "comprehend.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "ComprehendMedicalPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:ListBucket",
+                    "comprehendmedical:StartEntityRecognizer",
+                    "comprehendmedical:StopEntityRecognizer",
+                    "comprehendmedical:DescribeEntityRecognizer"
+                  ],
+                  "Resource": [
+                    "arn:aws:s3:::your-bucket",
+                    "arn:aws:s3:::your-bucket/*"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "RecognizerArn": {
+      "Description": "The ARN of the Medical Entity Recognizer",
+      "Value": {
+        "Ref": "MedicalEntityRecognizer"
+      }
+    }
+  }
+}
