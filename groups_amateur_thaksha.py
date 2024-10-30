@@ -31,21 +31,30 @@ def draw_all_lines(image_path):
     edges = cv2.Canny(thresh, 50, 150)
 
     # Show the edges detected
+    cv2.imshow('IMAGE', image)
+    cv2.imshow('gray', gray)
+    cv2.imshow('thresh', thresh)
     cv2.imshow('Edges', edges)
+    edges = cv2.dilate(thresh, np.ones((3, 3), np.uint8))
+    cv2.imshow('Dialated thresh', edges)
     cv2.waitKey(0)
 
     # Use Hough Transform to detect lines
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=50, maxLineGap=10)
-
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=50, maxLineGap=3)
+    graym = cv2.cvtColor(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2BGR)
     if lines is not None:
         for line in lines:
             x1, y1, x2, y2 = line[0]
-            cv2.line(image, (x1, y1), (x2, y2), hsl_to_rgb(np.random.randint(0, 360)), 2)
+
+            # graym = cv2.cvtColor(cv2.cvtColor(graym, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2BGR)
+            cv2.line(graym, (x1, y1), (x2, y2), hsl_to_rgb(np.random.randint(0, 360)), 2)
+            cv2.imshow('Detected Lines', graym)
+            # cv2.waitKey(0)
 
     # Show the image with detected lines
-    cv2.imshow('Detected Lines', image)
+    cv2.imshow('Detected Lines', graym)
     cv2.waitKey(0)
-
+    quit()
     return lines
 
 def is_rectangle(p1, p2, p3, p4, distance_threshold=10):
@@ -115,5 +124,5 @@ def detect_rectangles(image_path):
     print(f"Detected {len(rectangles)} rectangles.")
 
 # Example usage
-image_path = r"" # Change this to your image path
+image_path = r"./test1.png" # Change this to your image path
 detect_rectangles(image_path)

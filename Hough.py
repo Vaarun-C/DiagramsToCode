@@ -44,7 +44,26 @@
 # # Example usage
 # image_path = './test1.png'
 # detect_squares(image_path)
-
+import random 
+def a_clr():
+    h = random.randint(0,360)
+    x =  (1 - abs((h / 60) % 2 - 1))  # Second largest component
+    if 0 <= h < 60:
+        r_, g_, b_ = 1, x, 0
+    elif 60 <= h < 120:
+        r_, g_, b_ = x, 1, 0
+    elif 120 <= h < 180:
+        r_, g_, b_ = 0, 1, x
+    elif 180 <= h < 240:
+        r_, g_, b_ = 0, x, 1
+    elif 240 <= h < 300:
+        r_, g_, b_ = x, 0, 1
+    else:
+        r_, g_, b_ = 1, 0, x
+    r = round((r_) * 255)
+    g = round((g_) * 255)
+    b = round((b_) * 255)
+    return (r, g, b)
 
 
 import cv2
@@ -73,6 +92,26 @@ def hough_transform_visualization(image_path):
             rho, theta = line[0]
             theta_deg = int(np.rad2deg(theta))
             accumulator[int(rho) + max_rho, theta_deg] += 1
+    if lines is not None:
+        for rho, theta in lines[:, 0]:
+            # Convert polar coordinates to Cartesian coordinates for line endpoints
+            a = np.cos(theta)
+            b = np.sin(theta)
+            x0 = a * rho
+            y0 = b * rho
+            x1 = int(x0 + 2000 * (-b))
+            y1 = int(y0 + 2000 * (a))
+            x2 = int(x0 - 2000 * (-b))
+            y2 = int(y0 - 2000 * (a))
+
+            # Draw the line on the original image
+            cv2.line(image, (x1, y1), (x2, y2), a_clr(), 2)  # Red color, thickness of 2
+            cv2.imshow("Detected Lines", image)
+            cv2.waitKey(0)
+    cv2.imshow("Detected Lines", image)
+    cv2.waitKey(0)
+    quit()
+
 
     # Visualize the original image, edges, and the accumulator
     plt.figure(figsize=(12, 12))
