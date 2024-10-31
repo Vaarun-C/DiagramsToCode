@@ -1,0 +1,95 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for AWS Inspector.",
+  "Resources": {
+    "InspectorRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "inspector.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "InspectorPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:Describe*",
+                    "iam:PassRole"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "AssessmentTarget": {
+      "Type": "AWS::Inspector::AssessmentTarget",
+      "Properties": {
+        "AssessmentTargetName": {
+          "Fn::Sub": "MyAssessmentTarget-${AWS::AccountId}"
+        },
+        "ResourceGroupArn": {
+          "Ref": "ResourceGroup"
+        }
+      }
+    },
+    "ResourceGroup": {
+      "Type": "AWS::Inspector::ResourceGroup",
+      "Properties": {
+        "ResourceGroupTags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "MyResourceGroup-${AWS::AccountId}"
+            }
+          }
+        ]
+      }
+    },
+    "AssessmentTemplate": {
+      "Type": "AWS::Inspector::AssessmentTemplate",
+      "Properties": {
+        "AssessmentTargetArn": {
+          "Ref": "AssessmentTarget"
+        },
+        "AssessmentTemplateName": {
+          "Fn::Sub": "MyAssessmentTemplate-${AWS::AccountId}"
+        },
+        "DurationInSeconds": "3600",
+        "RulesPackageArns": [
+          "arn:aws:inspector:us-east-1:123456789012:rulespackage/0-12345678"  // Replace with actual ARN
+        ],
+        "UserAttributesForFindings": []
+      }
+    }
+  },
+  "Outputs": {
+    "AssessmentTargetArn": {
+      "Description": "ARN of the Assessment Target.",
+      "Value": {
+        "Ref": "AssessmentTarget"
+      }
+    },
+    "AssessmentTemplateArn": {
+      "Description": "ARN of the Assessment Template.",
+      "Value": {
+        "Ref": "AssessmentTemplate"
+      }
+    }
+  }
+}
