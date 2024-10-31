@@ -1,0 +1,92 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for AWS CodeDeploy.",
+  "Resources": {
+    "CodeDeployServiceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "codedeploy.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "CodeDeployServicePolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "codedeploy:*",
+                    "ec2:DescribeInstances",
+                    "autoscaling:DescribeAutoScalingGroups",
+                    "autoscaling:DescribeAutoScalingInstances",
+                    "tag:GetResources"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "CodeDeployApplication": {
+      "Type": "AWS::CodeDeploy::Application",
+      "Properties": {
+        "ApplicationName": {
+          "Fn::Sub": "MyCodeDeployApplication-${AWS::AccountId}"
+        },
+        "ComputePlatform": "EC2"  // Can be 'EC2' or 'Lambda'
+      }
+    },
+    "CodeDeployDeploymentGroup": {
+      "Type": "AWS::CodeDeploy::DeploymentGroup",
+      "Properties": {
+        "ApplicationName": {
+          "Ref": "CodeDeployApplication"
+        },
+        "DeploymentGroupName": {
+          "Fn::Sub": "MyDeploymentGroup-${AWS::AccountId}"
+        },
+        "ServiceRoleArn": {
+          "Fn::GetAtt": [
+            "CodeDeployServiceRole",
+            "Arn"
+          ]
+        },
+        "Ec2TagFilters": [
+          {
+            "Key": "Name",
+            "Value": "MyEC2Instance",
+            "Type": "KEY_AND_VALUE"
+          }
+        ],
+        "DeploymentConfigName": "CodeDeployDefault.AllAtOnce"
+      }
+    }
+  },
+  "Outputs": {
+    "CodeDeployApplicationName": {
+      "Description": "Name of the CodeDeploy application.",
+      "Value": {
+        "Ref": "CodeDeployApplication"
+      }
+    },
+    "CodeDeployDeploymentGroupName": {
+      "Description": "Name of the CodeDeploy deployment group.",
+      "Value": {
+        "Ref": "CodeDeployDeploymentGroup"
+      }
+    }
+  }
+}
