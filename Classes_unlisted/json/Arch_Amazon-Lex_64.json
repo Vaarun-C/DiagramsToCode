@@ -1,0 +1,93 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for Amazon Lex.",
+  "Resources": {
+    "LexBotRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lex.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "LexBotPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "polly:SynthesizeSpeech",
+                    "lambda:InvokeFunction"  // If using Lambda for fulfillment
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "LexBot": {
+      "Type": "AWS::Lex::Bot",
+      "Properties": {
+        "Name": "MyLexBot",
+        "Description": "A simple Lex chatbot",
+        "Locale": "en-US",
+        "ChildDirected": false,
+        "ClarificationPrompt": {
+          "Messages": [
+            {
+              "Content": "Sorry, I didn't get that. Can you please repeat?",
+              "ContentType": "PlainText"
+            }
+          ],
+          "MaxAttempts": 2
+        },
+        "FailureReason": "Intent recognition failed.",
+        "VoiceId": "Joanna",  // Change to your preferred voice
+        "Intents": [
+          {
+            "IntentName": {
+              "Ref": "LexIntent"
+            },
+            "IntentVersion": "$LATEST"
+          }
+        ],
+        "IdleSessionTTLInSeconds": 300,
+        "ProcessBehavior": "BUILD"
+      }
+    },
+    "LexIntent": {
+      "Type": "AWS::Lex::Intent",
+      "Properties": {
+        "Name": "MyIntent",
+        "SampleUtterances": [
+          "Hello",
+          "Help me",
+          "What can you do?"
+        ],
+        "FulfillmentActivity": {
+          "Type": "ReturnIntent"  // Or "CodeHook" if using Lambda for fulfillment
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "LexBotName": {
+      "Description": "Name of the Lex bot.",
+      "Value": {
+        "Ref": "LexBot"
+      }
+    }
+  }
+}
