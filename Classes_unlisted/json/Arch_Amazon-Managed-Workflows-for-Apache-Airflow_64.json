@@ -1,0 +1,108 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for Amazon Managed Workflows for Apache Airflow (MWAA).",
+  "Resources": {
+    "AirflowBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {
+          "Fn::Sub": "mwaa-airflow-bucket-${AWS::AccountId}-${AWS::Region}"
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        }
+      }
+    },
+    "AirflowExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "airflow.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "AirflowExecutionPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:ListBucket",
+                    "logs:*"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "${AirflowBucket.Arn}/*"
+                    },
+                    {
+                      "Fn::Sub": "${AirflowBucket.Arn}"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "AirflowEnvironment": {
+      "Type": "AWS::MWAA::Environment",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "my-mwaa-environment-${AWS::AccountId}"
+        },
+        "AirflowVersion": "2.4.0",  // Update to the desired Airflow version
+        "ExecutionRoleArn": {
+          "Fn::GetAtt": [
+            "AirflowExecutionRole",
+            "Arn"
+          ]
+        },
+        "SourceBucketArn": {
+          "Fn::GetAtt": [
+            "AirflowBucket",
+            "Arn"
+          ]
+        },
+        "DagS3Path": "dags",  // Change if you want a different path for your DAGs
+        "RequirementsS3Path": "requirements.txt",  // Path to your requirements file
+        "LoggingConfiguration": {
+          "DagProcessingLogs": {
+            "Enabled": true,
+            "LogLevel": "INFO"
+          },
+          "SchedulerLogs": {
+            "Enabled": true,
+            "LogLevel": "INFO"
+          },
+          "TaskLogs": {
+            "Enabled": true,
+            "LogLevel": "INFO"
+          },
+          "WebServerLogs": {
+            "Enabled": true,
+            "LogLevel": "INFO"
+          }
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "VPCId": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "The VPC ID for the MWAA environment."
+    }
+  }
+}
