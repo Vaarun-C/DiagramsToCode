@@ -1,0 +1,96 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for AWS Config.",
+  "Resources": {
+    "ConfigRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "config.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "ConfigRolePolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "config:PutConfigurationRecorder",
+                    "config:StartConfigurationRecorder",
+                    "config:StopConfigurationRecorder",
+                    "config:PutDeliveryChannel",
+                    "config:DescribeConfigurationRecorders",
+                    "config:DescribeDeliveryChannels",
+                    "config:GetResourceConfigHistory"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ConfigRecorder": {
+      "Type": "AWS::Config::ConfigurationRecorder",
+      "Properties": {
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "ConfigRole",
+            "Arn"
+          ]
+        },
+        "RecordingGroup": {
+          "AllSupported": true,
+          "IncludeGlobalResourceTypes": true
+        }
+      }
+    },
+    "DeliveryChannel": {
+      "Type": "AWS::Config::DeliveryChannel",
+      "Properties": {
+        "S3BucketName": {
+          "Ref": "S3BucketName"
+        },
+        "ConfigSnapshotDeliveryProperties": {
+          "S3KeyPrefix": "config-snapshots"
+        },
+        "SnsTopicARN": {
+          "Ref": "SnsTopicArn"  // Optional: Specify if you want to set up SNS notifications
+        }
+      }
+    },
+    "ConfigRule": {
+      "Type": "AWS::Config::ConfigRule",
+      "Properties": {
+        "ConfigRuleName": "my-config-rule",
+        "Source": {
+          "Owner": "AWS",
+          "SourceIdentifier": "S3_BUCKET_PUBLIC_READ_PROHIBITED"  // Change to your desired rule identifier
+        },
+        "InputParameters": "{}"
+      }
+    }
+  },
+  "Parameters": {
+    "S3BucketName": {
+      "Type": "String",
+      "Description": "The name of the S3 bucket to store configuration snapshots."
+    },
+    "SnsTopicArn": {
+      "Type": "String",
+      "Description": "The ARN of the SNS topic for notifications (optional)."
+    }
+  }
+}
