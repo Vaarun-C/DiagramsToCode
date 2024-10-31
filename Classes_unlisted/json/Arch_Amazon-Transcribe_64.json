@@ -1,0 +1,89 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for Amazon Transcribe.",
+  "Resources": {
+    "TranscriptionBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {
+          "Fn::Sub": "transcription-audio-${AWS::AccountId}-${AWS::Region}"
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        }
+      }
+    },
+    "TranscriptionJobRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "transcribe.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "TranscriptionJobPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:ListBucket"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "${TranscriptionBucket.Arn}/*"
+                    },
+                    {
+                      "Fn::Sub": "${TranscriptionBucket.Arn}"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "TranscriptionJob": {
+      "Type": "AWS::Transcribe::TranscriptionJob",
+      "Properties": {
+        "TranscriptionJobName": {
+          "Fn::Sub": "TranscriptionJob-${AWS::AccountId}"
+        },
+        "LanguageCode": "en-US",  // Adjust language code as needed
+        "Media": {
+          "MediaFileUri": {
+            "Fn::Sub": "s3://${TranscriptionBucket.BucketName}/audio-file.wav"  // Update with your audio file path
+          }
+        },
+        "OutputBucketName": {
+          "Ref": "TranscriptionBucket"
+        },
+        "Settings": {
+          "ShowSpeakerLabel": true,  // Optional: Set to true for speaker labeling
+          "MaxSpeakerLabels": 2      // Optional: Number of speakers to label
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "TranscriptionBucketName": {
+      "Description": "The name of the S3 bucket for transcription.",
+      "Value": {
+        "Ref": "TranscriptionBucket"
+      }
+    }
+  }
+}
