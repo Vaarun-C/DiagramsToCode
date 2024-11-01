@@ -1,0 +1,24 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon Augmented AI (A2I).",
+  "Resources": {
+    "HumanTaskUi": {
+      "Type": "AWS::A2I::HumanTaskUi",
+      "Properties": {
+        "HumanTaskUiName": "MyHumanTaskUi",
+        "HumanTaskUiDescription": "A sample UI for human review.",
+        "UiTemplate": {
+          "Html": "<html>\n  <body>\n    <h1>Human Review Task</h1>\n    <p>Please review the content below:</p>\n    <div>{{ task.input.content }}</div>\n    <label for=\"review\">Your Review:</label>\n    <textarea id=\"review\" name=\"review\" rows=\"4\" cols=\"50\"></textarea>\n  </body>\n</html>"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "HumanTaskUiArn": {
+      "Description": "ARN of the created Human Task UI.",
+      "Value": {
+        "Fn::GetAtt": ["HumanTaskUi", "HumanTaskUiArn"]
+      }
+    }
+  }
+}

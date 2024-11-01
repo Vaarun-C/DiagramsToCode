@@ -1,0 +1,42 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon MQ Setup",
+  "Resources": {
+    "MQBroker": {
+      "Type": "AWS::AmazonMQ::Broker",
+      "Properties": {
+        "BrokerName": "MyMQBroker",  // Replace with your desired broker name
+        "EngineType": "ACTIVEMQ",  // Options: ACTIVEMQ or RABBITMQ
+        "EngineVersion": "5.15.14",  // Replace with the desired version
+        "DeploymentMode": "SINGLE_INSTANCE",  // Options: SINGLE_INSTANCE or CLUSTER
+        "HostInstanceType": "mq.t2.micro",  // Replace with desired instance type
+        "PubliclyAccessible": true,  // Set to false for private access
+        "Users": [
+          {
+            "Username": "admin",  // Replace with your desired username
+            "Password": "MySecurePassword123!",  // Replace with a strong password
+            "ConsoleAccess": true
+          }
+        ],
+        "AutoMinorVersionUpgrade": true,
+        "Logs": {
+          "General": {
+            "Enabled": true
+          },
+          "Audit": {
+            "Enabled": true
+          },
+          "Broker": {
+            "Enabled": true
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "BrokerArn": {
+      "Description": "ARN of the Amazon MQ Broker",
+      "Value": { "Fn::GetAtt": ["MQBroker", "Arn"] }
+    }
+  }
+}

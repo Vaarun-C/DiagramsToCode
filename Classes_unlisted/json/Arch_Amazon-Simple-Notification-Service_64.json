@@ -1,0 +1,21 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon SNS.",
+  "Resources": {
+    "SnsTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "TopicName": "MySNSTopic",
+        "DisplayName": "My SNS Topic for Notifications"
+      }
+    }
+  },
+  "Outputs": {
+    "SnsTopicArn": {
+      "Description": "ARN of the created SNS topic.",
+      "Value": {
+        "Ref": "SnsTopic"
+      }
+    }
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS IoT Events.",
+  "Resources": {
+    "IoTEventsInput": {
+      "Type": "AWS::IoTEvents::Input",
+      "Properties": {
+        "InputName": "MyIoTEventInput",  // Replace with your desired input name
+        "InputDescription": "Input for monitoring IoT events.",
+        "InputDefinition": {
+          "Attributes": [
+            {
+              "Name": "temperature",
+              "Type": "DOUBLE"
+            },
+            {
+              "Name": "humidity",
+              "Type": "DOUBLE"
+            }
+          ]
+        }
+      }
+    },
+    "IoTEventsDetectorModel": {
+      "Type": "AWS::IoTEvents::DetectorModel",
+      "Properties": {
+        "DetectorModelName": "MyIoTEventDetector",  // Replace with your desired detector model name
+        "DetectorModelDefinition": {
+          "InitialStateName": "Monitoring",
+          "States": [
+            {
+              "StateName": "Monitoring",
+              "OnInput": {
+                "InputName": {
+                  "Ref": "IoTEventsInput"
+                },
+                "TransitionEvents": [
+                  {
+                    "EventName": "TemperatureTooHigh",
+                    "Condition": "temperature > 75.0",
+                    "Actions": [
+                      {
+                        "SetVariable": {
+                          "VariableName": "Alert",
+                          "Value": "'High Temperature Alert'"
+                        }
+                      }
+                    ],
+                    "NextState": "Alerting"
+                  }
+                ]
+              },
+              "OnExit": {
+                "Actions": [
+                  {
+                    "SetTimer": {
+                      "TimerName": "ResetTimer",
+                      "Seconds": 300
+                    }
+                  }
+                ]
+              },
+              "OnTimeout": {
+                "Actions": [
+                  {
+                    "SetVariable": {
+                      "VariableName": "Alert",
+                      "Value": "'Normal Temperature'"
+                    }
+                  }
+                ]
+              },
+              "OnEnter": {
+                "Actions": [
+                  {
+                    "SetVariable": {
+                      "VariableName": "Alert",
+                      "Value": "'Monitoring'"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "StateName": "Alerting",
+              "OnInput": {
+                "InputName": {
+                  "Ref": "IoTEventsInput"
+                },
+                "TransitionEvents": [
+                  {
+                    "EventName": "TemperatureNormal",
+                    "Condition": "temperature <= 75.0",
+                    "Actions": [
+                      {
+                        "SetVariable": {
+                          "VariableName": "Alert",
+                          "Value": "'Temperature Normal'"
+                        }
+                      }
+                    ],
+                    "NextState": "Monitoring"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "IoTEventsRole",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "IoTEventsRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "iotevents.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "IoTEventsPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iot:Publish",
+                    "iot:DescribeEndpoint",
+                    "iot:ListThings"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "IoTEventsInputName": {
+      "Description": "The name of the created IoT Events input.",
+      "Value": {
+        "Ref": "IoTEventsInput"
+      }
+    },
+    "IoTEventsDetectorModelName": {
+      "Description": "The name of the created IoT Events detector model.",
+      "Value": {
+        "Ref": "IoTEventsDetectorModel"
+      }
+    },
+    "IoTEventsRoleArn": {
+      "Description": "The ARN of the IAM role for AWS IoT Events.",
+      "Value": {
+        "Fn::GetAtt": [
+          "IoTEventsRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

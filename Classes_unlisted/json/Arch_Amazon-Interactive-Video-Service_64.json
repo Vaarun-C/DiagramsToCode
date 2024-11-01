@@ -1,0 +1,52 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create an Amazon Interactive Video Service channel and playback configuration.",
+  "Resources": {
+    "IVSChannel": {
+      "Type": "AWS::IVS::Channel",
+      "Properties": {
+        "Name": "MyIVSChannel",
+        "LatencyMode": "LOW",
+        "Type": "STANDARD",
+        "Authorized": false
+      }
+    },
+    "IVSPlaybackConfiguration": {
+      "Type": "AWS::IVS::PlaybackConfiguration",
+      "Properties": {
+        "Name": "MyPlaybackConfig",
+        "ChannelArn": {
+          "Fn::GetAtt": ["IVSChannel", "Arn"]
+        },
+        "VideoContentSource": {
+          "SourceType": "URL",
+          "SourceUrl": {
+            "Fn::Join": [
+              "",
+              [
+                "https://my-website.com/stream/",
+                {
+                  "Fn::GetAtt": ["IVSChannel", "StreamKey"]
+                }
+              ]
+            ]
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ChannelArn": {
+      "Description": "The ARN of the IVS channel",
+      "Value": {
+        "Fn::GetAtt": ["IVSChannel", "Arn"]
+      }
+    },
+    "PlaybackConfigurationArn": {
+      "Description": "The ARN of the IVS playback configuration",
+      "Value": {
+        "Ref": "IVSPlaybackConfiguration"
+      }
+    }
+  }
+}

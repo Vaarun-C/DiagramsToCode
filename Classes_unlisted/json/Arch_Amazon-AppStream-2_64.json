@@ -1,0 +1,49 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic Amazon AppStream 2.0 Setup",
+  "Resources": {
+    "AppStreamFleet": {
+      "Type": "AWS::AppStream::Fleet",
+      "Properties": {
+        "Name": "MyAppStreamFleet",
+        "InstanceType": "stream.standard.small",  // Replace with your desired instance type
+        "FleetType": "ON_DEMAND",
+        "ComputeCapacity": {
+          "Desired": 1
+        },
+        "ImageArn": "arn:aws:appstream:us-west-2:123456789012:image/MyImage",  // Replace with your image ARN 
+      }
+    },
+    "AppStreamStack": {
+      "Type": "AWS::AppStream::Stack",
+      "Properties": {
+        "Name": "MyAppStreamStack",
+        "Description": "A basic AppStream stack",
+        "DisplayName": "My AppStream Stack",
+        "UserSettings": [
+          {
+            "Action": "STREAM",
+            "Permission": "ALLOWED"
+          }
+        ],
+        "Tags": {
+          "Key": "Value"  // Add any necessary tags
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "FleetArn": {
+      "Description": "ARN of the AppStream Fleet",
+      "Value": {
+        "Ref": "AppStreamFleet"
+      }
+    },
+    "StackArn": {
+      "Description": "ARN of the AppStream Stack",
+      "Value": {
+        "Ref": "AppStreamStack"
+      }
+    }
+  }
+}

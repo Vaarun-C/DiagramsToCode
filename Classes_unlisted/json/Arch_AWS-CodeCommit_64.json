@@ -1,0 +1,33 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS CodeCommit.",
+  "Resources": {
+    "CodeCommitRepository": {
+      "Type": "AWS::CodeCommit::Repository",
+      "Properties": {
+        "RepositoryName": "MyCodeCommitRepo",
+        "RepositoryDescription": "A sample CodeCommit repository.",
+        "Code": {
+          "S3": {
+            "Bucket": "YOUR_BUCKET_NAME",  // Replace with your S3 bucket name
+            "Key": "path/to/initial_code.zip"  // Replace with the S3 key for your initial code (if any)
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "RepositoryCloneUrlHttp": {
+      "Description": "HTTP Clone URL for the CodeCommit repository.",
+      "Value": {
+        "Fn::GetAtt": ["CodeCommitRepository", "CloneUrlHttp"]
+      }
+    },
+    "RepositoryCloneUrlSsh": {
+      "Description": "SSH Clone URL for the CodeCommit repository.",
+      "Value": {
+        "Fn::GetAtt": ["CodeCommitRepository", "CloneUrlSsh"]
+      }
+    }
+  }
+}

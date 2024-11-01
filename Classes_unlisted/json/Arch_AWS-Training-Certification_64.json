@@ -1,0 +1,66 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Training and Certification resources.",
+  "Resources": {
+    "TrainingMaterialsBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-training-certification-bucket"  // Replace with a unique bucket name
+      }
+    },
+    "TrainingRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"  // Example: Replace based on use case
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "TrainingMaterialsAccessPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "${TrainingMaterialsBucket.Arn}/*"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "TrainingBucketName": {
+      "Description": "The S3 bucket for storing training materials.",
+      "Value": {
+        "Ref": "TrainingMaterialsBucket"
+      }
+    },
+    "TrainingRoleArn": {
+      "Description": "The ARN of the IAM role for accessing training materials.",
+      "Value": {
+        "Fn::GetAtt": [
+          "TrainingRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

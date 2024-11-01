@@ -1,0 +1,26 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS Amplify Setup",
+  "Resources": {
+    "AmplifyApp": {
+      "Type": "AWS::Amplify::App",
+      "Properties": {
+        "Name": "MyAmplifyApp",
+        "Repository": "https://github.com/your-username/your-repo",  // Replace with your GitHub repository
+        "OAuthToken": "your-github-token",  // Replace with your GitHub OAuth token
+        "EnvironmentVariables": {
+          "KEY": "value"  // Add any necessary environment variables
+        },
+        "BuildSpec": "version: 1\nfrontend:\n  phases:\n    preBuild:\n      commands:\n        - npm install\n    build:\n      commands:\n        - npm run build\n  artifacts:\n    baseDirectory: build\n    files:\n      - '**/*'\n  cache:\n    paths:\n      - node_modules/**/*"
+      }
+    }
+  },
+  "Outputs": {
+    "AmplifyAppId": {
+      "Description": "ID of the AWS Amplify App",
+      "Value": {
+        "Ref": "AmplifyApp"
+      }
+    }
+  }
+}

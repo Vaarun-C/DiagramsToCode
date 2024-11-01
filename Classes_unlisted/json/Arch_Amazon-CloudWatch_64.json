@@ -1,0 +1,65 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for Amazon CloudWatch.",
+  "Resources": {
+    "LogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Sub": "/aws/cloudwatch/my-log-group-${AWS::AccountId}"
+        },
+        "RetentionInDays": 14  // Adjust retention as necessary
+      }
+    },
+    "CloudWatchAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmName": {
+          "Fn::Sub": "High-CPU-Utilization-${AWS::AccountId}"
+        },
+        "AlarmDescription": "Alarm when CPU exceeds 80%",
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Statistic": "Average",
+        "Period": 300,
+        "EvaluationPeriods": 1,
+        "Threshold": 80,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": [
+          {
+            "Name": "InstanceId",
+            "Value": {
+              "Ref": "EC2InstanceId"
+            }
+          }
+        ],
+        "AlarmActions": [
+          {
+            "Ref": "AlarmSNSArn"
+          }
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmSNSArn"
+          }
+        ],
+        "InsufficientDataActions": [
+          {
+            "Ref": "AlarmSNSArn"
+          }
+        ],
+        "Unit": "Percent"
+      }
+    }
+  },
+  "Parameters": {
+    "EC2InstanceId": {
+      "Type": "String",
+      "Description": "The ID of the EC2 instance to monitor."
+    },
+    "AlarmSNSArn": {
+      "Type": "String",
+      "Description": "The ARN of the SNS topic for alarm notifications."
+    }
+  }
+}

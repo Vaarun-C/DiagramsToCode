@@ -1,0 +1,77 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS IoT Core.",
+  "Resources": {
+    "IoTPolicy": {
+      "Type": "AWS::IoT::Policy",
+      "Properties": {
+        "PolicyName": "MyIoTPolicy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "iot:Connect",
+                "iot:Publish",
+                "iot:Subscribe",
+                "iot:Receive"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    },
+    "IoTThing": {
+      "Type": "AWS::IoT::Thing",
+      "Properties": {
+        "ThingName": "MyIoTThing"  // Replace with your IoT thing name
+      }
+    },
+    "IoTThingPolicyAttachment": {
+      "Type": "AWS::IoT::PolicyPrincipalAttachment",
+      "Properties": {
+        "PolicyName": {
+          "Ref": "IoTPolicy"
+        },
+        "Principal": {
+          "Fn::GetAtt": ["IoTCertificate", "Arn"]
+        }
+      }
+    },
+    "IoTCertificate": {
+      "Type": "AWS::IoT::Certificate",
+      "Properties": {
+        "Status": "ACTIVE",
+        "CertificateSigningRequest": {
+          "Fn::Sub": "-----BEGIN CERTIFICATE REQUEST-----\nMIIBIjCB/QIBADCBhDELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMQ8wDQYDVQQH\n...\n-----END CERTIFICATE REQUEST-----"
+        },
+        "KeyPair": {
+          "PrivateKey": "YOUR_PRIVATE_KEY",  // Replace with your private key
+          "PublicKey": "YOUR_PUBLIC_KEY"  // Replace with your public key
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ThingArn": {
+      "Description": "ARN of the created IoT thing.",
+      "Value": {
+        "Fn::GetAtt": ["IoTThing", "Arn"]
+      }
+    },
+    "PolicyArn": {
+      "Description": "ARN of the created IoT policy.",
+      "Value": {
+        "Fn::GetAtt": ["IoTPolicy", "Arn"]
+      }
+    },
+    "CertificateArn": {
+      "Description": "ARN of the created IoT certificate.",
+      "Value": {
+        "Fn::GetAtt": ["IoTCertificate", "Arn"]
+      }
+    }
+  }
+}

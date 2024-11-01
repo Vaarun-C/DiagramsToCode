@@ -1,0 +1,18 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon Managed Service for Prometheus.",
+  "Resources": {
+    "PrometheusWorkspace": {
+      "Type": "AWS::Prometheus::Workspace",
+      "Properties": {
+        "WorkspaceName": "MyPrometheusWorkspace",  // Replace with your desired workspace name
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Development"  // Modify tags as needed
+          }
+        ]
+      }
+    }
+  }
+}

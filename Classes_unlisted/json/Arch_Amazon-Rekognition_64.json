@@ -1,0 +1,57 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic Amazon Rekognition Setup",
+  "Resources": {
+    "RekognitionIAMRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "RekognitionAccessRole",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"  // Change to your service if needed
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "RekognitionPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "rekognition:*"  // Allows all Rekognition actions
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ImageBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-rekognition-bucket"  // Replace with a unique bucket name
+      }
+    }
+  },
+  "Outputs": {
+    "RekognitionRoleArn": {
+      "Description": "ARN of the IAM Role for Amazon Rekognition",
+      "Value": { "Fn::GetAtt": ["RekognitionIAMRole", "Arn"] }
+    },
+    "ImageBucketName": {
+      "Description": "Name of the S3 Bucket for images",
+      "Value": { "Ref": "ImageBucket" }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon CloudSearch.",
+  "Resources": {
+    "MyCloudSearchDomain": {
+      "Type": "AWS::CloudSearch::Domain",
+      "Properties": {
+        "DomainName": "my-cloudsearch-domain",  // Replace with your desired domain name
+        "IndexingOptions": {
+          "NumberOfReplicas": 1,
+          "NumberOfShards": 1
+        },
+        "SearchInstanceType": "search.m3.medium",  // Adjust based on your needs
+        "EndpointOptions": {
+          "EnableQueryLogs": true
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "SearchEndpoint": {
+      "Description": "The endpoint for the CloudSearch domain.",
+      "Value": {
+        "Fn::GetAtt": [
+          "MyCloudSearchDomain",
+          "SearchServiceEndpoint"
+        ]
+      }
+    }
+  }
+}

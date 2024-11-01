@@ -1,0 +1,28 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Health Dashboard.",
+  "Resources": {
+    "HealthDashboard": {
+      "Type": "AWS::CloudWatch::Dashboard",
+      "Properties": {
+        "DashboardName": "MyHealthDashboard",
+        "DashboardBody": {
+          "Fn::Sub": [
+            "{\"widgets\":[{\"type\":\"metric\",\"x\":0,\"y\":0,\"width\":24,\"height\":6,\"properties\":{\"metrics\":[[\"AWS/Health\",\"StatusCheckFailed\",\"ResourceId\",\"${HealthResourceId}\"]],\"view\":\"timeSeries\",\"stacked\":false,\"region\":\"${AWS::Region}\",\"title\":\"Service Health\"}}]}",
+            {
+              "HealthResourceId": "YourResourceIdHere"  // Replace with your actual resource ID
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "DashboardName": {
+      "Description": "The name of the created CloudWatch dashboard.",
+      "Value": {
+        "Ref": "HealthDashboard"
+      }
+    }
+  }
+}

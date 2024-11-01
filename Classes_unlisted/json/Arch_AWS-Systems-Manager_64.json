@@ -1,0 +1,84 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Systems Manager.",
+  "Resources": {
+    "SSMRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "SSMRole",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ssm.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "SSMPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:DescribeInstances",
+                    "ssm:SendCommand",
+                    "ssm:ListCommands"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "SSMDocument": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Command",
+        "Content": {
+          "schemaVersion": "2.2",
+          "description": "My Command Document",
+          "mainSteps": [
+            {
+              "action": "aws:runCommand",
+              "name": "RunShellScript",
+              "inputs": {
+                "DocumentType": "Shell",
+                "parameters": {
+                  "commands": [
+                    "echo Hello, World!"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "RoleArn": {
+      "Description": "The ARN of the SSM role.",
+      "Value": {
+        "Fn::GetAtt": [
+          "SSMRole",
+          "Arn"
+        ]
+      }
+    },
+    "DocumentName": {
+      "Description": "The name of the created SSM Document.",
+      "Value": {
+        "Ref": "SSMDocument"
+      }
+    }
+  }
+}

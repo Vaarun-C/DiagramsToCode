@@ -1,0 +1,65 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon Lookout for Metrics.",
+  "Resources": {
+    "MyMetricsAlert": {
+      "Type": "AWS::LookoutMetrics::Alert",
+      "Properties": {
+        "AlertName": "MyMetricsAlert",  // Replace with your desired alert name
+        "AlertDescription": "Sample alert for Lookout for Metrics",
+        "AlertSensitivity": "LOW",  // Options: LOW, MEDIUM, HIGH
+        "AnomalyDetectorArn": {
+          "Ref": "MyAnomalyDetector"  // Reference to the anomaly detector
+        },
+        "Frequency": "DAILY",  // Options: HOURLY, DAILY, WEEKLY
+        "Actions": [
+          {
+            "Action": "SNS",
+            "NotificationArn": {
+              "Ref": "MySNSArn"  // Reference to an SNS topic ARN for notifications
+            }
+          }
+        ]
+      }
+    },
+    "MyAnomalyDetector": {
+      "Type": "AWS::LookoutMetrics::AnomalyDetector",
+      "Properties": {
+        "AnomalyDetectorName": "MyAnomalyDetector",  // Replace with your desired detector name
+        "AnomalyDetectorConfig": {
+          "MetricSetList": [
+            {
+              "MetricSetName": "MyMetricSet",  // Replace with your metric set name
+              "MetricSetDataSource": {
+                "S3DataSource": {
+                  "S3Uri": "s3://my-bucket/my-data",  // Replace with your S3 data source
+                  "RoleArn": {
+                    "Ref": "MyRoleArn"  // Replace with your IAM role ARN
+                  }
+                }
+              },
+              "DimensionList": [
+                "dimension1",  // Replace with your actual dimensions
+                "dimension2"   // Replace with your actual dimensions
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "AlertArn": {
+      "Description": "The ARN of the created Lookout for Metrics alert.",
+      "Value": {
+        "Ref": "MyMetricsAlert"
+      }
+    },
+    "AnomalyDetectorArn": {
+      "Description": "The ARN of the created Anomaly Detector.",
+      "Value": {
+        "Ref": "MyAnomalyDetector"
+      }
+    }
+  }
+}

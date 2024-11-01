@@ -1,0 +1,35 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS IAM Identity Center.",
+  "Resources": {
+    "IAMIdentityCenter": {
+      "Type": "AWS::SSO::Instance",
+      "Properties": {
+        "IdentityStoreId": {
+          "Ref": "IdentityStore"
+        },
+        "Name": "MyIdentityCenter"
+      }
+    },
+    "IdentityStore": {
+      "Type": "AWS::SSO::IdentityStore",
+      "Properties": {
+        "IdentityStoreType": "AWS_SSO"  // Options: "AWS_SSO", "EXTERNAL"
+      }
+    }
+  },
+  "Outputs": {
+    "IdentityCenterId": {
+      "Description": "ID of the created IAM Identity Center.",
+      "Value": {
+        "Ref": "IAMIdentityCenter"
+      }
+    },
+    "IdentityStoreId": {
+      "Description": "ID of the created Identity Store.",
+      "Value": {
+        "Ref": "IdentityStore"
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Security Hub.",
+  "Resources": {
+    "SecurityHub": {
+      "Type": "AWS::SecurityHub::Hub",
+      "Properties": {
+        "EnableDefaultStandards": true  // Enables default standards (CIS AWS Foundations, PCI DSS, etc.)
+      }
+    }
+  },
+  "Outputs": {
+    "HubArn": {
+      "Description": "ARN of the created Security Hub.",
+      "Value": {
+        "Fn::GetAtt": ["SecurityHub", "HubArn"]
+      }
+    }
+  }
+}

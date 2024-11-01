@@ -1,0 +1,25 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic Amazon Route 53 Setup",
+  "Resources": {
+    "PublicHostedZone": {
+      "Type": "AWS::Route53::HostedZone",
+      "Properties": {
+        "Name": "example.com",  // Replace with your domain name
+        "HostedZoneConfig": {
+          "Comment": "Hosted zone for example.com"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "HostedZoneId": {
+      "Description": "ID of the Route 53 Hosted Zone",
+      "Value": { "Ref": "PublicHostedZone" }
+    },
+    "HostedZoneName": {
+      "Description": "Name of the Route 53 Hosted Zone",
+      "Value": { "Fn::GetAtt": ["PublicHostedZone", "Name"] }
+    }
+  }
+}

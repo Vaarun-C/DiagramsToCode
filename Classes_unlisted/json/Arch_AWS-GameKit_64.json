@@ -1,0 +1,44 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS GameKit Setup",
+  "Resources": {
+    "GameAssetsBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-game-assets-bucket"  // Replace with a unique bucket name
+      }
+    },
+    "GameStateTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "TableName": "GameState",  // Replace with your desired table name
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "PlayerId",
+            "AttributeType": "S"  // String type
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "PlayerId",
+            "KeyType": "HASH"  // Partition key
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 5,
+          "WriteCapacityUnits": 5
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "AssetsBucketName": {
+      "Description": "Name of the S3 Bucket for game assets",
+      "Value": { "Ref": "GameAssetsBucket" }
+    },
+    "GameStateTableArn": {
+      "Description": "ARN of the DynamoDB Table for game state",
+      "Value": { "Fn::GetAtt": ["GameStateTable", "Arn"] }
+    }
+  }
+}

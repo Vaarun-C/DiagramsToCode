@@ -1,0 +1,56 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS IoT SiteWise.",
+  "Resources": {
+    "SiteWiseGateway": {
+      "Type": "AWS::IoTSiteWise::Gateway",
+      "Properties": {
+        "GatewayName": "MySiteWiseGateway",
+        "GatewayPlatform": {
+          "Greengrass": {
+            "GroupArn": {
+              "Ref": "GreengrassGroupArn"  // Replace with your Greengrass Group ARN
+            }
+          }
+        }
+      }
+    },
+    "AssetModel": {
+      "Type": "AWS::IoTSiteWise::AssetModel",
+      "Properties": {
+        "AssetModelName": "MyAssetModel",
+        "AssetModelDescription": "Asset model for industrial equipment.",
+        "AssetModelProperties": [
+          {
+            "Name": "temperature",
+            "DataType": "DOUBLE",
+            "Unit": "Celsius",
+            "Alias": "Temperature",
+            "Notification": "ON_CHANGE"
+          },
+          {
+            "Name": "humidity",
+            "DataType": "DOUBLE",
+            "Unit": "Percent",
+            "Alias": "Humidity",
+            "Notification": "ON_CHANGE"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "GatewayId": {
+      "Description": "The ID of the created IoT SiteWise gateway.",
+      "Value": {
+        "Ref": "SiteWiseGateway"
+      }
+    },
+    "AssetModelId": {
+      "Description": "The ID of the created IoT SiteWise asset model.",
+      "Value": {
+        "Ref": "AssetModel"
+      }
+    }
+  }
+}

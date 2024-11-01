@@ -1,0 +1,30 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic Amazon WorkMail Setup",
+  "Resources": {
+    "WorkMailOrganization": {
+      "Type": "AWS::WorkMail::Organization",
+      "Properties": {
+        "Alias": "myworkmail",  // Replace with your desired WorkMail alias
+        "ClientToken": "unique-token"  // Use a unique token for idempotency
+      }
+    },
+    "EmailDomain": {
+      "Type": "AWS::WorkMail::Domain",
+      "Properties": {
+        "DomainName": "example.com",  // Replace with your email domain
+        "OrganizationId": { "Ref": "WorkMailOrganization" }
+      }
+    }
+  },
+  "Outputs": {
+    "OrganizationId": {
+      "Description": "ID of the WorkMail Organization",
+      "Value": { "Ref": "WorkMailOrganization" }
+    },
+    "DomainName": {
+      "Description": "Email Domain configured for WorkMail",
+      "Value": { "Ref": "EmailDomain" }
+    }
+  }
+}

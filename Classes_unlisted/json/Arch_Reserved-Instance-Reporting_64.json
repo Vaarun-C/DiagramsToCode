@@ -1,0 +1,31 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Reserved Instance Reporting.",
+  "Resources": {
+    "ReservedInstancesReport": {
+      "Type": "AWS::Cur::ReportDefinition",
+      "Properties": {
+        "ReportName": "ReservedInstancesUsageReport",
+        "TimeUnit": "DAILY",  // Options: DAILY, HOURLY, MONTHLY
+        "Format": "textORcsv",  // Options: textORcsv, Parquet
+        "Compression": "GZIP",  // Options: GZIP, ZIP
+        "S3Bucket": "YOUR_BUCKET_NAME",  // Replace with your S3 bucket name
+        "S3Prefix": "reserved-instances-reports/",  // Prefix for the report files in S3
+        "S3Region": "YOUR_REGION",  // Replace with your S3 bucket's region
+        "AdditionalArtifacts": [
+          "REDSHIFT",  // Optional: Use if you want to also send reports to Amazon Redshift
+          "QUICKSIGHT"  // Optional: Use if you want to integrate with Amazon QuickSight
+        ],
+        "ReportVersioning": "CREATE_NEW_REPORT"  // Options: CREATE_NEW_REPORT, OVERWRITE_REPORT
+      }
+    }
+  },
+  "Outputs": {
+    "ReportDefinitionArn": {
+      "Description": "ARN of the created Reserved Instances Report.",
+      "Value": {
+        "Fn::GetAtt": ["ReservedInstancesReport", "ReportDefinitionArn"]
+      }
+    }
+  }
+}

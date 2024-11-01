@@ -1,0 +1,29 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for startup resources under AWS Activate.",
+  "Resources": {
+    "MyS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-startup-bucket",  // Replace with your desired bucket name
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        }
+      }
+    },
+    "MyEC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t2.micro",  // Adjust based on your needs
+        "ImageId": "ami-0c55b159cbfafe01e",  // Replace with a valid AMI ID for your region
+        "KeyName": "my-key-pair",  // Replace with your key pair name
+      }
+    },
+    "InstanceSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Enable SSH access"
+      }
+    }
+  }
+}

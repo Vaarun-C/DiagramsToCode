@@ -1,0 +1,68 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS B2B Data Interchange.",
+  "Resources": {
+    "DataInterchangeBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-b2b-data-interchange-bucket"  // Replace with a unique bucket name
+      }
+    },
+    "ApiGateway": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Name": "B2BDataInterchangeAPI",
+        "Description": "API for B2B Data Interchange"
+      }
+    },
+    "ApiResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGateway",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "data",
+        "RestApiId": {
+          "Ref": "ApiGateway"
+        }
+      }
+    },
+    "ApiMethod": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "ResourceId": {
+          "Ref": "ApiResource"
+        },
+        "RestApiId": {
+          "Ref": "ApiGateway"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:s3:path/${DataInterchangeBucket}/"
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "BucketName": {
+      "Description": "The S3 bucket for B2B Data Interchange.",
+      "Value": {
+        "Ref": "DataInterchangeBucket"
+      }
+    },
+    "ApiUrl": {
+      "Description": "The URL of the B2B Data Interchange API.",
+      "Value": {
+        "Fn::Sub": "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/data"
+      }
+    }
+  }
+}

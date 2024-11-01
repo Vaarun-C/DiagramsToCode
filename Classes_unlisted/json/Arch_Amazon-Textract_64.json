@@ -1,0 +1,46 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon Textract.",
+  "Resources": {
+    "DocumentS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-textract-documents-bucket"  // Replace with a unique bucket name
+      }
+    },
+    "TextractJob": {
+      "Type": "AWS::Textract::DocumentAnalysis",
+      "Properties": {
+        "DocumentLocation": {
+          "S3Object": {
+            "Bucket": {
+              "Ref": "DocumentS3Bucket"
+            },
+            "Name": "my-document.pdf"  // Replace with the actual document name
+          }
+        },
+        "FeatureTypes": [
+          "TABLES",
+          "FORMS"
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "DocumentBucket": {
+      "Description": "The S3 bucket for storing documents.",
+      "Value": {
+        "Ref": "DocumentS3Bucket"
+      }
+    },
+    "TextractJobId": {
+      "Description": "The ID of the Textract analysis job.",
+      "Value": {
+        "Fn::GetAtt": [
+          "TextractJob",
+          "JobId"
+        ]
+      }
+    }
+  }
+}
