@@ -5,15 +5,11 @@
     "OpenSearchDomain": {
       "Type": "AWS::OpenSearchService::Domain",
       "Properties": {
-        "DomainName": "my-opensearch-domain",  // Replace with your whateverrrrrrr
-        "ElasticsearchClusterConfig": {
-          "InstanceType": "t2.small.elasticsearch",  // Choose instance type
-          "InstanceCount": 1
-        },
+        "DomainName": "my-opensearch-domain",  
         "EBSOptions": {
           "EBSEnabled": true,
           "VolumeType": "gp2",
-          "VolumeSize": 10  // Size in GB
+          "VolumeSize": 10  
         },
         "AccessPolicies": {
           "Version": "2012-10-17",

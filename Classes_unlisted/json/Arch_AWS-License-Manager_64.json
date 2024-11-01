@@ -7,7 +7,7 @@
       "Properties": {
         "Name": "MyLicenseConfiguration",
         "Description": "License configuration for tracking licenses",
-        "LicenseCount": 10,  // Replace with your desired license count
+        "LicenseCount": 10,
         "LicenseCountHardLimit": true,
         "Tags": [
           {

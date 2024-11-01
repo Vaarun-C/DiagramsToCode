@@ -5,9 +5,7 @@
     "CostProfiler": {
       "Type": "AWS::ApplicationCostProfiler::CostProfiler",
       "Properties": {
-        "Name": "MyCostProfiler",
-        //remove while testing: "S3OutputPath": "s3://your-bucket-name/cost-profiler-output/",  // Replace with your S3 bucket path
-        //remove while testing"Enable": true
+        "Name": "MyCostProfiler"
       }
     }
   }

@@ -5,8 +5,8 @@
     "CustomerGateway": {
       "Type": "AWS::EC2::CustomerGateway",
       "Properties": {
-        "BgpAsn": 65000,  // Replace with your BGP ASN
-        "IpAddress": "203.0.113.1",  // Replace with your customer gateway's public IP address
+        "BgpAsn": 65000,  
+        "IpAddress": "203.0.113.1",  
         "Type": "ipsec.1",
         "Tags": [
           {
@@ -36,7 +36,7 @@
         "Type": "ipsec.1",
         "VpnTunnelOptions": [
           {
-            "PreSharedKey": "myPresharedKey",  // Replace with your pre-shared key
+            "PreSharedKey": "myPresharedKey",  
             "TunnelInsideCidr": "169.254.10.0/30",
             "IKEVersions": [
               "ikev2"

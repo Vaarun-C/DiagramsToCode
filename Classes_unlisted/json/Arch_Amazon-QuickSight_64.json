@@ -9,9 +9,6 @@
         "DataSourceId": "MyDataSource",
         "Name": "MyQuickSightDataSource",
         "Type": "S3",
-        "S3Parameters": {
-        //set up S3  "ManifestFileLocation": "s3://your-bucket-name/path/to/manifest.json"  // Replace with your S3 manifest file path
-        },
         "Permissions": [
           {
             "Principal": { "Fn::Sub": "arn:aws:quicksight:${AWS::Region}:${AWS::AccountId}:user/default/admin" },
@@ -29,7 +26,6 @@
       "Type": "AWS::QuickSight::Dataset",
       "Properties": {
         "AwsAccountId": { "Fn::Sub": "${AWS::AccountId}" },
-        "DatasetId": "MyDataset",
         "Name": "MyQuickSightDataset",
         "PhysicalTableMap": {
           "MyPhysicalTable": {
@@ -58,7 +54,6 @@
         "Name": "MyQuickSightAnalysis",
         "SourceEntity": {
           "SourceTemplate": {
-            "DataSetArn": { "Fn::GetAtt": ["QuickSightDataset", "Arn"] },
             "Arn": { "Fn::Sub": "arn:aws:quicksight:${AWS::Region}:${AWS::AccountId}:template/MyTemplate" }
           }
         },

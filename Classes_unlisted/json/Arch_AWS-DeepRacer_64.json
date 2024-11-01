@@ -5,7 +5,7 @@
     "DeepRacerModel": {
       "Type": "AWS::DeepRacer::Model",
       "Properties": {
-        "ModelName": "MyDeepRacerModel",  // Customize the model name as needed
+        "ModelName": "MyDeepRacerModel"
       }
     }
   }

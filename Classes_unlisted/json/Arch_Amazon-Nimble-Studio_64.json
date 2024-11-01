@@ -5,82 +5,10 @@
     "NimbleStudio": {
       "Type": "AWS::NimbleStudio::Studio",
       "Properties": {
-        "StudioName": "MyNimbleStudio",  // Replace with your desired studio name
-        "AdminRoleArn": { "Fn::GetAtt": ["NimbleAdminRole", "Arn"] },
-        "UserRoleArn": { "Fn::GetAtt": ["NimbleUserRole", "Arn"] },
-    },
-    "NimbleAdminRole": {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "nimble.amazonaws.com"
-              },
-              "Action": "sts:AssumeRole"
-            }
-          ]
-        },
-        "Policies": [
-          {
-            "PolicyName": "NimbleAdminPolicy",
-            "PolicyDocument": {
-              "Version": "2012-10-17",
-              "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Action": [
-                    "nimble:CreateStudio",
-                    "nimble:DeleteStudio",
-                    "nimble:UpdateStudio",
-                    "nimble:DescribeStudio"
-                  ],
-                  "Resource": "*"
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    "NimbleUserRole": {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "nimble.amazonaws.com"
-              },
-              "Action": "sts:AssumeRole"
-            }
-          ]
-        },
-        "Policies": [
-          {
-            "PolicyName": "NimbleUserPolicy",
-            "PolicyDocument": {
-              "Version": "2012-10-17",
-              "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Action": [
-                    "nimble:GetStudio",
-                    "nimble:ListStudios",
-                    "nimble:StartStreamingSession"
-                  ],
-                  "Resource": "*"
-                }
-              ]
-            }
-          }
-        ]
+        "StudioName": "MyNimbleStudio",  
+        "AdminRoleArn": {},
+        "UserRoleArn": {}
+        }
       }
     }
-  }
 }

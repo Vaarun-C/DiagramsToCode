@@ -13,8 +13,7 @@
       "Properties": {
         "ProjectName": "MyMigrationProject",
         "Description": "Migration project for tracking",
-      //rmv  "RoleArn": "arn:aws:iam::your-account-id:role/your-migration-role",  // Replace with your IAM role ARN
-        "ClientRequestToken": { "Fn::Sub": "${AWS::StackName}-${AWS::Region}-${AWS::AccountId}-${AWS::Timestamp}" }
+        "ClientRequestToken": { "Fn::Sub": "${AWS::StackName}-${AWS::Region}-${AWS::AccountId}" }
       }
     }
   }

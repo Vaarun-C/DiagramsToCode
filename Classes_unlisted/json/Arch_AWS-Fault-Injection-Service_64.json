@@ -1,4 +1,4 @@
-{
+  {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "Simple AWS Fault Injection Simulator Experiment Template",
   "Resources": {
@@ -6,6 +6,10 @@
       "Type": "AWS::FIS::ExperimentTemplate",
       "Properties": {
         "Description": "My first fault injection experiment",
+        "StopConditions": [],
+        "Targets": {},
+        "RoleArn": "",
+        "Tags": []
       }
     }
   }

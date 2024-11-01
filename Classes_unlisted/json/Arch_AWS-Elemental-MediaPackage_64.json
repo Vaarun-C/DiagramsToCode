@@ -15,18 +15,7 @@
         "Id": "MyOriginEndpoint",
         "ChannelId": { "Ref": "MediaPackageChannel" },
         "Description": "My first MediaPackage origin endpoint",
-        "HlsPackage": {
-          "HlsManifests": [
-            {
-              "ManifestName": "MyHLSManifest",
-              "PlaylistType": "EVENT",
-              "PlaylistWindowSeconds": 60,
-              "ProgramDateTimeIntervalSeconds": 60
-            }
-          ]
-        },
-        "StartoverWindowSeconds": 3600,  // 1 hour
-        "TimeToLiveSeconds": 86400  // 1 day
+        "StartoverWindowSeconds": 3600  
       }
     }
   }

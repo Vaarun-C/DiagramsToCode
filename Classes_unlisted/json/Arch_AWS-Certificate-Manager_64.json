@@ -5,11 +5,11 @@
     "Certificate": {
       "Type": "AWS::CertificateManager::Certificate",
       "Properties": {
-       */ "DomainName": "example.com",  // Replace with your domain name
-        "ValidationMethod": "DNS",  // Choose either DNS or EMAIL for validation
+        "DomainName": "example.com",  
+        "ValidationMethod": "DNS",  
         "SubjectAlternativeNames": [
-          "www.example.com"  // Replace with any additional domain names
-        ],/*
+          "www.example.com"  
+        ],
         "Tags": [
           {
             "Key": "Name",

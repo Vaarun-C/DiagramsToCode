@@ -5,6 +5,7 @@
     "GlueDatabase": {
       "Type": "AWS::Glue::Database",
       "Properties": {
+        "CatalogId": "",
         "DatabaseInput": {
           "Name": "MyGlueDatabase",
           "Description": "A simple Glue database"

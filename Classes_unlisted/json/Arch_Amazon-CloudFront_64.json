@@ -5,7 +5,7 @@
     "MyS3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-example-bucket"  // Replace with whatver bucket name
+        "BucketName": "my-example-bucket"  
       }
     },
     "CloudFrontDistribution": {
@@ -44,9 +44,7 @@
     "CloudFrontOriginAccessIdentity": {
       "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
       "Properties": {
-        "CloudFrontOriginAccessIdentityConfig": {
-          "Comment": "My CloudFront Origin Access Identity"
-        }
+        "CloudFrontOriginAccessIdentityConfig": {"Comment": "My CloudFront Origin Access Identity"}
       }
     }
   },

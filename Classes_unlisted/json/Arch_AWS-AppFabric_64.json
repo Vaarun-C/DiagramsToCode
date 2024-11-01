@@ -5,11 +5,10 @@
     "AppFabricApplication": {
       "Type": "AWS::AppFabric::Application",
       "Properties": {
-        "ApplicationName": "MyAppFabricApplication",  // Customize the application name as needed
-        "AuthType": "OAuth2",  // Example authentication type; customize as needed
-          }
+        "ApplicationName": "MyAppFabricApplication",  
+        "AuthType": "OAuth2"
         }
       }
     }
   }
-}
+

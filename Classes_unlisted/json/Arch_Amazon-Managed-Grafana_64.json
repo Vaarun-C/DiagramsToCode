@@ -5,8 +5,8 @@
     "GrafanaWorkspace": {
       "Type": "AWS::Grafana::Workspace",
       "Properties": {
-        "AccountAccessType": "CURRENT_ACCOUNT",  // Options: CURRENT_ACCOUNT, ALL_ACCOUNTS
-        "PermissionType": "SERVICE_MANAGED",  // Options: SERVICE_MANAGED, CUSTOMER_MANAGED
+        "AccountAccessType": "CURRENT_ACCOUNT",  
+        "PermissionType": "SERVICE_MANAGED", 
         "WorkspaceName": "MyGrafanaWorkspace"
       }
     }

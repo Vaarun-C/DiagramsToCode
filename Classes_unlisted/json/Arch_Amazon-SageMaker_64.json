@@ -41,8 +41,8 @@
     "SageMakerNotebookInstance": {
       "Type": "AWS::SageMaker::NotebookInstance",
       "Properties": {
-        "NotebookInstanceName": "MySageMakerNotebook",  // Replace with whatever name
-        "InstanceType": "ml.t2.medium",  // Choose your instance type
+        "NotebookInstanceName": "MySageMakerNotebook",  
+        "InstanceType": "ml.t2.medium", 
         "RoleArn": { "Fn::GetAtt": ["SageMakerRole", "Arn"] },
         "Tags": [
           {
