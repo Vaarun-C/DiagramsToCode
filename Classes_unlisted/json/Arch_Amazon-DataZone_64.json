@@ -1,0 +1,32 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon DataZone.",
+  "Resources": {
+    "DataZoneProject": {
+      "Type": "AWS::DataZone::Project",
+      "Properties": {
+        "Name": "MyDataZoneProject",  // Replace with your desired project name
+        "Description": "Sample project for Amazon DataZone",
+        "ProjectType": "DATA"  // Options: DATA, ANALYTICS, etc.
+      }
+    },
+    "DataAsset": {
+      "Type": "AWS::DataZone::DataAsset",
+      "Properties": {
+        "ProjectId": {
+          "Ref": "DataZoneProject"
+        },
+        "Name": "MyDataAsset",  // Replace with your desired data asset name
+        "Description": "Sample data asset description",
+        "AssetType": "DATASET",  // Options may vary based on the use case
+        "DataSource": {
+          "DataSourceType": "S3",  // Specify the data source type
+          "DataSourceDetails": {
+            "BucketName": "my-data-zone-bucket",  // Replace with your S3 bucket name
+            "Prefix": "data/"  // Optional prefix for the data
+          }
+        }
+      }
+    }
+  }
+}

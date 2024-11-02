@@ -1,0 +1,21 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon Managed Service for Apache Flink.",
+  "Resources": {
+    "FlinkApplication": {
+      "Type": "AWS::Flink::Application",
+      "Properties": {
+        "Name": "MyFlinkApplication",  // Replace with your desired application name
+        "FlinkVersion": "1.14",  // Specify the Flink version
+        "RoleArn": {
+          "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/MyFlinkRole"  // Replace with your IAM role ARN
+        },
+        "RuntimeEnvironment": "STREAMING",  // Options: STREAMING or BATCH
+        "ApplicationConfiguration": {
+          "ApplicationCode": "s3://my-flink-app-bucket/my-flink-app.jar",  // Replace with your application code S3 path
+          "Parallelism": 1  // Adjust based on your needs
+        }
+      }
+    }
+  }
+}

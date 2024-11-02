@@ -1,0 +1,20 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template to enable Amazon Macie.",
+  "Resources": {
+    "MacieDetector": {
+      "Type": "AWS::Macie::Detector",
+      "Properties": {
+        "Enable": true
+      }
+    }
+  },
+  "Outputs": {
+    "DetectorId": {
+      "Description": "The ID of the Macie detector.",
+      "Value": {
+        "Ref": "MacieDetector"
+      }
+    }
+  }
+}

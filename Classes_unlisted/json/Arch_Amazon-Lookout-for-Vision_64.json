@@ -1,0 +1,50 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for Amazon Lookout for Vision.",
+  "Resources": {
+    "InputBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {
+          "Fn::Sub": "lookout-for-vision-input-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    },
+    "LookoutVisionProject": {
+      "Type": "AWS::LookoutforVision::Project",
+      "Properties": {
+        "ProjectName": {
+          "Fn::Sub": "LookoutForVisionProject-${AWS::AccountId}"
+        },
+        "DatasetMetadata": {
+          "DatasetType": "Image",
+          "S3Bucket": {
+            "Ref": "InputBucket"
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "LookoutForVision-${AWS::AccountId}"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "ProjectName": {
+      "Description": "The name of the Lookout for Vision project.",
+      "Value": {
+        "Ref": "LookoutVisionProject"
+      }
+    },
+    "InputBucketName": {
+      "Description": "The name of the S3 bucket for input data.",
+      "Value": {
+        "Ref": "InputBucket"
+      }
+    }
+  }
+}

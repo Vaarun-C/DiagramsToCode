@@ -5,70 +5,37 @@
     "OpenSearchDomain": {
       "Type": "AWS::OpenSearchService::Domain",
       "Properties": {
+<<<<<<< HEAD
         "DomainName": "my-opensearch-domain",  
         "EBSOptions": {
           "EBSEnabled": true,
           "VolumeType": "gp2",
           "VolumeSize": 10  
+=======
+        "DomainName": "my-opensearch-domain",  // Replace with whateverrrrrrr domain name
+        "ElasticsearchVersion": "7.10",  // Specify the version of OpenSearch
+        "NodeToNodeEncryptionOptions": {
+          "Enabled": true
         },
-        "AccessPolicies": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": "es:*",
-              "Resource": "*"
-            }
-          ]
+        "EncryptionAtRestOptions": {
+          "Enabled": true
+>>>>>>> e65d1f9108cc0bad3624f267255ba03bdf3d2e9b
         },
-        "AdvancedOptions": {
-          "rest.action.multi.allow_explicit_index": "true"
-        },
-        "Tags": [
+        "AccessPolicies": [
           {
-            "Key": "Name",
-            "Value": "MyOpenSearchDomain"
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "es:*",
+            "Resource": "*"
           }
         ]
       }
-    },
-    "OpenSearchServiceRole": {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "es.amazonaws.com"
-              },
-              "Action": "sts:AssumeRole"
-            }
-          ]
-        },
-        "Policies": [
-          {
-            "PolicyName": "OpenSearchServicePolicy",
-            "PolicyDocument": {
-              "Version": "2012-10-17",
-              "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Action": [
-                    "es:CreateElasticsearchDomain",
-                    "es:DescribeElasticsearchDomain",
-                    "es:DeleteElasticsearchDomain",
-                    "es:UpdateElasticsearchDomainConfig"
-                  ],
-                  "Resource": "*"
-                }
-              ]
-            }
-          }
-        ]
-      }
+    }
+  },
+  "Outputs": {
+    "DomainEndpoint": {
+      "Description": "Endpoint of the OpenSearch Domain",
+      "Value": { "Fn::GetAtt": ["OpenSearchDomain", "DomainEndpoint"] }
     }
   }
 }

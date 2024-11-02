@@ -1,0 +1,19 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic Amazon Verified Permissions Setup",
+  "Resources": {
+    "VerifiedPermissionsPolicyStore": {
+      "Type": "AWS::VerifiedPermissions::PolicyStore",
+      "Properties": {
+        "PolicyStoreId": "my-policy-store",  // Replace with your desired policy store ID
+        "Description": "My Verified Permissions Policy Store"
+      }
+    }
+  },
+  "Outputs": {
+    "PolicyStoreArn": {
+      "Description": "ARN of the Verified Permissions Policy Store",
+      "Value": { "Fn::GetAtt": ["VerifiedPermissionsPolicyStore", "Arn"] }
+    }
+  }
+}

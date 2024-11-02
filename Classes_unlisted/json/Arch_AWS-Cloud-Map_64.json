@@ -1,0 +1,52 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for AWS Cloud Map.",
+  "Resources": {
+    "Namespace": {
+      "Type": "AWS::ServiceDiscovery::PrivateDnsNamespace",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "my-private-namespace-${AWS::AccountId}.local"
+        },
+        "Vpc": {
+          "Ref": "VPCId"
+        },
+        "Description": "Private DNS namespace for my application"
+      }
+    },
+    "Service": {
+      "Type": "AWS::ServiceDiscovery::Service",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "my-service-${AWS::AccountId}"
+        },
+        "DnsConfig": {
+          "DnsRecords": [
+            {
+              "Type": "A",
+              "TTL": 60
+            }
+          ],
+          "NamespaceId": {
+            "Ref": "Namespace"
+          }
+        },
+        "HealthCheckConfig": {
+          "Type": "HTTP",
+          "ResourcePath": "/health",
+          "FailureThreshold": 2
+        },
+        "HealthCheckCustomConfig": {
+          "FailureThreshold": 2,
+          "RequestInterval": 30
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "VPCId": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "The VPC ID where the Cloud Map namespace will be created."
+    }
+  }
+}

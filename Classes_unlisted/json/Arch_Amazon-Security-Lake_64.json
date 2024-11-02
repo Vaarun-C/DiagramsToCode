@@ -1,0 +1,98 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create an Amazon Security Lake.",
+  "Resources": {
+    "SecurityLake": {
+      "Type": "AWS::SecurityLake::DataLake",
+      "Properties": {
+        "DataLakeConfiguration": {
+          "DataLakeSources": [
+            {
+              "Source": {
+                "Type": "AWS",
+                "Name": "MyDataLakeSource"
+              }
+            }
+          ],
+          "EnableDataLake": true
+        }
+      }
+    },
+    "DataLakeS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-security-lake-bucket-123456",  // Ensure the bucket name is globally unique
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MySecurityLakeBucket"
+          }
+        ]
+      }
+    },
+    "SecurityLakeRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "MySecurityLakeRole",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "securitylake.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "SecurityLakePolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:PutObject",
+                    "s3:GetObject",
+                    "s3:ListBucket"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "${DataLakeS3Bucket.Arn}/*"
+                    },
+                    {
+                      "Ref": "DataLakeS3Bucket"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "DataLakeBucketName": {
+      "Description": "The name of the S3 bucket for Amazon Security Lake",
+      "Value": {
+        "Ref": "DataLakeS3Bucket"
+      }
+    },
+    "SecurityLakeRoleArn": {
+      "Description": "The ARN of the IAM role for Amazon Security Lake",
+      "Value": {
+        "Fn::GetAtt": [
+          "SecurityLakeRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

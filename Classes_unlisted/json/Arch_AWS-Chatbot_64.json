@@ -1,0 +1,28 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Chatbot with Slack.",
+  "Resources": {
+    "ChatbotSlackChannelConfiguration": {
+      "Type": "AWS::Chatbot::SlackChannelConfiguration",
+      "Properties": {
+        "SlackChannelId": "YOUR_SLACK_CHANNEL_ID",  // Replace with your Slack channel ID
+        "SlackWorkspaceId": "YOUR_SLACK_WORKSPACE_ID",  // Replace with your Slack workspace ID
+        "ConfigurationName": "MyChatbotConfiguration",
+        "IAMRoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_CHATBOT_ROLE",  // Replace with your IAM role ARN
+        "LoggingLevel": "INFO",  // Options: INFO, ERROR, DISABLED
+        "BotEmail": "YOUR_BOT_EMAIL",  // Replace with the email of your Slack bot
+        "SnsTopicArns": [
+          "arn:aws:sns:YOUR_REGION:YOUR_ACCOUNT_ID:YOUR_SNS_TOPIC"  // Replace with your SNS topic ARN
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "ChatbotConfigurationArn": {
+      "Description": "The ARN of the created Chatbot configuration.",
+      "Value": {
+        "Ref": "ChatbotSlackChannelConfiguration"
+      }
+    }
+  }
+}

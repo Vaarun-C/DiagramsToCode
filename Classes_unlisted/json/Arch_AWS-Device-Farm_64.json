@@ -1,0 +1,21 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Device Farm.",
+  "Resources": {
+    "DeviceFarmProject": {
+      "Type": "AWS::DeviceFarm::Project",
+      "Properties": {
+        "Name": "MyDeviceFarmProject",
+        "Description": "A sample Device Farm project for testing applications."
+      }
+    }
+  },
+  "Outputs": {
+    "ProjectArn": {
+      "Description": "ARN of the created Device Farm project.",
+      "Value": {
+        "Fn::GetAtt": ["DeviceFarmProject", "Arn"]
+      }
+    }
+  }
+}

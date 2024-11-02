@@ -1,0 +1,40 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS Payment Cryptography Setup",
+  "Resources": {
+    "PaymentCryptographyKey": {
+      "Type": "AWS::PaymentCryptography::Key",
+      "Properties": {
+        "KeySpec": "SYMMETRIC_DEFAULT",  // Specify the key specification
+        "KeyUsage": "ENCRYPT_DECRYPT",     // Specify key usage
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::123456789012:role/MyPaymentCryptographyRole"  // Replace with your IAM role ARN
+              },
+              "Action": "kms:*",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyPaymentCryptographyKey"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "PaymentCryptographyKeyArn": {
+      "Description": "ARN of the Payment Cryptography Key",
+      "Value": {
+        "Ref": "PaymentCryptographyKey"
+      }
+    }
+  }
+}

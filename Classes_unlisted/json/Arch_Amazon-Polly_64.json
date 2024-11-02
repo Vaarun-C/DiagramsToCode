@@ -1,0 +1,49 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic setup for Amazon Polly with IAM Role",
+  "Resources": {
+    "PollyIAMRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "PollyAccessRole",  // Replace with your desired role name
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"  // Change whatever service 
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "PollyAccessPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "polly:SynthesizeSpeech",
+                    "polly:GetLexicon",
+                    "polly:ListLexicons"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "RoleArn": {
+      "Description": "ARN of the IAM Role for Amazon Polly",
+      "Value": { "Fn::GetAtt": ["PollyIAMRole", "Arn"] }
+    }
+  }
+}

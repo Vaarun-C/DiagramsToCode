@@ -1,0 +1,45 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon Personalize Setup",
+  "Resources": {
+    "PersonalizeDatasetGroup": {
+      "Type": "AWS::Personalize::DatasetGroup",
+      "Properties": {
+        "Name": "MyDatasetGroup"  // Replace with desired dataset group name
+      }
+    },
+    "PersonalizeDataset": {
+      "Type": "AWS::Personalize::Dataset",
+      "Properties": {
+        "DatasetGroupArn": { "Fn::GetAtt": ["PersonalizeDatasetGroup", "DatasetGroupArn"] },
+        "DatasetType": "INTERACTIONS",  // Options: INTERACTIONS, USERS, ITEMS
+        "Name": "MyInteractionsDataset",  // Replace with desired dataset name
+        "Schema": {
+          "Name": "InteractionsSchema",
+          "Schema": "{\"type\": \"record\", \"name\": \"Interactions\", \"fields\": [{\"name\": \"USER_ID\", \"type\": \"string\"}, {\"name\": \"ITEM_ID\", \"type\": \"string\"}, {\"name\": \"TIMESTAMP\", \"type\": \"long\"}]}"
+        },
+        "DataSource": {
+          "DataLocation": "s3://my-personalize-bucket/interactions.csv"  // Replace with your S3 data location
+        }
+      }
+    },
+    "PersonalizeSolution": {
+      "Type": "AWS::Personalize::Solution",
+      "Properties": {
+        "Name": "MySolution",  // Replace with your desired solution name
+        "DatasetGroupArn": { "Fn::GetAtt": ["PersonalizeDatasetGroup", "DatasetGroupArn"] },
+        "RecipeArn": "arn:aws:personalize:::recipe/aws-user-personalization"  // Replace with the desired recipe ARN
+      }
+    }
+  },
+  "Outputs": {
+    "DatasetGroupArn": {
+      "Description": "ARN of the Dataset Group",
+      "Value": { "Fn::GetAtt": ["PersonalizeDatasetGroup", "DatasetGroupArn"] }
+    },
+    "SolutionArn": {
+      "Description": "ARN of the Personalize Solution",
+      "Value": { "Fn::GetAtt": ["PersonalizeSolution", "SolutionArn"] }
+    }
+  }
+}

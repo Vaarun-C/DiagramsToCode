@@ -1,0 +1,99 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for AWS IoT FleetWise.",
+  "Resources": {
+    "VehicleModel": {
+      "Type": "AWS::IoTFleetWise::VehicleModel",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "MyVehicleModel-${AWS::AccountId}"
+        },
+        "Description": "A model for my vehicles",
+        "VehicleType": "LightDuty",  // Change to appropriate vehicle type if needed
+        "ModelManifestArn": {
+          "Ref": "ModelManifest"
+        }
+      }
+    },
+    "ModelManifest": {
+      "Type": "AWS::IoTFleetWise::ModelManifest",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "MyModelManifest-${AWS::AccountId}"
+        },
+        "Description": "Model manifest for my vehicle data",
+        "ModelManifestArn": {
+          "Ref": "VehicleModel"
+        },
+        "Nodes": [
+          {
+            "Name": "EngineSpeed",
+            "Type": "ECU",
+            "DataType": "Double",
+            "Unit": "RPM"
+          }
+        ]
+      }
+    },
+    "Campaign": {
+      "Type": "AWS::IoTFleetWise::Campaign",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "MyCampaign-${AWS::AccountId}"
+        },
+        "Description": "Campaign to manage data collection",
+        "VehicleModelArn": {
+          "Fn::GetAtt": [
+            "VehicleModel",
+            "Arn"
+          ]
+        },
+        "SignalCatalogArn": {
+          "Ref": "SignalCatalog"
+        },
+        "Action": {
+          "ActionType": "SendDataToCloud",
+          "Frequency": 10,  // Frequency in seconds
+          "Duration": 3600  // Duration in seconds
+        }
+      }
+    },
+    "SignalCatalog": {
+      "Type": "AWS::IoTFleetWise::SignalCatalog",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "MySignalCatalog-${AWS::AccountId}"
+        },
+        "Description": "Catalog for vehicle signals",
+        "Nodes": [
+          {
+            "Name": "EngineSpeed",
+            "Type": "ECU",
+            "DataType": "Double",
+            "Unit": "RPM"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "VehicleModelArn": {
+      "Description": "ARN of the Vehicle Model.",
+      "Value": {
+        "Fn::GetAtt": [
+          "VehicleModel",
+          "Arn"
+        ]
+      }
+    },
+    "CampaignArn": {
+      "Description": "ARN of the Campaign.",
+      "Value": {
+        "Fn::GetAtt": [
+          "Campaign",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

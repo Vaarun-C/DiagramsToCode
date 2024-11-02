@@ -1,0 +1,34 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon Chime SDK.",
+  "Resources": {
+    "ChimeMeeting": {
+      "Type": "AWS::Chime::Meeting",
+      "Properties": {
+        "ClientRequestToken": {
+          "Fn::Sub": "${AWS::StackName}-${AWS::Region}"  // Unique token for the meeting
+        },
+        "MediaRegion": "us-east-1"  // Choose the media region
+      }
+    },
+    "ChimeMeetingAppInstance": {
+      "Type": "AWS::Chime::AppInstance",
+      "Properties": {
+        "AppInstanceArn": {
+          "Fn::Sub": "arn:aws:chime:${AWS::Region}:${AWS::AccountId}:app-instance/${AWS::StackName}-app-instance"
+        },
+        "Name": "MyChimeAppInstance"  // Replace with xyz app instance name
+      }
+    },
+    "ChimeMessagingChannel": {
+      "Type": "AWS::Chime::Channel",
+      "Properties": {
+        "AppInstanceArn": {
+          "Ref": "ChimeMeetingAppInstance"
+        },
+        "Name": "MyChimeChannel",  // Replace with your desired channel name
+        "Mode": "UNRESTRICTED"  // Choose channel mode: UNRESTRICTED or RESTRICTED
+      }
+    }
+  }
+}

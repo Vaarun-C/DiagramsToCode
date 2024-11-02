@@ -1,0 +1,71 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS Network Firewall Setup",
+  "Resources": {
+    "FirewallPolicy": {
+      "Type": "AWS::NetworkFirewall::FirewallPolicy",
+      "Properties": {
+        "FirewallPolicyName": "MyFirewallPolicy",
+        "FirewallPolicy": {
+          "StatelessRuleGroupReferences": [
+            {
+              "ResourceArn": { "Ref": "StatelessRuleGroup" }
+            }
+          ],
+          "StatelessDefaultActions": [
+            "aws:pass"
+          ],
+          "StatefullRuleGroupReferences": [
+            {
+              "ResourceArn": { "Ref": "StatefulRuleGroup" }
+            }
+          ]
+        }
+      }
+    },
+    "StatelessRuleGroup": {
+      "Type": "AWS::NetworkFirewall::RuleGroup",
+      "Properties": {
+        "RuleGroupName": "MyStatelessRuleGroup",
+        "Type": "STATELESS",
+        "Capacity": 100,
+        "RuleGroup": {
+          "RulesSource": {
+            "RulesString": "pass all"
+          }
+        }
+      }
+    },
+    "StatefulRuleGroup": {
+      "Type": "AWS::NetworkFirewall::RuleGroup",
+      "Properties": {
+        "RuleGroupName": "MyStatefulRuleGroup",
+        "Type": "STATEFUL",
+        "Capacity": 100,
+        "RuleGroup": {
+          "RulesSource": {
+            "RulesString": "pass all"
+          }
+        }
+      }
+    },
+    "Firewall": {
+      "Type": "AWS::NetworkFirewall::Firewall",
+      "Properties": {
+        "FirewallName": "MyFirewall",
+        "FirewallPolicyArn": { "Ref": "FirewallPolicy" },
+        "Description": "My Network Firewall"
+      }
+    }
+  },
+  "Outputs": {
+    "FirewallArn": {
+      "Description": "ARN of the AWS Network Firewall",
+      "Value": { "Ref": "Firewall" }
+    },
+    "FirewallPolicyArn": {
+      "Description": "ARN of the Firewall Policy",
+      "Value": { "Ref": "FirewallPolicy" }
+    }
+  }
+}

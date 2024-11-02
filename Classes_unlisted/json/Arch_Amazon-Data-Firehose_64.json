@@ -1,0 +1,113 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create an Amazon Kinesis Data Firehose delivery stream.",
+  "Resources": {
+    "S3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-firehose-bucket-123456",  // Ensure the bucket name is globally unique
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyFirehoseBucket"
+          }
+        ]
+      }
+    },
+    "FirehoseRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "MyFirehoseRole",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "firehose.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "FirehoseS3Policy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:PutObject",
+                    "s3:PutObjectAcl"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "${S3Bucket.Arn}/*"
+                    },
+                    {
+                      "Ref": "S3Bucket"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "FirehoseDeliveryStream": {
+      "Type": "AWS::KinesisFirehose::DeliveryStream",
+      "Properties": {
+        "DeliveryStreamType": "DirectPut",
+        "S3DestinationConfiguration": {
+          "BucketARN": {
+            "Fn::GetAtt": [
+              "S3Bucket",
+              "Arn"
+            ]
+          },
+          "RoleARN": {
+            "Fn::GetAtt": [
+              "FirehoseRole",
+              "Arn"
+            ]
+          },
+          "Prefix": "firehose-data/",
+          "BufferingHints": {
+            "SizeInMBs": 5,
+            "IntervalInSeconds": 300
+          },
+          "CompressionFormat": "UNCOMPRESSED"  // Can be GZIP, Snappy, etc.
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "S3BucketName": {
+      "Description": "The name of the S3 bucket for Kinesis Firehose",
+      "Value": {
+        "Ref": "S3Bucket"
+      }
+    },
+    "FirehoseDeliveryStreamName": {
+      "Description": "The name of the Kinesis Data Firehose delivery stream",
+      "Value": {
+        "Ref": "FirehoseDeliveryStream"
+      }
+    },
+    "FirehoseRoleArn": {
+      "Description": "The ARN of the IAM role for Kinesis Data Firehose",
+      "Value": {
+        "Fn::GetAtt": [
+          "FirehoseRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

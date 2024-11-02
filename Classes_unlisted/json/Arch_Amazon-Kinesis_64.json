@@ -1,0 +1,33 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS CloudFormation template to create an Amazon Kinesis Data Stream.",
+  "Resources": {
+    "MyKinesisStream": {
+      "Type": "AWS::Kinesis::Stream",
+      "Properties": {
+        "Name": "MyKinesisStream",
+        "ShardCount": 1,
+        "RetentionPeriodHours": 24,
+        "StreamEncryption": {
+          "EncryptionType": "KMS",
+          "KeyId": {
+            "Ref": "KMSKeyId"
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyKinesisStream"
+          }
+        ]
+      }
+    }
+  },
+  "Parameters": {
+    "KMSKeyId": {
+      "Type": "String",
+      "Description": "The ID of the KMS Key for stream encryption.",
+      "Default": "alias/aws/kinesis"
+    }
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for AWS Data Exchange foundational resources.",
+  "Resources": {
+    "S3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-data-exchange-bucket-123456",  // Ensure the bucket name is globally unique
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyDataExchangeBucket"
+          }
+        ]
+      }
+    },
+    "DataExchangeRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "MyDataExchangeRole",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "dataexchange.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "DataExchangePolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:ListBucket"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "${S3Bucket.Arn}/*"
+                    },
+                    {
+                      "Ref": "S3Bucket"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "S3BucketName": {
+      "Description": "The name of the S3 bucket for data exchange",
+      "Value": {
+        "Ref": "S3Bucket"
+      }
+    },
+    "DataExchangeRoleArn": {
+      "Description": "The ARN of the IAM role for AWS Data Exchange",
+      "Value": {
+        "Fn::GetAtt": [
+          "DataExchangeRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

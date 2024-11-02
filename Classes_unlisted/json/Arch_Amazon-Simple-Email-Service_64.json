@@ -1,0 +1,20 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon Simple Email Service (SES).",
+  "Resources": {
+    "EmailIdentity": {
+      "Type": "AWS::SES::EmailIdentity",
+      "Properties": {
+        "EmailIdentity": "example@example.com"  // Replace with your email address
+      }
+    }
+  },
+  "Outputs": {
+    "EmailIdentity": {
+      "Description": "The verified email identity.",
+      "Value": {
+        "Ref": "EmailIdentity"
+      }
+    }
+  }
+}

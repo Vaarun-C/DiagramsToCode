@@ -1,0 +1,77 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS CodePipeline Setup",
+  "Resources": {
+    "CodePipeline": {
+      "Type": "AWS::CodePipeline::Pipeline",
+      "Properties": {
+        "Name": "MyCodePipeline",
+        "RoleArn": "arn:aws:iam::123456789012:role/service-role/AWS-CodePipeline-Service",  // Replace with your CodePipeline role ARN
+        "ArtifactStore": {
+          "Type": "S3",
+          "Location": "my-artifact-bucket"  // Replace with your S3 bucket for artifacts
+        },
+        "Stages": [
+          {
+            "Name": "Source",
+            "Actions": [
+              {
+                "Name": "SourceAction",
+                "ActionTypeId": {
+                  "Category": "Source",
+                  "Owner": "AWS",
+                  "Provider": "S3",
+                  "Version": "1"
+                },
+                "OutputArtifacts": [
+                  {
+                    "Name": "SourceOutput"
+                  }
+                ],
+                "Configuration": {
+                  "S3Bucket": "my-source-bucket",  // Replace with your source S3 bucket
+                  "S3ObjectKey": "source.zip"  // Replace with your source object key
+                }
+              }
+            ]
+          },
+          {
+            "Name": "Build",
+            "Actions": [
+              {
+                "Name": "BuildAction",
+                "ActionTypeId": {
+                  "Category": "Build",
+                  "Owner": "AWS",
+                  "Provider": "CodeBuild",
+                  "Version": "1"
+                },
+                "InputArtifacts": [
+                  {
+                    "Name": "SourceOutput"
+                  }
+                ],
+                "OutputArtifacts": [
+                  {
+                    "Name": "BuildOutput"
+                  }
+                ],
+                "Configuration": {
+                  "ProjectName": "MyCodeBuildProject"  // Replace with your CodeBuild project name
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "PipelineArn": {
+      "Description": "ARN of the CodePipeline",
+      "Value": {
+        "Ref": "CodePipeline"
+      }
+    }
+  }
+}

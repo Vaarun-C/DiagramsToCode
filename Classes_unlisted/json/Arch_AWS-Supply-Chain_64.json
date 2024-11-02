@@ -1,0 +1,29 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Supply Chain.",
+  "Resources": {
+    "SupplyChainConfiguration": {
+      "Type": "AWS::SupplyChain::SupplyChainConfiguration",
+      "Properties": {
+        "Name": "MySupplyChain",  // Replace with your desired supply chain name
+        "Description": "Configuration for my supply chain",
+        "Source": {
+          "SourceType": "S3",  // Specify your source type
+          "SourceDetails": {
+            "BucketName": "my-supply-chain-bucket",  // Replace with your S3 bucket name
+            "Prefix": "data/"  // Optional prefix for source data
+          }
+        }
+      }
+    },
+    "SupplyChainExecution": {
+      "Type": "AWS::SupplyChain::SupplyChainExecution",
+      "Properties": {
+        "SupplyChainConfigurationId": {
+          "Ref": "SupplyChainConfiguration"
+        },
+        "ExecutionStatus": "ACTIVE"  // Options: ACTIVE, PAUSED, etc.
+      }
+    }
+  }
+}

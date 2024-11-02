@@ -1,0 +1,61 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for AWS Application Migration Service.",
+  "Resources": {
+    "ReplicationServer": {
+      "Type": "AWS::MGN::ReplicationServer",
+      "Properties": {
+        "ServerType": "t3.micro",  // Choose an appropriate instance type
+        "SecurityGroupIds": [
+          {
+            "Ref": "ReplicationSecurityGroup"
+          }
+        ],
+        "SubnetIds": [
+          {
+            "Ref": "SubnetId"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "ReplicationServer"
+          }
+        ]
+      }
+    },
+    "ReplicationSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for replication server",
+        "VpcId": {
+          "Ref": "VPCId"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    }
+  },
+  "Parameters": {
+    "SubnetId": {
+      "Type": "AWS::EC2::Subnet::Id",
+      "Description": "The Subnet ID where the replication server will be launched."
+    },
+    "VPCId": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "The VPC ID where the replication server will be launched."
+    }
+  }
+}

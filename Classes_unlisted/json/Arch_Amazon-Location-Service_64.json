@@ -1,0 +1,41 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for Amazon Location Service.",
+  "Resources": {
+    "GeoTracker": {
+      "Type": "AWS::Location::Tracker",
+      "Properties": {
+        "TrackerName": {
+          "Fn::Sub": "MyGeoTracker-${AWS::AccountId}"
+        },
+        "Description": "Tracker for monitoring location data",
+        "PricingPlan": "RequestBasedUsage"  // Options: RequestBasedUsage, MobileAssetTracking
+      }
+    },
+    "GeoFenceCollection": {
+      "Type": "AWS::Location::GeofenceCollection",
+      "Properties": {
+        "CollectionName": {
+          "Fn::Sub": "MyGeofenceCollection-${AWS::AccountId}"
+        },
+        "Description": "Collection for geofences",
+        "PricingPlan": "RequestBasedUsage",  // Options: RequestBasedUsage, MobileAssetTracking
+        "DataSource": "Esri"  // Example data source
+      }
+    }
+  },
+  "Outputs": {
+    "TrackerArn": {
+      "Description": "ARN of the Geo Tracker.",
+      "Value": {
+        "Fn::GetAtt": ["GeoTracker", "Arn"]
+      }
+    },
+    "GeofenceCollectionArn": {
+      "Description": "ARN of the Geofence Collection.",
+      "Value": {
+        "Fn::GetAtt": ["GeoFenceCollection", "Arn"]
+      }
+    }
+  }
+}

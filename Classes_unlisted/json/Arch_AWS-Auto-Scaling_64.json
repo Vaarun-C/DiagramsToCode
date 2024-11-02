@@ -1,0 +1,86 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for AWS Auto Scaling.",
+  "Resources": {
+    "LaunchConfiguration": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "ImageId": "ami-0c55b159cbfafe01e",  // Replace with an appropriate AMI ID
+        "InstanceType": "t2.micro",
+        "KeyName": {
+          "Ref": "KeyPairName"
+        },
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Sub": "#!/bin/bash\n    yum update -y\n    # Additional setup commands here"
+          }
+        }
+      }
+    },
+    "AutoScalingGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "LaunchConfigurationName": {
+          "Ref": "LaunchConfiguration"
+        },
+        "MinSize": "1",
+        "MaxSize": "5",
+        "DesiredCapacity": "2",
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "SubnetId"
+          }
+        ],
+        "HealthCheckType": "EC2",
+        "HealthCheckGracePeriod": "300",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "AutoScalingInstance",
+            "PropagateAtLaunch": true
+          }
+        ]
+      }
+    },
+    "ScalingPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AutoScalingGroupName": {
+          "Ref": "AutoScalingGroup"
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "TargetValue": 50.0,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization"
+          },
+          "ScaleOutCooldown": 300,
+          "ScaleInCooldown": 300
+        }
+      }
+    },
+    "InstanceSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for Auto Scaling instances",
+        "VpcId": {
+          "Ref": "VPCId"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 80,
+            "ToPort": 80,
+            "CidrIp": "0.0.0.0/0"  // Adjust as necessary
+          }
+        ]
+      }
+    }
+  },
+  "Parameters": {
+    "KeyPairName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance."
+    }
+  }
+}

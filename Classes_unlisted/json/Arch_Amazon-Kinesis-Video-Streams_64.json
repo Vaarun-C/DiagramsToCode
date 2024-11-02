@@ -1,0 +1,59 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create an Amazon Kinesis Video Stream.",
+  "Resources": {
+    "KinesisVideoStream": {
+      "Type": "AWS::KinesisVideo::Stream",
+      "Properties": {
+        "StreamName": "MyKinesisVideoStream",
+        "MediaType": "video/h264",
+        "DataRetentionInHours": 24
+      }
+    },
+    "KinesisVideoRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "kinesisvideo.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "KinesisVideoPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kinesisvideo:PutMedia",
+                    "kinesisvideo:GetMedia",
+                    "kinesisvideo:DescribeStream",
+                    "kinesisvideo:ListStreams"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "KinesisVideoStreamName": {
+      "Description": "The name of the Kinesis Video Stream",
+      "Value": {
+        "Ref": "KinesisVideoStream"
+      }
+    }
+  }
+}

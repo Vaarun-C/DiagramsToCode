@@ -1,0 +1,72 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Deep Composer.",
+  "Resources": {
+    "DeepComposerBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-deep-composer-bucket"  // Replace with a unique bucket name
+      }
+    },
+    "DeepComposerRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "deepcomposer.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "DeepComposerPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:PutObject",
+                    "s3:GetObject",
+                    "s3:ListBucket"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "${DeepComposerBucket.Arn}/*"
+                    },
+                    {
+                      "Ref": "DeepComposerBucket"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "DeepComposerBucketName": {
+      "Description": "The S3 bucket for storing Deep Composer music compositions.",
+      "Value": {
+        "Ref": "DeepComposerBucket"
+      }
+    },
+    "DeepComposerRoleArn": {
+      "Description": "The ARN of the IAM role for AWS Deep Composer.",
+      "Value": {
+        "Fn::GetAtt": [
+          "DeepComposerRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}
