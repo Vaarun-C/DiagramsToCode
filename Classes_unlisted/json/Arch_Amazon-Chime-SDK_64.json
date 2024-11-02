@@ -8,13 +8,7 @@
         "Name": "MyVoiceConnector",
         "AwsRegion": { "Ref": "AWS::Region" },
         "RequireEncryption": true
-    },
-    "Meeting": {
-      "Type": "AWS::Chime::Meeting",
-      "Properties": {
-        "ClientRequestToken": { "Fn::Sub": "${AWS::StackName}-${AWS::Region}-${AWS::AccountId}-${AWS::Timestamp}" },
-        "MediaRegion": { "Ref": "AWS::Region" },
-      }
+    }
     }
   }
 }

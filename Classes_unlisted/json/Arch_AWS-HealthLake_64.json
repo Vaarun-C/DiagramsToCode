@@ -5,8 +5,8 @@
     "HealthLakeStore": {
       "Type": "AWS::HealthLake::FHIRStore",
       "Properties": {
-        "Name": "MyHealthLakeStore",  // Customize the store name as needed
-        "EnableSoftDelete": true,  // Set to true to enable soft delete
+        "Name": "MyHealthLakeStore",  
+        "EnableSoftDelete": true
       }
     }
   }

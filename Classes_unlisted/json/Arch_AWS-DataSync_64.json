@@ -5,9 +5,9 @@
     "S3Location": {
       "Type": "AWS::DataSync::LocationS3",
       "Properties": {
-        "S3BucketArn": "arn:aws:s3:::your-bucket-name",  // Replace with your S3 bucket ARN
+        "S3BucketArn": "arn:aws:s3:::your-bucket-name",  
         "S3Config": {
-          "BucketAccessRoleArn": "arn:aws:iam::your-account-id:role/YourDataSyncRole"  // Replace with your IAM role ARN
+          "BucketAccessRoleArn": "arn:aws:iam::your-account-id:role/YourDataSyncRole"  
         },
         "Tags": [
           {
@@ -20,13 +20,13 @@
     "Task": {
       "Type": "AWS::DataSync::Task",
       "Properties": {
-        "SourceLocationArn": { "Fn::GetAtt": ["S3Location", "LocationArn"] }
-       */ "DestinationLocationArn": { "Fn::GetAtt": ["S3Location", "LocationArn"] },  // Replace with the ARN of your destination location
+        "SourceLocationArn": { "Fn::GetAtt": ["S3Location", "LocationArn"] },
+        "DestinationLocationArn": { "Fn::GetAtt": ["S3Location", "LocationArn"] },  
         "Name": "MyDataSyncTask",
-        "CloudWatchLogGroupArn": "arn:aws:logs:your-region:your-account-id:log-group:your-log-group",  // Replace with your CloudWatch log group ARN
+        "CloudWatchLogGroupArn": "arn:aws:logs:your-region:your-account-id:log-group:your-log-group",  
         "Schedule": {
-          "ScheduleExpression": "rate(5 minutes)"  // Set your desired schedule
-        }/*
+          "ScheduleExpression": "rate(5 minutes)"  
+        }
       }
     }
   }

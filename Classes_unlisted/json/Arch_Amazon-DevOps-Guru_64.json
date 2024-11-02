@@ -5,9 +5,9 @@
     "DevOpsGuruResourceCollection": {
       "Type": "AWS::DevOpsGuru::ResourceCollection",
       "Properties": {
-        "ResourceCollectionType": "AWS::CloudFormation::Stack",  // Specify the resource collection type
+        "ResourceCollectionType": "AWS::CloudFormation::Stack",
         "StackNames": [
-          "MyCloudFormationStack"  // Replace with your CloudFormation stack name
+          "MyCloudFormationStack" 
         ]
       }
     },
@@ -55,7 +55,7 @@
       "Properties": {
         "Config": {
           "Sns": {
-            "TopicArn": "arn:aws:sns:us-east-1:123456789012:MySnsTopic"  // Replace with your SNS topic ARN
+            "TopicArn": "arn:aws:sns:us-east-1:123456789012:MySnsTopic" 
           }
         },
         "ServiceRoleArn": {

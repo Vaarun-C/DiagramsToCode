@@ -5,7 +5,7 @@
     "MySQSQueue": {
       "Type": "AWS::SQS::Queue",
       "Properties": {
-        "QueueName": "MySQSQueue"  // Customize the queue name as needed
+        "QueueName": "MySQSQueue"
       }
     }
   }

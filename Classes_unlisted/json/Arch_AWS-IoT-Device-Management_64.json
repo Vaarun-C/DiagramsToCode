@@ -7,9 +7,9 @@
       "Properties": {
         "ThingName": "MyIoTThing",
         "AttributePayload": {
-          "Attributes": { //take it off before testing
+          "Attributes": { 
             "Key1": "Value1", 
-            "Key2": "Value2"  // Customize with your attributes
+            "Key2": "Value2"  
           }
         }
       }

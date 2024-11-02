@@ -27,11 +27,11 @@
             "Type": "timestamp"
           }
         ],
-        */rmv"Location": "s3://your-bucket-name/path/to/data/",  // Replace with your S3 bucket path
+        
         "InputFormat": "org.apache.hadoop.mapred.TextInputFormat",
         "OutputFormat": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
         "SerdeInfo": {
-          "SerializationLibrary": "org.apache.hadoop.hive.serde2.OpenCSVSerde"/*
+          "SerializationLibrary": "org.apache.hadoop.hive.serde2.OpenCSVSerde"
         }
       }
     }

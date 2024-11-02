@@ -5,6 +5,15 @@
     "NimbleStudio": {
       "Type": "AWS::NimbleStudio::Studio",
       "Properties": {
+<<<<<<< HEAD
+        "StudioName": "MyNimbleStudio",  
+        "AdminRoleArn": {},
+        "UserRoleArn": {}
+        }
+      }
+    }
+}
+=======
         "Name": "MyNimbleStudio",  // Replace with your desired studio name
         "DisplayName": "My Nimble Studio",  // Replace with a display name
         "StudioAccess": [
@@ -29,3 +38,4 @@
     }
   }
 }
+>>>>>>> e65d1f9108cc0bad3624f267255ba03bdf3d2e9b

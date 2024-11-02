@@ -5,10 +5,10 @@
     "VerifiedAccessInstance": {
       "Type": "AWS::VerifiedAccess::Instance",
       "Properties": {
-        "Name": "MyVerifiedAccessInstance",  // Replace with your desired instance name
+        "Name": "MyVerifiedAccessInstance",  
         "Description": "My Verified Access Instance",
-        */"Policy": {
-          "Id": "MyVerifiedAccessPolicy",  // Replace with your policy ID
+        "Policy": {
+          "Id": "MyVerifiedAccessPolicy",  
           "Description": "My Access Policy"
         },
         "Tags": [
@@ -16,26 +16,26 @@
             "Key": "Name",
             "Value": "MyVerifiedAccessInstance"
           }
-        ]*/
+        ]
       }
     },
     "VerifiedAccessPolicy": {
       "Type": "AWS::VerifiedAccess::Policy",
       "Properties": {
-        "Name": "MyVerifiedAccessPolicy",  // Replace with your desired policy name
+        "Name": "MyVerifiedAccessPolicy",  
         "Description": "My Access Policy Description",
-       */ "Rules": [
+       "Rules": [
           {
             "RuleName": "AllowAll",
             "RuleAction": "Allow",
             "RuleCondition": [
               {
                 "Key": "request.context.sourceIp",
-                "Values": ["0.0.0.0/0"]  // Replace with your desired CIDR range
+                "Values": ["0.0.0.0/0"]  
               }
             ]
           }
-        ]/*
+        ]
       }
     }
   }

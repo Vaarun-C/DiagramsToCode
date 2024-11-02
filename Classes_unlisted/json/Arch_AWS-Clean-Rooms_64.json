@@ -21,13 +21,13 @@
         "DataSourceName": "MyDataSource",
         "Description": "Data source for clean room",
         "CleanRoomArn": { "Fn::GetAtt": ["CleanRoom", "Arn"] },
-        "DataSourceType": "S3",  // Replace with your data source type (e.g., S3, RDS)
+        "DataSourceType": "S3",  
         "DataSourceConfiguration": {
           "S3": {
-            "BucketArn": "arn:aws:s3:::your-bucket-name"  // Replace with your S3 bucket ARN
+            "BucketArn": "arn:aws:s3:::your-bucket-name" 
+            }   
           }
         }
       }
     }
   }
-}

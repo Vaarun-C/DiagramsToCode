@@ -5,9 +5,10 @@
     "TwinMakerWorkspace": {
       "Type": "AWS::IoTTwinMaker::Workspace",
       "Properties": {
-        "WorkspaceId": "MyTwinMakerWorkspace",  // Customize the workspace ID as needed //Remove this line
+        "WorkspaceId": "MyTwinMakerWorkspace",  
         "Description": "My first IoT TwinMaker workspace",
-        "RoleArn": "arn:aws:iam::account-id:role/role-name"  // Replace with your IAM role ARN //Remove this line
+        "Role" : "",
+        "S3Location" : ""
       }
     }
   }

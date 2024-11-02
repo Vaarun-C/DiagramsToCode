@@ -5,8 +5,9 @@
     "CodeWhispererIAMRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
+        "AssumeRolePolicyDocument" : "path/to/json/file",
         "RoleName": "CodeWhispererRole"       
-            }
-          }   
-       }
-    }
+      }
+    }   
+  }
+}

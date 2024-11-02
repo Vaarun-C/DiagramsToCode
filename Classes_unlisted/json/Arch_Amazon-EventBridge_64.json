@@ -5,7 +5,7 @@
     "MyEventBus": {
       "Type": "AWS::Events::EventBus",
       "Properties": {
-        "Name": "MyEventBus"  // Customize the event bus name as needed
+        "Name": "MyEventBus" 
       }
     }
   }

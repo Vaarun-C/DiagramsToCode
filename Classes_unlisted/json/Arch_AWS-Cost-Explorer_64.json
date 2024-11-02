@@ -5,10 +5,10 @@
     "CostAllocationTag": {
       "Type": "AWS::CostExplorer::CostAllocationTag",
       "Properties": {
-        "TagKey": "MyCostAllocationTag",  // Replace with your tag key
-        */ "TagValues": [
+        "TagKey": "MyCostAllocationTag",  
+        "TagValues": [
           {
-            "Value": "MyTagValue"  // Replace with your tag value
+            "Value": "MyTagValue"  
           }
         ]
       }
@@ -16,11 +16,11 @@
     "CostCategory": {
       "Type": "AWS::CostExplorer::CostCategory",
       "Properties": {
-        "Name": "MyCostCategory",  // Replace with your cost category name
+        "Name": "MyCostCategory",  
         "Rules": [
           {
             "Rule": {
-              "Value": "MyCostCategoryRule",  // Replace with your rule details
+              "Value": "MyCostCategoryRule",  
               "MatchOptions": [
                 "MATCH_ANY"
               ]
@@ -30,10 +30,10 @@
         "SplitChargeRules": [
           {
             "SplitChargeRule": {
-              "Value": "MySplitChargeValue"  // Replace with your split charge value
+              "Value": "MySplitChargeValue"  
             }
           }
-        ] /*
+        ] 
       }
     }
   }

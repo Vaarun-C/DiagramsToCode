@@ -5,7 +5,7 @@
     "S3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-ground-truth-bucket"  // Replace with your desired bucket name
+        "BucketName": "my-ground-truth-bucket" 
       }
     },
     "SageMakerRole": {
@@ -48,29 +48,11 @@
     "LabelingJob": {
       "Type": "AWS::SageMaker::LabelingJob",
       "Properties": {
-        "LabelingJobName": "MyLabelingJob",  // Replace with your desired labeling job name
-        "LabelAttributeName": "my-label"
-      },
-        "RoleArn": { "Fn::GetAtt": ["SageMakerRole", "Arn"] },
-        "HumanTaskConfig": {
-          "WorkteamArn": { "Ref": "Workteam" },
-          "UiConfig": {
-            "UiTemplate": {
-              "Content": "<html>Your labeling UI</html>"  // Replace with your UI template
-            }
-          },
-          "TaskTitle": "Label Images",
-          "TaskDescription": "Please label the images",
-          "NumberOfHumanWorkersPerDataObject": 1
-        }
+          "LabelingJobName": "MyLabelingJob",  
+          "LabelAttributeName": "my-label"
+          }
+        } 
       }
-    },
-    "Workteam": {
-      "Type": "AWS::SageMaker::Workteam",
-      "Properties": {
-        "WorkteamName": "MyWorkteam",  // Replace with your desired workteam name
-       
-      }
-    }
   }
-}
+  
+

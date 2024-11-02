@@ -15,6 +15,12 @@
     "QuickSightDataSource": {
       "Type": "AWS::QuickSight::DataSource",
       "Properties": {
+<<<<<<< HEAD
+        "AwsAccountId": { "Fn::Sub": "${AWS::AccountId}" },
+        "DataSourceId": "MyDataSource",
+        "Name": "MyQuickSightDataSource",
+        "Type": "S3",
+=======
         "DataSourceId": "my-data-source",  // Replace with your desired data source ID
         "Name": "MyDataSource",  // Replace with your desired data source name
         "Type": "RDS",  // Specify the data source type (e.g., RDS, S3, etc.)
@@ -31,12 +37,67 @@
             "Password": "db-password"  // Replace with your DB password
           }
         },
+>>>>>>> e65d1f9108cc0bad3624f267255ba03bdf3d2e9b
         "Permissions": [
           {
             "Principal": { "Fn::Sub": "quicksight-user" },  // Use the QuickSight user created above
             "Actions": [
               "quicksight:DescribeDataSource",
+<<<<<<< HEAD
+              "quicksight:ListDataSources",
+              "quicksight:UpdateDataSource",
+              "quicksight:DeleteDataSource"
+            ]
+          }
+        ]
+      }
+    },
+    "QuickSightDataset": {
+      "Type": "AWS::QuickSight::Dataset",
+      "Properties": {
+        "AwsAccountId": { "Fn::Sub": "${AWS::AccountId}" },
+        "Name": "MyQuickSightDataset",
+        "PhysicalTableMap": {
+          "MyPhysicalTable": {
+            "S3Source": {
+              "DataSourceArn": { "Fn::GetAtt": ["QuickSightDataSource", "Arn"] },
+              "InputColumns": [
+                {
+                  "Name": "column1",
+                  "Type": "STRING"
+                },
+                {
+                  "Name": "column2",
+                  "Type": "INTEGER"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "QuickSightAnalysis": {
+      "Type": "AWS::QuickSight::Analysis",
+      "Properties": {
+        "AwsAccountId": { "Fn::Sub": "${AWS::AccountId}" },
+        "AnalysisId": "MyAnalysis",
+        "Name": "MyQuickSightAnalysis",
+        "SourceEntity": {
+          "SourceTemplate": {
+            "Arn": { "Fn::Sub": "arn:aws:quicksight:${AWS::Region}:${AWS::AccountId}:template/MyTemplate" }
+          }
+        },
+        "Permissions": [
+          {
+            "Principal": { "Fn::Sub": "arn:aws:quicksight:${AWS::Region}:${AWS::AccountId}:user/default/admin" },
+            "Actions": [
+              "quicksight:DescribeAnalysis",
+              "quicksight:ListAnalyses",
+              "quicksight:UpdateAnalysis",
+              "quicksight:DeleteAnalysis"
+=======
               "quicksight:UpdateDataSource"
+>>>>>>> e65d1f9108cc0bad3624f267255ba03bdf3d2e9b
             ]
           }
         ]

@@ -5,7 +5,7 @@
     "SigningProfile": {
       "Type": "AWS::Signer::SigningProfile",
       "Properties": {
-        "Name": "MySigningProfile"
+        "PlatformId": ""
       }
     }
   }

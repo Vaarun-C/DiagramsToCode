@@ -6,8 +6,8 @@
       "Type": "AWS::Kinesis::Stream",
       "Properties": {
         "Name": "MyKinesisDataStream",
-        "ShardCount": 1,  // Specify the number of shards
-        "RetentionPeriodHours": 24  // Data retention period (default is 24 hours)
+        "ShardCount": 1,
+        "RetentionPeriodHours": 24 
       }
     }
   }

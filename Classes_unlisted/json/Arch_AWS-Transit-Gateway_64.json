@@ -17,13 +17,15 @@
     "TransitGatewayAttachment": {
       "Type": "AWS::EC2::TransitGatewayVpcAttachment",
       "Properties": {
-        "TransitGatewayId": { "Ref": "TransitGateway" }
+        "TransitGatewayId": { "Ref": "TransitGateway" },
         "Tags": [
           {
             "Key": "Name",
             "Value": "MyVpcAttachment"
           }
-        ]
+        ],
+        "SubnetIds": [""],
+        "VpcId": ""
       }
     }
   }
