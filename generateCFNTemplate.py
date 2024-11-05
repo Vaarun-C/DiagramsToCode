@@ -18,7 +18,7 @@ class Node:
         self.outputs = outputs
         self.dependencies = [] if dependencies is None else dependencies # dependency types
         self.dependency_edges = []  # Stores IDs of dependent nodes
-        self.replaceList = []
+        self.replaceMap = {}
 
 
     def __repr__(self):
@@ -146,14 +146,18 @@ def build_graph_from_types(class_types):
     
     return graph
 
+def createName(type_name:str, graph:Graph, type_dict={}):
+    type_dict[type_name] = type_dict.get(type_name,0) + 1
+    name = 'My'+type_name.split("::")[-1] + str(type_dict[type_name])
+    return name
 
 def create_template(result):
     data = {
         "AWSTemplateFormatVersion": '2010-09-09',
         "Description": "CloudFormation Template",
-        "Parameters": {},
-        "Resources": {},
-        "Outputs": {}
+        "Parameters": '',
+        "Resources": '',
+        "Outputs": ''
     }
 
     # Get detected classes
@@ -161,11 +165,21 @@ def create_template(result):
     
     graph = build_graph_from_types(detected_classes_types)
     
-    sorted_nodes = graph.topological_sort_out_degree()
+    sorted_nodes:list[Node] = graph.topological_sort_out_degree()
+    print(sorted_nodes)
+    input()
     for node in sorted_nodes:
-        node.replaceList = [getRandomName()]
+        node_name = createName(node.type_name, graph=graph)
+        node.replaceMap[node.type_name] = node_name
+        for nbr_id in node.dependency_edges:
+            graph.nodes[nbr_id].replaceMap[node.type_name] = node_name
         
+        data['Parameters'] += node.parameters
+        data['Resources'] += node.resources
+        data['Outputs'] += node.outputs
+
     return data
+    print(data)
 
 # Predict using best weights from the model
 model = YOLO(weight_for_model)
