@@ -1,0 +1,104 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create an Amazon GameSparks project.",
+  "Resources": {
+    "GameSparksProject": {
+      "Type": "AWS::GameSparks::Game",
+      "Properties": {
+        "GameName": "MyGameSparksProject",
+        "GameDescription": "This is an example GameSparks project",
+        "GameCode": "MyGameCode",
+        "Engine": "Unity",
+        "GameInstanceRole": {
+          "Fn::GetAtt": ["GameInstanceRole", "Arn"]
+        },
+        "GameSparksRole": {
+          "Fn::GetAtt": ["GameSparksRole", "Arn"]
+        }
+      }
+    },
+    "GameInstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "gamesparks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "GameInstancePolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "GameSparksRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "gamesparks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "GameSparksPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:CreateTable",
+                    "dynamodb:DeleteTable",
+                    "dynamodb:PutItem",
+                    "dynamodb:GetItem",
+                    "dynamodb:Scan",
+                    "dynamodb:Query"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "GameSparksProjectId": {
+      "Description": "The ID of the GameSparks project",
+      "Value": {
+        "Ref": "GameSparksProject"
+      }
+    }
+  }
+}

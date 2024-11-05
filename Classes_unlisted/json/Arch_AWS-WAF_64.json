@@ -1,0 +1,60 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS WAF.",
+  "Resources": {
+    "WebACL": {
+      "Type": "AWS::WAFv2::WebACL",
+      "Properties": {
+        "Scope": "REGIONAL",  // Options: REGIONAL or CLOUDFRONT
+        "Name": "MyWebACL",  // Replace with your desired WebACL name
+        "Description": "My Web Application Firewall",
+        "DefaultAction": {
+          "Allow": {}
+        },
+        "VisibilityConfig": {
+          "SampledRequestsEnabled": true,
+          "CloudWatchMetricsEnabled": true,
+          "MetricName": "MyWebACLMetric"
+        },
+        "Rules": [
+          {
+            "Name": "BlockBadIPs",
+            "Priority": 1,
+            "Statement": {
+              "IPSetReferenceStatement": {
+                "ARN": {
+                  "Ref": "IPSet"
+                }
+              }
+            },
+            "Action": {
+              "Block": {}
+            },
+            "VisibilityConfig": {
+              "SampledRequestsEnabled": true,
+              "CloudWatchMetricsEnabled": true,
+              "MetricName": "BlockBadIPsMetric"
+            }
+          }
+        ]
+      }
+    },
+    "IPSet": {
+      "Type": "AWS::WAFv2::IPSet",
+      "Properties": {
+        "Scope": "REGIONAL",
+        "Name": "MyIPSet",  // Replace with your desired IPSet name
+        "Description": "IP Set for blocking specific IPs",
+        "IPAddressVersion": "IPV4",
+        "Addresses": [
+          "192.0.2.0/24"  // Replace with the IP address or range you want to block
+        ],
+        "VisibilityConfig": {
+          "SampledRequestsEnabled": true,
+          "CloudWatchMetricsEnabled": true,
+          "MetricName": "MyIPSetMetric"
+        }
+      }
+    }
+  }
+}

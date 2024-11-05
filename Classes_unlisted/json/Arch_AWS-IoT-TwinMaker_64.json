@@ -1,0 +1,15 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS IoT TwinMaker Workspace",
+  "Resources": {
+    "TwinMakerWorkspace": {
+      "Type": "AWS::IoTTwinMaker::Workspace",
+      "Properties": {
+        "WorkspaceId": "MyTwinMakerWorkspace",  
+        "Description": "My first IoT TwinMaker workspace",
+        "Role" : "",
+        "S3Location" : ""
+      }
+    }
+  }
+}

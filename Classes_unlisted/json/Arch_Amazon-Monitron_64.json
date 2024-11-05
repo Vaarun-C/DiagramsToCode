@@ -1,0 +1,36 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon Monitron Setup",
+  "Resources": {
+    "MonitronModel": {
+      "Type": "AWS::Monitron::Model",
+      "Properties": {
+        "ModelName": "MyMonitronModel",  // Replace with your desired model name
+        "ModelDescription": "A sample model for Amazon Monitron"
+      }
+    },
+    "MonitronJob": {
+      "Type": "AWS::Monitron::MonitoringJob",
+      "Properties": {
+        "JobName": "MyMonitoringJob",  // Replace with your desired monitoring job name
+        "ModelArn": { "Fn::GetAtt": ["MonitronModel", "Arn"] },
+        "Frequency": "P1D",  // Frequency of monitoring, e.g., daily
+        "StartTime": "2024-01-01T00:00:00Z",  // Replace with your desired start time
+        "EndTime": "2024-12-31T23:59:59Z",  // Replace with your desired end time
+        "NotificationConfig": {
+          "NotificationTopicArn": "arn:aws:sns:us-east-1:123456789012:MySNSTopic"  // Replace with your SNS topic ARN
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ModelArn": {
+      "Description": "ARN of the Monitron Model",
+      "Value": { "Fn::GetAtt": ["MonitronModel", "Arn"] }
+    },
+    "MonitoringJobArn": {
+      "Description": "ARN of the Monitoring Job",
+      "Value": { "Fn::GetAtt": ["MonitronJob", "Arn"] }
+    }
+  }
+}

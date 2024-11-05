@@ -1,0 +1,14 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon Kinesis Data Stream",
+  "Resources": {
+    "KinesisDataStream": {
+      "Type": "AWS::Kinesis::Stream",
+      "Properties": {
+        "Name": "MyKinesisDataStream",
+        "ShardCount": 1,
+        "RetentionPeriodHours": 24 
+      }
+    }
+  }
+}

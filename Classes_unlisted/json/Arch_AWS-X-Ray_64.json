@@ -1,0 +1,25 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS X-Ray Setup",
+  "Resources": {
+    "XRayGroup": {
+      "Type": "AWS::XRay::Group",
+      "Properties": {
+        "GroupName": "MyXRayGroup",  
+        "FilterExpression": "service() = \"my-service\"", 
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyXRayGroup"
+          }
+        ]
+      } 
+    },
+    "XRaySamplingRule": {
+      "Type": "AWS::XRay::SamplingRule",
+      "Properties": {
+        "RuleName": "MySamplingRule"
+      }
+    }
+  }
+}

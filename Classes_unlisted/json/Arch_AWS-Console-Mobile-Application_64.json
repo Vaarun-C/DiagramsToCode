@@ -1,0 +1,26 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS Console Mobile Application Setup",
+  "Resources": {
+    "MobileHubProject": {
+      "Type": "AWS::MobileHub::Project",
+      "Properties": {
+        "Name": "MyMobileHubProject",
+        "Region": "us-west-2",  // Replace with the right region
+        "Features": [
+          "UserSignIn",
+          "UserData",
+          "PushNotifications"
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "ProjectId": {
+      "Description": "ID of the Mobile Hub Project",
+      "Value": {
+        "Ref": "MobileHubProject"
+      }
+    }
+  }
+}

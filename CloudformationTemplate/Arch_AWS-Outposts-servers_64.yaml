@@ -4,7 +4,11 @@ Description: Simple Setup for AWS Outposts Server
 Resources:
   OutpostInstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
+<<<<<<< HEAD
+    Properties: {}
+=======
     # Properties:
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb
     #   Roles:
     #     - !Ref OutpostRole
 
@@ -32,7 +36,11 @@ Resources:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: "Outposts Security Group"
+<<<<<<< HEAD
+      # VpcId: !Ref OutpostVpcId
+=======
       VpcId: !Ref OutpostVpcId
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb
       SecurityGroupIngress:
         - IpProtocol: "tcp"
           FromPort: 80

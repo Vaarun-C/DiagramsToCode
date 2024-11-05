@@ -1,0 +1,39 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon Athena Database and Table",
+  "Resources": {
+    "AthenaDatabase": {
+      "Type": "AWS::Athena::Database",
+      "Properties": {
+        "DatabaseName": "MyAthenaDatabase"
+      }
+    },
+    "AthenaTable": {
+      "Type": "AWS::Athena::Table",
+      "Properties": {
+        "DatabaseName": { "Ref": "AthenaDatabase" },
+        "TableName": "MyAthenaTable",
+        "Columns": [
+          {
+            "Name": "id",
+            "Type": "bigint"
+          },
+          {
+            "Name": "name",
+            "Type": "string"
+          },
+          {
+            "Name": "created_at",
+            "Type": "timestamp"
+          }
+        ],
+        
+        "InputFormat": "org.apache.hadoop.mapred.TextInputFormat",
+        "OutputFormat": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+        "SerdeInfo": {
+          "SerializationLibrary": "org.apache.hadoop.hive.serde2.OpenCSVSerde"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic Alexa for Business Setup",
+  "Resources": {
+    "AlexaSkill": {
+      "Type": "AWS::AlexaForBusiness::Skill",
+      "Properties": {
+        "SkillId": "your-skill-id",  // Replace with your Alexa skill ID
+        "SkillName": "MyAlexaSkill",
+        "SkillType": "Custom",
+        "AuthenticationConfiguration": {
+          "AccessToken": "your-access-token",  // Replace with your access token
+        },
+        "VendorId": "your-vendor-id"  // Replace with your vendor ID
+      }
+    },
+    "AlexaDevice": {
+      "Type": "AWS::AlexaForBusiness::Device",
+      "Properties": {
+        "DeviceName": "MyAlexaDevice",
+        "DeviceType": "Echo",  // Specify the device type
+        "DeviceId": "your-device-id",  // Replace with your device ID
+        "RoomArn": "your-room-arn"  // Replace with your room ARN
+      }
+    }
+  },
+  "Outputs": {
+    "SkillArn": {
+      "Description": "ARN of the Alexa Skill",
+      "Value": {
+        "Ref": "AlexaSkill"
+      }
+    },
+    "DeviceArn": {
+      "Description": "ARN of the Alexa Device",
+      "Value": {
+        "Ref": "AlexaDevice"
+      }
+    }
+  }
+}

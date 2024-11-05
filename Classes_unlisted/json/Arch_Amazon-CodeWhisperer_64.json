@@ -1,0 +1,13 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "IAM Role for Amazon CodeWhisperer",
+  "Resources": {
+    "CodeWhispererIAMRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument" : "path/to/json/file",
+        "RoleName": "CodeWhispererRole"       
+      }
+    }   
+  }
+}

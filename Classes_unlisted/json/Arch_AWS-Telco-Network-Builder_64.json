@@ -1,0 +1,13 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Telco Network Builder.",
+  "Resources": {
+    "TelcoNetwork": {
+      "Type": "AWS::TelcoNetwork::Network",
+      "Properties": {
+        "NetworkName": "MyTelcoNetwork",  // Replace with your desired network name
+        "Description": "Sample Telco Network"
+      }
+    }
+  }
+}

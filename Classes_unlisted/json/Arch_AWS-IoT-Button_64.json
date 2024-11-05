@@ -1,0 +1,105 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS IoT Button Setup",
+  "Resources": {
+    "IoTButton": {
+      "Type": "AWS::IoT::Button",
+      "Properties": {
+        "ButtonArn": "arn:aws:iot:us-east-1:123456789012:button/MyButton",  // Replace with your IoT Button ARN
+        "Description": "My AWS IoT Button"
+      }
+    },
+    "IoTButtonLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "MyIoTButtonFunction",
+        "Handler": "index.handler",
+        "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
+        "Code": {
+          "ZipFile": "def handler(event, context):\n    print(\"IoT Button pressed!\")\n    return {\"status\": \"success\"}"
+        },
+        "Runtime": "python3.8",
+        "Timeout": 3
+      }
+    },
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "LambdaBasicExecution",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "IoTButtonEventRule": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "EventPattern": {
+          "source": [
+            "aws.iotbutton"
+          ],
+          "detail-type": [
+            "AWS IoT Button"
+          ],
+          "detail": {
+            "buttonArn": [
+              { "Ref": "IoTButton" }
+            ]
+          }
+        },
+        "Targets": [
+          {
+            "Arn": { "Fn::GetAtt": ["IoTButtonLambdaFunction", "Arn"] },
+            "Id": "TargetFunctionV1"
+          }
+        ]
+      }
+    },
+    "IoTButtonPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": { "Ref": "IoTButtonLambdaFunction" },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": { "Fn::GetAtt": ["IoTButtonEventRule", "Arn"] }
+      }
+    }
+  },
+  "Outputs": {
+    "IoTButtonArn": {
+      "Description": "ARN of the AWS IoT Button",
+      "Value": { "Ref": "IoTButton" }
+    },
+    "LambdaFunctionArn": {
+      "Description": "ARN of the Lambda function",
+      "Value": { "Fn::GetAtt": ["IoTButtonLambdaFunction", "Arn"] }
+    }
+  }
+}

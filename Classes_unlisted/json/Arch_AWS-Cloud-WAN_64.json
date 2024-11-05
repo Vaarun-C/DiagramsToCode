@@ -1,0 +1,76 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create an AWS Cloud WAN global network.",
+  "Resources": {
+    "GlobalNetwork": {
+      "Type": "AWS::NetworkManager::GlobalNetwork",
+      "Properties": {
+        "Description": "My Global Network"
+      }
+    },
+    "CoreNetwork": {
+      "Type": "AWS::NetworkManager::CoreNetwork",
+      "Properties": {
+        "GlobalNetworkId": {
+          "Ref": "GlobalNetwork"
+        },
+        "CoreNetworkPolicy": {
+          "Description": "My Core Network Policy",
+          "Segments": [
+            {
+              "SegmentName": "MySegment",
+              "SegmentType": "ISOLATED",  // or "CONNECTED"
+              "Policy": {
+                "AllowPolicy": [
+                  {
+                    "SourceSegment": "MySegment",
+                    "DestinationSegment": "MyOtherSegment"  // Replace with your other segment name
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyCoreNetwork"
+          }
+        ]
+      }
+    },
+    "Connection": {
+      "Type": "AWS::NetworkManager::Connection",
+      "Properties": {
+        "GlobalNetworkId": {
+          "Ref": "GlobalNetwork"
+        },
+        "ConnectionId": "my-connection",  // Provide a unique connection ID
+        "Bandwidth": {
+          "Provider": "AWS",
+          "Value": 100  // Adjust bandwidth as necessary
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyConnection"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "GlobalNetworkId": {
+      "Description": "The ID of the Global Network",
+      "Value": {
+        "Ref": "GlobalNetwork"
+      }
+    },
+    "CoreNetworkId": {
+      "Description": "The ID of the Core Network",
+      "Value": {
+        "Ref": "CoreNetwork"
+      }
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon SageMaker Setup",
+  "Resources": {
+    "SageMakerRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "sagemaker.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "SageMakerPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket",
+                    "s3:PutObject",
+                    "s3:GetObject"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "SageMakerNotebookInstance": {
+      "Type": "AWS::SageMaker::NotebookInstance",
+      "Properties": {
+        "NotebookInstanceName": "MySageMakerNotebook",  
+        "InstanceType": "ml.t2.medium", 
+        "RoleArn": { "Fn::GetAtt": ["SageMakerRole", "Arn"] },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MySageMakerNotebook"
+          }
+        ]
+      }
+    }
+  }
+}

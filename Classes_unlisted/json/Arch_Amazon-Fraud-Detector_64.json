@@ -1,0 +1,13 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon Fraud Detector Model",
+  "Resources": {
+    "FraudDetector": {
+      "Type": "AWS::FraudDetector::Model",
+      "Properties": {
+        "Name": "MyFraudDetectorModel"
+        }
+      }
+    }
+  }
+

@@ -1,0 +1,52 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon EMR.",
+  "Resources": {
+    "EMRCluster": {
+      "Type": "AWS::EMR::Cluster",
+      "Properties": {
+        "Name": "MyEMRCluster",
+        "ReleaseLabel": "emr-6.10.0",  // Specify the desired EMR release version
+        "Applications": [
+          {
+            "Name": "Hadoop"
+          },
+          {
+            "Name": "Spark"  // Add other applications as needed
+          }
+        ],
+        "Instances": {
+          "InstanceGroups": [
+            {
+              "InstanceGroupType": "MASTER",
+              "InstanceType": "m5.xlarge",  // Choose appropriate instance type
+              "InstanceCount": 1
+            },
+            {
+              "InstanceGroupType": "CORE",
+              "InstanceType": "m5.xlarge",
+              "InstanceCount": 1
+            }
+          ]
+        },
+        "JobFlowRole": "EMR_EC2_DefaultRole",  // Ensure the role exists
+        "ServiceRole": "EMR_DefaultRole",  // Ensure the role exists
+        "VisibleToAllUsers": true
+      }
+    }
+  },
+  "Outputs": {
+    "EMRClusterId": {
+      "Description": "ID of the created EMR cluster.",
+      "Value": {
+        "Ref": "EMRCluster"
+      }
+    },
+    "EMRClusterArn": {
+      "Description": "ARN of the created EMR cluster.",
+      "Value": {
+        "Fn::GetAtt": ["EMRCluster", "Arn"]
+      }
+    }
+  }
+}

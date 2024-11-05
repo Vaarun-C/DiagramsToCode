@@ -50,7 +50,11 @@ Resources:
     Properties:
       GatewayName: !Ref GatewayName
       GatewayType: FILE_S3  # Specify the gateway type (File Gateway)
+<<<<<<< HEAD
+      #ActivationKey: !Ref ActivationKey  # Needs to be provided during manual activation
+=======
       ActivationKey: !Ref ActivationKey  # Needs to be provided during manual activation
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb
 
 # Outputs:
 #   StorageBucketArn:

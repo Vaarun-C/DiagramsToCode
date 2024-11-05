@@ -1,0 +1,28 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon CodeCatalyst.",
+  "Resources": {
+    "MyCodeCatalystProject": {
+      "Type": "AWS::CodeCatalyst::Project",
+      "Properties": {
+        "Name": "MyCodeCatalystProject",  // Replace with your desired project name
+        "Description": "Sample CodeCatalyst project",
+        "Identifier": "my-codecatalyst-project",  // Must be unique within your organization
+        "ProjectTemplate": {
+          "Name": "BasicTemplate"  // Replace with your desired project template name
+        },
+        "Tags": {
+          "Key1": "Value1"  // Replace with your desired tags
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ProjectId": {
+      "Description": "The ID of the created CodeCatalyst project.",
+      "Value": {
+        "Ref": "MyCodeCatalystProject"
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon Detective Graph",
+  "Resources": {
+    "DetectiveGraph": {
+      "Type": "AWS::Detective::Graph",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyDetectiveGraph",  
+          }
+        ]
+      }
+    }
+  }
+}

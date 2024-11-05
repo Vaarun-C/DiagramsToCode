@@ -1,0 +1,59 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS CloudFormation template to deploy an Open 3D Engine environment.",
+  "Resources": {
+    "O3DEInstance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t2.micro",
+        "ImageId": "ami-0c55b159cbfafe01e",  // Replace with an appropriate AMI for O3DE
+        "KeyName": {
+          "Ref": "KeyPairName"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "O3DESecurityGroup"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Sub": "#!/bin/bash\n    yum update -y\n    # Commands to install Open 3D Engine will go here"
+          }
+        }
+      }
+    },
+    "O3DESecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Enable HTTP and SSH access",
+        "VpcId": {
+          "Ref": "VPCId"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 8080,
+            "ToPort": 8080,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    }
+  },
+  "Parameters": {
+    "KeyPairName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance."
+    },
+    "VPCId": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "The VPC ID where the EC2 instance will be launched."
+    }
+  }
+}

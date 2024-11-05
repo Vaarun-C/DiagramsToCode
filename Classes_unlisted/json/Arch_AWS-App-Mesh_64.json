@@ -1,0 +1,144 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create an AWS App Mesh setup.",
+  "Resources": {
+    "AppMesh": {
+      "Type": "AWS::AppMesh::Mesh",
+      "Properties": {
+        "MeshName": "MyAppMesh",
+        "Spec": {
+          "EgressFilter": {
+            "OutboundTrafficPolicy": {
+              "Type": "ALLOW_ALL"
+            }
+          }
+        }
+      }
+    },
+    "VirtualNode": {
+      "Type": "AWS::AppMesh::VirtualNode",
+      "Properties": {
+        "MeshName": {
+          "Ref": "AppMesh"
+        },
+        "VirtualNodeName": "MyVirtualNode",
+        "Spec": {
+          "ServiceDiscovery": {
+            "DNS": {
+              "Hostname": "my-service.local"
+            }
+          },
+          "Listeners": [
+            {
+              "PortMapping": {
+                "Port": 8080,
+                "Protocol": "http"
+              }
+            }
+          ],
+          "Backends": [
+            {
+              "VirtualService": {
+                "VirtualServiceName": {
+                  "Ref": "VirtualService"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "VirtualService": {
+      "Type": "AWS::AppMesh::VirtualService",
+      "Properties": {
+        "MeshName": {
+          "Ref": "AppMesh"
+        },
+        "VirtualServiceName": "MyVirtualService",
+        "Spec": {
+          "Provider": {
+            "VirtualNode": {
+              "VirtualNodeName": {
+                "Ref": "VirtualNode"
+              }
+            }
+          }
+        }
+      }
+    },
+    "VirtualRouter": {
+      "Type": "AWS::AppMesh::VirtualRouter",
+      "Properties": {
+        "MeshName": {
+          "Ref": "AppMesh"
+        },
+        "VirtualRouterName": "MyVirtualRouter",
+        "Spec": {
+          "Listener": {
+            "PortMapping": {
+              "Port": 8080,
+              "Protocol": "http"
+            }
+          }
+        }
+      }
+    },
+    "VirtualRouterRoute": {
+      "Type": "AWS::AppMesh::Route",
+      "Properties": {
+        "MeshName": {
+          "Ref": "AppMesh"
+        },
+        "VirtualRouterName": {
+          "Ref": "VirtualRouter"
+        },
+        "RouteName": "MyRoute",
+        "Spec": {
+          "HttpRoute": {
+            "Match": {
+              "Prefix": "/"
+            },
+            "Action": {
+              "WeightedTargets": [
+                {
+                  "Weight": 1,
+                  "VirtualServiceRef": {
+                    "VirtualServiceName": {
+                      "Ref": "VirtualService"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "AppMeshName": {
+      "Description": "The name of the App Mesh",
+      "Value": {
+        "Ref": "AppMesh"
+      }
+    },
+    "VirtualNodeName": {
+      "Description": "The name of the Virtual Node",
+      "Value": {
+        "Ref": "VirtualNode"
+      }
+    },
+    "VirtualServiceName": {
+      "Description": "The name of the Virtual Service",
+      "Value": {
+        "Ref": "VirtualService"
+      }
+    },
+    "VirtualRouterName": {
+      "Description": "The name of the Virtual Router",
+      "Value": {
+        "Ref": "VirtualRouter"
+      }
+    }
+  }
+}

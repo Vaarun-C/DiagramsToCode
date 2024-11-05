@@ -1,0 +1,14 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon Chime SDK Configuration",
+  "Resources": {
+    "VoiceConnector": {
+      "Type": "AWS::Chime::VoiceConnector",
+      "Properties": {
+        "Name": "MyVoiceConnector",
+        "AwsRegion": { "Ref": "AWS::Region" },
+        "RequireEncryption": true
+    }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS Resilience Hub Setup",
+  "Resources": {
+    "ResilienceHubApplication": {
+      "Type": "AWS::ResilienceHub::Application",
+      "Properties": {
+        "ApplicationName": "MyResilienceApplication",
+        "Description": "A basic application in AWS Resilience Hub",
+        "ResourceMappings": [
+          {
+            "ResourceType": "AWS::EC2::Instance",
+            "ResourceId": "i-0123456789abcdef0"  // Replace with your EC2 instance ID
+          },
+          {
+            "ResourceType": "AWS::S3::Bucket",
+            "ResourceId": "my-bucket-name"  // Replace with your S3 bucket name
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "ApplicationArn": {
+      "Description": "ARN of the AWS Resilience Hub Application",
+      "Value": {
+        "Ref": "ResilienceHubApplication"
+      }
+    }
+  }
+}

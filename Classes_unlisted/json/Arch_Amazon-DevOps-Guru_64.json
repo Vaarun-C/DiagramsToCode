@@ -1,0 +1,67 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon DevOps Guru Setup",
+  "Resources": {
+    "DevOpsGuruResourceCollection": {
+      "Type": "AWS::DevOpsGuru::ResourceCollection",
+      "Properties": {
+        "ResourceCollectionType": "AWS::CloudFormation::Stack",
+        "StackNames": [
+          "MyCloudFormationStack" 
+        ]
+      }
+    },
+    "DevOpsGuruServiceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "devopsguru.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "DevOpsGuruPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents",
+                    "cloudwatch:PutMetricData",
+                    "sns:Publish",
+                    "cloudwatch:DescribeAlarms"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "DevOpsGuru": {
+      "Type": "AWS::DevOpsGuru::NotificationChannel",
+      "Properties": {
+        "Config": {
+          "Sns": {
+            "TopicArn": "arn:aws:sns:us-east-1:123456789012:MySnsTopic" 
+          }
+        },
+        "ServiceRoleArn": {
+          "Fn::GetAtt": ["DevOpsGuruServiceRole", "Arn"]
+        }
+      }
+    }
+  }
+}

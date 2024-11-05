@@ -1,0 +1,15 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon Q Setup",
+  "Resources": {
+    "QuantumTask": {
+      "Type": "AWS::Quantum::Task",
+      "Properties": {
+        "Name": "MyQuantumTask",  // Replace with task name
+        "Action": "AWS::Quantum::Action",  // Specify the action to perform
+        "Device": "arn:aws:quantum::device:device-name",  // Replace with your device ARN
+      }
+    }
+  }
+}
+

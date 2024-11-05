@@ -1,0 +1,14 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS AppFabric Application",
+  "Resources": {
+    "AppFabricApplication": {
+      "Type": "AWS::AppFabric::Application",
+      "Properties": {
+        "ApplicationName": "MyAppFabricApplication",  
+        "AuthType": "OAuth2"
+        }
+      }
+    }
+  }
+

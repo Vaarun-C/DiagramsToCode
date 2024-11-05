@@ -1,0 +1,101 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Elemental MediaLive.",
+  "Resources": {
+    "MediaLiveInput": {
+      "Type": "AWS::MediaLive::Input",
+      "Properties": {
+        "InputSecurityGroups": [
+          {
+            "Ref": "MediaLiveInputSecurityGroup"
+          }
+        ],
+        "Name": "MyInput",
+        "Type": "RTMP_PUSH",
+        "Sources": [
+          {
+            "Url": "rtmp://example.com/live"  // Replace with your input URL
+          }
+        ]
+      }
+    },
+    "MediaLiveInputSecurityGroup": {
+      "Type": "AWS::MediaLive::InputSecurityGroup",
+      "Properties": {
+        "InputSecurityGroupName": "MyInputSecurityGroup",
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Production"
+          }
+        ]
+      }
+    },
+    "MediaLiveChannel": {
+      "Type": "AWS::MediaLive::Channel",
+      "Properties": {
+        "ChannelClass": "SINGLE_PIPELINE",
+        "Name": "MyChannel",
+        "RoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_MEDIALIVE_ROLE",  // Replace with your IAM role ARN
+        "InputAttachments": [
+          {
+            "InputId": {
+              "Ref": "MediaLiveInput"
+            }
+          }
+        ],
+        "EncoderSettings": {
+          "OutputGroups": [
+            {
+              "Name": "HLS",
+              "OutputGroupSettings": {
+                "HlsGroupSettings": {
+                  "Destination": "s3://YOUR_S3_BUCKET/outputs/"  // Replace with your S3 bucket
+                }
+              },
+              "Outputs": [
+                {
+                  "NameModifier": "output1",
+                  "VideoDescriptionName": "VideoDescription",
+                  "AudioDescriptionNames": [
+                    "AudioDescription"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "Destinations": [
+          {
+            "Id": "destination1",
+            "DestinationSettings": [
+              {
+                "Id": "destination1",
+                "DestinationType": "S3",
+                "DestinationSettings": {
+                  "S3Settings": {
+                    "S3Uri": "s3://YOUR_S3_BUCKET/outputs/"  // Replace with your S3 bucket
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "InputId": {
+      "Description": "The ID of the created MediaLive input.",
+      "Value": {
+        "Ref": "MediaLiveInput"
+      }
+    },
+    "ChannelId": {
+      "Description": "The ID of the created MediaLive channel.",
+      "Value": {
+        "Ref": "MediaLiveChannel"
+      }
+    }
+  }
+}

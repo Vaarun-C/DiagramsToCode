@@ -1,0 +1,55 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Site-to-Site VPN Setup",
+  "Resources": {
+    "CustomerGateway": {
+      "Type": "AWS::EC2::CustomerGateway",
+      "Properties": {
+        "BgpAsn": 65000,  
+        "IpAddress": "203.0.113.1",  
+        "Type": "ipsec.1",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyCustomerGateway"
+          }
+        ]
+      }
+    },
+    "VirtualPrivateGateway": {
+      "Type": "AWS::EC2::VPNGateway",
+      "Properties": {
+        "Type": "ipsec.1",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyVirtualPrivateGateway"
+          }
+        ]
+      }
+    },
+    "VpnConnection": {
+      "Type": "AWS::EC2::VPNConnection",
+      "Properties": {
+        "CustomerGatewayId": { "Ref": "CustomerGateway" },
+        "VirtualPrivateGatewayId": { "Ref": "VirtualPrivateGateway" },
+        "Type": "ipsec.1",
+        "VpnTunnelOptions": [
+          {
+            "PreSharedKey": "myPresharedKey",  
+            "TunnelInsideCidr": "169.254.10.0/30",
+            "IKEVersions": [
+              "ikev2"
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyVpnConnection"
+          }
+        ]
+      }
+    }
+  }
+}

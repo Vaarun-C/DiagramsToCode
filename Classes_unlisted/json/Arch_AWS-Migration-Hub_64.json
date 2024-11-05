@@ -1,0 +1,20 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Migration Hub Project Setup",
+  "Resources": {
+    "MigrationHub": {
+      "Type": "AWS::MigrationHub::HomeRegion",
+      "Properties": {
+        "HomeRegion": { "Ref": "AWS::Region" }
+      }
+    },
+    "MigrationProject": {
+      "Type": "AWS::MigrationHub::MigrationProject",
+      "Properties": {
+        "ProjectName": "MyMigrationProject",
+        "Description": "Migration project for tracking",
+        "ClientRequestToken": { "Fn::Sub": "${AWS::StackName}-${AWS::Region}-${AWS::AccountId}" }
+      }
+    }
+  }
+}

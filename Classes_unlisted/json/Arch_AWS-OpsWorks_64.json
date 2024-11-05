@@ -1,0 +1,78 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for AWS OpsWorks.",
+  "Resources": {
+    "OpsWorksStack": {
+      "Type": "AWS::OpsWorks::Stack",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "MyOpsWorksStack-${AWS::AccountId}"
+        },
+        "Region": {
+          "Ref": "AWS::Region"
+        },
+        "ServiceRoleArn": {
+          "Ref": "ServiceRoleArn"
+        },
+        "DefaultInstanceProfileArn": {
+          "Ref": "InstanceProfileArn"
+        },
+        "Attributes": {
+          "DefaultAvailabilityZone": {
+            "Fn::Select": [0, { "Fn::GetAZs": "" }]
+          }
+        }
+      }
+    },
+    "OpsWorksLayer": {
+      "Type": "AWS::OpsWorks::Layer",
+      "Properties": {
+        "StackId": {
+          "Ref": "OpsWorksStack"
+        },
+        "Name": {
+          "Fn::Sub": "MyWebLayer-${AWS::AccountId}"
+        },
+        "Type": "web",
+        "Shortname": "web",
+        "InstanceType": "t2.micro",
+        "AutoAssignElasticIps": true,
+        "AutoAssignPublicIps": true,
+        "CustomRecipes": {
+          "Configure": [],
+          "Deploy": [],
+          "Setup": [],
+          "Shutdown": [],
+          "Undeploy": []
+        }
+      }
+    },
+    "OpsWorksApplication": {
+      "Type": "AWS::OpsWorks::App",
+      "Properties": {
+        "StackId": {
+          "Ref": "OpsWorksStack"
+        },
+        "Name": {
+          "Fn::Sub": "MyApp-${AWS::AccountId}"
+        },
+        "Type": "rails",  // Change according to your application type
+        "AppSource": {
+          "Type": "git",
+          "Url": "https://github.com/your-repo.git",  // Replace with your app repository URL
+          "Revision": "master"
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "ServiceRoleArn": {
+      "Type": "String",
+      "Description": "ARN of the IAM service role for AWS OpsWorks."
+    },
+    "InstanceProfileArn": {
+      "Type": "String",
+      "Description": "ARN of the IAM instance profile for OpsWorks instances."
+    }
+  }
+}

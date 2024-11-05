@@ -1,0 +1,12 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon SQS Queue",
+  "Resources": {
+    "MySQSQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "QueueName": "MySQSQueue"
+      }
+    }
+  }
+}

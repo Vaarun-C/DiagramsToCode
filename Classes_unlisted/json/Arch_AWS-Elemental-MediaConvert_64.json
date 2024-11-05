@@ -1,0 +1,58 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS Elemental MediaConvert Setup",
+  "Resources": {
+    "MediaConvertJobTemplate": {
+      "Type": "AWS::MediaConvert::JobTemplate",
+      "Properties": {
+        "Name": "MyMediaConvertJobTemplate",
+        "Description": "A simple MediaConvert job template",
+        "Status": "ACTIVE",
+        "Settings": {
+          "OutputGroups": [
+            {
+              "Name": "File Group",
+              "Outputs": [
+                {
+                  "ContainerSettings": {
+                    "Container": "MP4"
+                  },
+                  "VideoDescription": {
+                    "CodecSettings": {
+                      "Codec": "H.264"
+                    },
+                    "Width": 1920,
+                    "Height": 1080
+                  },
+                  "AudioDescriptions": [
+                    {
+                      "CodecSettings": {
+                        "Codec": "AAC"
+                      },
+                      "LanguageCode": "eng",
+                      "Name": "Audio"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "AdAvailOffset": 0,
+          "Inputs": [
+            {
+              "FileInput": "s3://your-input-bucket/input-file.mp4"  // Replace with your input file
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "JobTemplateArn": {
+      "Description": "ARN of the MediaConvert Job Template",
+      "Value": {
+        "Ref": "MediaConvertJobTemplate"
+      }
+    }
+  }
+}

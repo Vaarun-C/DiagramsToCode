@@ -1,0 +1,12 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Application Cost Profiler",
+  "Resources": {
+    "CostProfiler": {
+      "Type": "AWS::ApplicationCostProfiler::CostProfiler",
+      "Properties": {
+        "Name": "MyCostProfiler"
+      }
+    }
+  }
+}

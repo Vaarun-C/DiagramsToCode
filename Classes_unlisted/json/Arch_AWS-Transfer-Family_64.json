@@ -1,0 +1,136 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Transfer Family.",
+  "Resources": {
+    "TransferS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-transfer-family-bucket"  // Replace with a unique bucket name
+      }
+    },
+    "TransferServer": {
+      "Type": "AWS::Transfer::Server",
+      "Properties": {
+        "EndpointType": "PUBLIC",
+        "IdentityProviderType": "SERVICE_MANAGED",
+        "LoggingRole": {
+          "Fn::GetAtt": [
+            "TransferLoggingRole",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "TransferUser": {
+      "Type": "AWS::Transfer::User",
+      "Properties": {
+        "UserName": "transfer-user",  // Replace with your desired username
+        "ServerId": {
+          "Ref": "TransferServer"
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "TransferUserRole",
+            "Arn"
+          ]
+        },
+        "HomeDirectory": {
+          "Fn::Sub": "/${TransferS3Bucket}/"
+        }
+      }
+    },
+    "TransferLoggingRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "transfer.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "TransferLoggingPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "TransferUserRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "transfer.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "TransferUserPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket",
+                    "s3:PutObject",
+                    "s3:GetObject"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "${TransferS3Bucket.Arn}"
+                    },
+                    {
+                      "Fn::Sub": "${TransferS3Bucket.Arn}/*"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "TransferServerId": {
+      "Description": "The ID of the created Transfer server.",
+      "Value": {
+        "Ref": "TransferServer"
+      }
+    },
+    "TransferBucketName": {
+      "Description": "The S3 bucket for AWS Transfer Family.",
+      "Value": {
+        "Ref": "TransferS3Bucket"
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon CodeGuru Setup",
+  "Resources": {
+    "CodeGuruReviewer": {
+      "Type": "AWS::CodeGuruReviewer::RepositoryAssociation",
+      "Properties": {
+        "Name": "MyCodeGuruRepoAssociation",  
+        "Repository": {
+          "CodeCommit": {
+            "Name": "MyCodeCommitRepo"  
+          }
+        },
+        "Owner": "your-github-username",
+        "ProviderType": "GitHub",  
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyCodeGuruReviewer"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS Distro for OpenTelemetry Setup",
+  "Resources": {
+    "OpenTelemetryCollector": {
+      "Type": "AWS::DistroForOpenTelemetry::Collector",
+      "Properties": {
+        "CollectorName": "MyOpenTelemetryCollector",
+        "RoleArn": "arn:aws:iam::123456789012:role/YourRole",  // Replace with your IAM Role ARN
+        "Configuration": {
+          "Signal": {
+            "OTLP": {
+              "Endpoint": "your-otel-collector-endpoint",  // Replace with your endpoint
+              "Insecure": false  // Set to true if you're using an insecure connection
+            }
+          }
+        },
+        "Tags": {
+          "Key": "Value"  // Add any necessary tags
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "CollectorArn": {
+      "Description": "ARN of the OpenTelemetry Collector",
+      "Value": {
+        "Ref": "OpenTelemetryCollector"
+      }
+    }
+  }
+}

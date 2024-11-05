@@ -1,0 +1,12 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon EventBridge Event Bus",
+  "Resources": {
+    "MyEventBus": {
+      "Type": "AWS::Events::EventBus",
+      "Properties": {
+        "Name": "MyEventBus" 
+      }
+    }
+  }
+}

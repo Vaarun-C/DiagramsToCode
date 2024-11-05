@@ -1,0 +1,95 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for AWS Lake Formation.",
+  "Resources": {
+    "LakeFormationDataLakeSettings": {
+      "Type": "AWS::LakeFormation::DataLakeSettings",
+      "Properties": {
+        "DataLakeAdmins": [
+          {
+            "Ref": "DataLakeAdminRole"
+          }
+        ],
+        "CreateDatabaseDefaultPermissions": [
+          {
+            "DataLakePrincipal": {
+              "DataLakePrincipalIdentifier": {
+                "Ref": "DataLakeAdminRole"
+              }
+            },
+            "Permissions": [
+              "ALL"
+            ]
+          }
+        ]
+      }
+    },
+    "DataLakeAdminRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lakeformation.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "LakeFormationAdminPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lakeformation:GrantPermissions",
+                    "lakeformation:RevokePermissions",
+                    "lakeformation:GetDataLakeSettings",
+                    "lakeformation:PutDataLakeSettings"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "DataLakeLocation": {
+      "Type": "AWS::LakeFormation::DataLakeLocation",
+      "Properties": {
+        "ResourceArn": {
+          "Ref": "S3BucketArn"
+        },
+        "DataLakePrincipal": {
+          "DataLakePrincipalIdentifier": {
+            "Ref": "DataLakeAdminRole"
+          }
+        },
+        "Permissions": [
+          "ALL"
+        ]
+      }
+    }
+  },
+  "Parameters": {
+    "S3BucketArn": {
+      "Type": "String",
+      "Description": "ARN of the S3 bucket to be used for the data lake."
+    }
+  },
+  "Outputs": {
+    "DataLakeSettingsArn": {
+      "Description": "ARN of the Data Lake Settings.",
+      "Value": {
+        "Ref": "LakeFormationDataLakeSettings"
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Amazon Nimble Studio Setup",
+  "Resources": {
+    "NimbleStudio": {
+      "Type": "AWS::NimbleStudio::Studio",
+      "Properties": {
+<<<<<<< HEAD
+        "StudioName": "MyNimbleStudio",  
+        "AdminRoleArn": {},
+        "UserRoleArn": {}
+        }
+      }
+    }
+}
+=======
+        "Name": "MyNimbleStudio",  // Replace with your desired studio name
+        "DisplayName": "My Nimble Studio",  // Replace with a display name
+        "StudioAccess": [
+          {
+            "PrincipalId": "arn:aws:iam::123456789012:role/MyStudioRole"  // Replace with your IAM role ARN
+          }
+        ],
+        "StudioLogoS3Path": "s3://my-nimble-studio-bucket/logo.png",  // Replace with your logo S3 path
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyNimbleStudio"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "StudioId": {
+      "Description": "ID of the Amazon Nimble Studio",
+      "Value": { "Ref": "NimbleStudio" }
+    }
+  }
+}
+>>>>>>> e65d1f9108cc0bad3624f267255ba03bdf3d2e9b

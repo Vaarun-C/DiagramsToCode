@@ -1,0 +1,21 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS Control Tower Setup",
+  "Resources": {
+    "OrganizationUnit": {
+      "Type": "AWS::Organizations::OrganizationalUnit",
+      "Properties": {
+        "Name": "MyOU",  // Replace with your desired organizational unit name
+        "ParentId": "r-examplerootid"  // Replace with your root ID
+      }
+    }
+  },
+  "Outputs": {
+    "OrganizationalUnitId": {
+      "Description": "ID of the created Organizational Unit",
+      "Value": {
+        "Ref": "OrganizationUnit"
+      }
+    }
+  }
+}

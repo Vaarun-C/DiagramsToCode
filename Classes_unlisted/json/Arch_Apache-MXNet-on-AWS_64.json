@@ -1,0 +1,40 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple Apache MXNet on AWS Setup",
+  "Resources": {
+    "MXNetTrainingJob": {
+      "Type": "AWS::SageMaker::TrainingJob",
+      "Properties": {
+        "TrainingJobName": "MyMXNetTrainingJob",
+        "AlgorithmSpecification": {
+          "TrainingImage": "811284229777.dkr.ecr.us-west-2.amazonaws.com/mxnet-training:1.8.0-cpu-py3",  
+          "TrainingInputMode": "File"
+        },
+        "RoleArn": "arn:aws:iam::your-account-id:role/SageMakerRole", 
+        "InputDataConfig": [
+          {
+            "ChannelName": "training",
+            "DataSource": {
+              "S3DataSource": {
+                "S3DataType": "S3Prefix",
+                "S3Uri": "s3://your-bucket/training-data/",  
+                "S3DataDistributionType": "FullyReplicated"
+              }
+            }
+          }
+        ],
+        "OutputDataConfig": {
+          "S3OutputPath": "s3://your-bucket/output/"  
+        },
+        "ResourceConfig": {
+          "InstanceType": "ml.m5.large",  
+          "InstanceCount": 1,
+          "VolumeSizeInGB": 10
+        },
+        "StoppingCondition": {
+          "MaxRuntimeInSeconds": 3600  
+        } 
+      } 
+    }
+  }
+}

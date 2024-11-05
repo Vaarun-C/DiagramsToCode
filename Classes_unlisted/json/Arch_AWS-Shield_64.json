@@ -1,0 +1,132 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Shield.",
+  "Resources": {
+    "MyLoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "Name": "MyLoadBalancer",
+        "Subnets": [
+          {
+            "Ref": "MySubnet1"
+          },
+          {
+            "Ref": "MySubnet2"
+          }
+        ],
+        "SecurityGroups": [
+          {
+            "Ref": "MySecurityGroup"
+          }
+        ],
+        "Scheme": "internet-facing",
+        "LoadBalancerAttributes": [
+          {
+            "Key": "idle_timeout.timeout_seconds",
+            "Value": "60"
+          }
+        ]
+      }
+    },
+    "MySubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "MyVPC"
+        },
+        "CidrBlock": "10.0.1.0/24",
+        "AvailabilityZone": {
+          "Fn::Select": [
+            0,
+            {
+              "Fn::GetAZs": ""
+            }
+          ]
+        }
+      }
+    },
+    "MySubnet2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "MyVPC"
+        },
+        "CidrBlock": "10.0.2.0/24",
+        "AvailabilityZone": {
+          "Fn::Select": [
+            1,
+            {
+              "Fn::GetAZs": ""
+            }
+          ]
+        }
+      }
+    },
+    "MySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Allow HTTP and HTTPS",
+        "VpcId": {
+          "Ref": "MyVPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 80,
+            "ToPort": 80,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+    "ShieldProtection": {
+      "Type": "AWS::Shield::Protection",
+      "Properties": {
+        "Name": "MyShieldProtection",
+        "ResourceArn": {
+          "Fn::GetAtt": [
+            "MyLoadBalancer",
+            "Arn"
+          ]
+        },
+        "HealthCheckConfig": {
+          "ResourceArn": {
+            "Fn::GetAtt": [
+              "MyLoadBalancer",
+              "Arn"
+            ]
+          },
+          "HealthCheckInterval": 60,
+          "HealthCheckPath": "/",
+          "HealthCheckProtocol": "HTTP",
+          "HealthCheckTimeout": 5,
+          "HealthyThreshold": 2,
+          "UnhealthyThreshold": 2
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "LoadBalancerArn": {
+      "Description": "The ARN of the Load Balancer.",
+      "Value": {
+        "Fn::GetAtt": [
+          "MyLoadBalancer",
+          "Arn"
+        ]
+      }
+    },
+    "ShieldProtectionArn": {
+      "Description": "The ARN of the Shield protection policy.",
+      "Value": {
+        "Ref": "ShieldProtection"
+      }
+    }
+  }
+}

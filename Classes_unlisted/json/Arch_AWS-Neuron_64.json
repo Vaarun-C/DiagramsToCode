@@ -1,0 +1,50 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Neuron.",
+  "Resources": {
+    "SageMakerEndpointConfig": {
+      "Type": "AWS::SageMaker::EndpointConfig",
+      "Properties": {
+        "EndpointConfigName": "MyNeuronEndpointConfig",
+        "ProductionVariants": [
+          {
+            "VariantName": "AllTraffic",
+            "ModelName": {
+              "Ref": "NeuronModel"
+            },
+            "InitialVariantWeight": 1.0,
+            "InstanceType": "ml.inf1.xlarge",  // Choose an appropriate instance type
+            "InitialInstanceCount": 1
+          }
+        ]
+      }
+    },
+    "NeuronModel": {
+      "Type": "AWS::SageMaker::Model",
+      "Properties": {
+        "ModelName": "MyNeuronModel",
+        "PrimaryContainer": {
+          "Image": "your-neuron-image-uri",  // Replace with the actual Neuron model image URI
+          "ModelDataUrl": "s3://your-bucket/model.tar.gz"  // Replace with your model data S3 URL
+        }
+      }
+    },
+    "SageMakerEndpoint": {
+      "Type": "AWS::SageMaker::Endpoint",
+      "Properties": {
+        "EndpointName": "MyNeuronEndpoint",
+        "EndpointConfigName": {
+          "Ref": "SageMakerEndpointConfig"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "EndpointArn": {
+      "Description": "ARN of the created SageMaker endpoint.",
+      "Value": {
+        "Fn::GetAtt": ["SageMakerEndpoint", "Arn"]
+      }
+    }
+  }
+}

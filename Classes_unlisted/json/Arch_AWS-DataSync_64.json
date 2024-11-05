@@ -1,0 +1,33 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS DataSync Setup",
+  "Resources": {
+    "S3Location": {
+      "Type": "AWS::DataSync::LocationS3",
+      "Properties": {
+        "S3BucketArn": "arn:aws:s3:::your-bucket-name",  
+        "S3Config": {
+          "BucketAccessRoleArn": "arn:aws:iam::your-account-id:role/YourDataSyncRole"  
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyS3Location"
+          }
+        ]
+      }
+    },
+    "Task": {
+      "Type": "AWS::DataSync::Task",
+      "Properties": {
+        "SourceLocationArn": { "Fn::GetAtt": ["S3Location", "LocationArn"] },
+        "DestinationLocationArn": { "Fn::GetAtt": ["S3Location", "LocationArn"] },  
+        "Name": "MyDataSyncTask",
+        "CloudWatchLogGroupArn": "arn:aws:logs:your-region:your-account-id:log-group:your-log-group",  
+        "Schedule": {
+          "ScheduleExpression": "rate(5 minutes)"  
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS HealthImaging.",
+  "Resources": {
+    "HealthImagingDataset": {
+      "Type": "AWS::HealthImaging::Dataset",
+      "Properties": {
+        "DatasetName": "MyHealthImagingDataset",  // Replace with your dataset name
+        "Description": "A dataset for managing medical images.",
+        "S3Bucket": "my-health-imaging-bucket",  // Replace with your S3 bucket name
+        "KmsKeyId": "alias/aws/healthimaging"  // Optional: specify a KMS key for encryption
+      }
+    }
+  },
+  "Outputs": {
+    "DatasetArn": {
+      "Description": "ARN of the created HealthImaging dataset.",
+      "Value": {
+        "Ref": "HealthImagingDataset"
+      }
+    },
+    "DatasetName": {
+      "Description": "Name of the created HealthImaging dataset.",
+      "Value": {
+        "Fn::GetAtt": ["HealthImagingDataset", "DatasetName"]
+      }
+    }
+  }
+}

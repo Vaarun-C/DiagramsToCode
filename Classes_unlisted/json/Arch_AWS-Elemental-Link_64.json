@@ -1,0 +1,22 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to launch AWS Elemental Link.",
+  "Resources": {
+    "ElementalLink": {
+      "Type": "AWS::Elemental::Link",
+      "Properties": {
+        "Name": "MyElementalLink",
+        "Description": "Example Elemental Link instance"
+        // Include other properties as required by your setup
+      }
+    }
+  },
+  "Outputs": {
+    "ElementalLinkId": {
+      "Description": "The ID of the Elemental Link instance",
+      "Value": {
+        "Ref": "ElementalLink"
+      }
+    }
+  }
+}

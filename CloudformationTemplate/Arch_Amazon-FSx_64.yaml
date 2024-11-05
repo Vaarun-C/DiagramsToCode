@@ -61,7 +61,11 @@ Resources:
           - "Equals" 
           - !Ref FileSystemType 
           - !Ref ActiveDirectoryId 
+<<<<<<< HEAD
+          # - !Ref AWS::NoValue
+=======
           - !Ref AWS::NoValue
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb
         AutomaticBackupRetentionDays: 7
         DailyAutomaticBackupStartTime: "04:00"
         MultiAZ: true
@@ -73,7 +77,11 @@ Resources:
           - "Equals" 
           - !Ref FileSystemType 
           - !Ref AutoImportPolicy 
+<<<<<<< HEAD
+          # - !Ref AWS::NoValue
+=======
           - !Ref AWS::NoValue
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb
         WeeklyMaintenanceStartTime: "1:00"
 
 # Outputs:

@@ -1,0 +1,33 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS IoT ExpressLink.",
+  "Resources": {
+    "MyExpressLinkProfile": {
+      "Type": "AWS::IoTExpressLink::Profile",
+      "Properties": {
+        "ProfileName": "MyExpressLinkProfile",  // Replace with your desired profile name
+        "Description": "Sample ExpressLink profile",
+        "Connectivity": {
+          "WiFi": {
+            "Ssid": "MyWiFiSSID",  // Replace with your Wi-Fi SSID
+            "Password": "MyWiFiPassword"  // Replace with your Wi-Fi password
+          }
+        },
+        "CertificateArn": {
+          "Ref": "MyCertificateArn"  // Replace with your IoT certificate ARN
+        },
+        "RoleArn": {
+          "Ref": "MyRoleArn"  // Replace with your IAM role ARN
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ExpressLinkProfileArn": {
+      "Description": "The ARN of the created ExpressLink profile.",
+      "Value": {
+        "Ref": "MyExpressLinkProfile"
+      }
+    }
+  }
+}

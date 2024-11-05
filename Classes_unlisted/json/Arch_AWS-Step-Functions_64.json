@@ -1,0 +1,65 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Step Functions.",
+  "Resources": {
+    "MyStateMachine": {
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Properties": {
+        "StateMachineName": "MyStateMachine",  // Replace with your desired state machine name
+        "DefinitionString": {
+          "Fn::Sub": "{ \"Comment\": \"A simple AWS Step Functions state machine that passes through input.\", \"StartAt\": \"PassState\", \"States\": { \"PassState\": { \"Type\": \"Pass\", \"Result\": \"Hello, World!\", \"End\": true } } }"
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "StepFunctionsExecutionRole",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "StepFunctionsExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "states.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "StepFunctionsExecutionPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "StateMachineArn": {
+      "Description": "The ARN of the created Step Functions state machine.",
+      "Value": {
+        "Ref": "MyStateMachine"
+      }
+    }
+  }
+}

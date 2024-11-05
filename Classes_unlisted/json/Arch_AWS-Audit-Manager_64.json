@@ -1,0 +1,45 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Audit Manager.",
+  "Resources": {
+    "MyAuditManagerFramework": {
+      "Type": "AWS::AuditManager::Framework",
+      "Properties": {
+        "Name": "MyAuditFramework",  // Replace with your desired framework name
+        "Description": "Sample Audit Manager Framework",
+        "FrameworkType": "CUSTOM",
+        "ControlSets": [
+          {
+            "ControlSetName": "ControlSet1",
+            "Controls": [
+              {
+                "ControlName": "MyControl",
+                "ControlDescription": "Sample control description",
+                "ControlId": "MyControlId",  // Unique control ID
+                "ControlStatus": "ACTIVE",
+                "ControlType": "Process",  // Example control type
+                "ControlSources": [
+                  {
+                    "Source": "AWS",
+                    "SourceIdentifier": "AWS service identifier"  // Replace with actual source identifier
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "FrameworkArn": {
+      "Description": "The ARN of the created Audit Manager framework.",
+      "Value": {
+        "Fn::GetAtt": [
+          "MyAuditManagerFramework",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

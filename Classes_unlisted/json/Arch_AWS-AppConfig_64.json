@@ -1,0 +1,21 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS AppConfig Application and Environment",
+  "Resources": {
+    "AppConfigApplication": {
+      "Type": "AWS::AppConfig::Application",
+      "Properties": {
+        "Name": "MyAppConfigApplication"
+      }
+    },
+    "AppConfigEnvironment": {
+      "Type": "AWS::AppConfig::Environment",
+      "Properties": {
+        "Name": "MyAppConfigEnvironment",
+        "ApplicationId": {
+          "Ref": "AppConfigApplication"
+        }
+      }
+    }
+  }
+}

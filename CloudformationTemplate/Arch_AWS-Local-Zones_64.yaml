@@ -24,7 +24,11 @@ Resources:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: Allow SSH access
+<<<<<<< HEAD
+      # VpcId: !Ref MyVPC
+=======
       VpcId: !Ref MyVPC
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
@@ -43,8 +47,13 @@ Resources:
       KeyName: my-key-pair  # Replace with your key pair name Varun
 
 Outputs:
+<<<<<<< HEAD
+  # InstanceId:
+  #   Description: The Instance ID
+=======
   InstanceId:
     Description: The Instance ID
+>>>>>>> 010ee410c3a9f9a035794a000376aa6a210a68eb
     # Value: !Ref MyLocalZoneInstance
 
   PublicIP:

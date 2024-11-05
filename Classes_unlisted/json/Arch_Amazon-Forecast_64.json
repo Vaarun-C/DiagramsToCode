@@ -1,0 +1,76 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for Amazon Forecast.",
+  "Resources": {
+    "DatasetGroup": {
+      "Type": "AWS::Forecast::DatasetGroup",
+      "Properties": {
+        "DatasetGroupName": "MyDatasetGroup",
+        "Domain": "RETAIL"  // Change to your desired domain (e.g., "RETAIL", "CUSTOM", etc.)
+      }
+    },
+    "Dataset": {
+      "Type": "AWS::Forecast::Dataset",
+      "Properties": {
+        "DatasetName": "MyDataset",
+        "DatasetGroupArn": {
+          "Fn::GetAtt": ["DatasetGroup", "DatasetGroupArn"]
+        },
+        "DatasetType": "TARGET_TIME_SERIES",  // Change as needed (e.g., "ITEM_METADATA")
+        "DataFrequency": "D",  // Daily frequency
+        "Schema": {
+          "Attributes": [
+            {
+              "AttributeName": "item_id",
+              "AttributeType": "string"
+            },
+            {
+              "AttributeName": "timestamp",
+              "AttributeType": "timestamp"
+            },
+            {
+              "AttributeName": "demand",
+              "AttributeType": "float"
+            }
+          ]
+        }
+      }
+    },
+    "DatasetImportJob": {
+      "Type": "AWS::Forecast::DatasetImportJob",
+      "Properties": {
+        "DatasetImportJobName": "MyDatasetImportJob",
+        "DatasetArn": {
+          "Fn::GetAtt": ["Dataset", "DatasetArn"]
+        },
+        "DataSource": {
+          "S3Config": {
+            "Path": "s3://YOUR_BUCKET/path/to/data.csv",  // Replace with your S3 bucket and file path
+            "RoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_FORECAST_ROLE"  // Replace with your IAM role ARN
+          }
+        },
+        "TimestampFormat": "yyyy-MM-dd HH:mm:ss"  // Adjust based on your CSV format
+      }
+    }
+  },
+  "Outputs": {
+    "DatasetGroupArn": {
+      "Description": "The ARN of the created Dataset Group.",
+      "Value": {
+        "Fn::GetAtt": ["DatasetGroup", "DatasetGroupArn"]
+      }
+    },
+    "DatasetArn": {
+      "Description": "The ARN of the created Dataset.",
+      "Value": {
+        "Fn::GetAtt": ["Dataset", "DatasetArn"]
+      }
+    },
+    "DatasetImportJobArn": {
+      "Description": "The ARN of the created Dataset Import Job.",
+      "Value": {
+        "Fn::GetAtt": ["DatasetImportJob", "DatasetImportJobArn"]
+      }
+    }
+  }
+}

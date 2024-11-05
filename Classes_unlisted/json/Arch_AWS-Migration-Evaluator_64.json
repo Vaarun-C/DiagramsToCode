@@ -1,0 +1,21 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Simple AWS Migration Evaluator Configuration",
+  "Resources": {
+    "MigrationEvaluator": {
+      "Type": "AWS::MigrationEvaluator::MigrationEvaluator",
+      "Properties": {
+        "Name": "MyMigrationEvaluator",
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Production"
+          }
+        ],
+        "DataSource": {
+          "Type": "CSV"
+        }
+      }
+    }
+  }
+}

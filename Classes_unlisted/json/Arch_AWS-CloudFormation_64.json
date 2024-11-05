@@ -1,0 +1,37 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "A simple AWS CloudFormation template for an EC2 instance and security group.",
+  "Resources": {
+    "MySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Allow SSH and HTTP access"
+      }
+    },
+    "MyEC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t2.micro",
+        "ImageId": "ami-0c55b159cbfafe01e",  // Replace with a suitable AMI ID
+        "KeyName": {
+          "Ref": "KeyPairName"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "MySecurityGroup"
+          }
+        ]
+      }
+    }
+  },
+  "Parameters": {
+    "KeyPairName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance."
+    },
+    "VPCId": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "The VPC ID where the EC2 instance will be launched."
+    }
+  }
+}

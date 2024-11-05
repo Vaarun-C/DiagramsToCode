@@ -1,0 +1,37 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS CodeArtifact.",
+  "Resources": {
+    "CodeArtifactDomain": {
+      "Type": "AWS::CodeArtifact::Domain",
+      "Properties": {
+        "DomainName": "MyDomain"
+      }
+    },
+    "CodeArtifactRepository": {
+      "Type": "AWS::CodeArtifact::Repository",
+      "Properties": {
+        "RepositoryName": "MyRepository",
+        "DomainName": {
+          "Ref": "CodeArtifactDomain"
+        },
+        "UpstreamRepositories": [],  // Add upstream repositories if needed
+        "Description": "A repository for storing artifacts."
+      }
+    }
+  },
+  "Outputs": {
+    "DomainName": {
+      "Description": "Name of the created CodeArtifact domain.",
+      "Value": {
+        "Ref": "CodeArtifactDomain"
+      }
+    },
+    "RepositoryName": {
+      "Description": "Name of the created CodeArtifact repository.",
+      "Value": {
+        "Ref": "CodeArtifactRepository"
+      }
+    }
+  }
+}

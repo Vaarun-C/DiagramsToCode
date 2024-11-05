@@ -1,0 +1,34 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic AWS Private Certificate Authority Setup",
+  "Resources": {
+    "PrivateCertificateAuthority": {
+      "Type": "AWS::ACMPCA::CertificateAuthority",
+      "Properties": {
+        "CertificateAuthorityType": "SUBORDINATE",  // Can be "ROOT" or "SUBORDINATE"
+        "KeyAlgorithm": "RSA_2048",
+        "SigningAlgorithm": "SHA256WITHRSA",
+        "Subject": {
+          "Country": "US",
+          "Organization": "My Organization",
+          "OrganizationalUnit": "My OU",
+          "CommonName": "My CA"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyPrivateCA"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "CertificateAuthorityArn": {
+      "Description": "ARN of the Private Certificate Authority",
+      "Value": {
+        "Ref": "PrivateCertificateAuthority"
+      }
+    }
+  }
+}

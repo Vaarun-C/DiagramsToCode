@@ -1,0 +1,30 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Basic CloudFormation template for AWS Elemental MediaTailor.",
+  "Resources": {
+    "MediaTailorConfiguration": {
+      "Type": "AWS::MediaTailor::PlaybackConfiguration",
+      "Properties": {
+        "Name": "MyPlaybackConfiguration",
+        "VideoContentSourceUrl": "https://example.com/your-video-source",  // Replace with your video source URL
+        "AdDecisionServerUrl": "https://example.com/ad-server",  // Replace with your ad decision server URL
+        "Slates": [
+          {
+            "SlateAdUrl": "https://example.com/slate-ad"  // Replace with your slate ad URL
+          }
+        ],
+        "Tags": {
+          "Environment": "Production"  // Optional tags
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "PlaybackConfigurationArn": {
+      "Description": "The ARN of the created MediaTailor playback configuration.",
+      "Value": {
+        "Ref": "MediaTailorConfiguration"
+      }
+    }
+  }
+}

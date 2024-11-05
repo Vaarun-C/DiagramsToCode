@@ -1,0 +1,54 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create an IAM role for AWS Trusted Advisor access.",
+  "Resources": {
+    "TrustedAdvisorRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "TrustedAdvisorAccessRole",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"  // Change as per your use case
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "TrustedAdvisorPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "support:DescribeTrustedAdvisorChecks",
+                    "support:DescribeTrustedAdvisorCheckResult",
+                    "support:RefreshTrustedAdvisorCheck"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "TrustedAdvisorRoleArn": {
+      "Description": "The ARN of the IAM role for AWS Trusted Advisor",
+      "Value": {
+        "Fn::GetAtt": [
+          "TrustedAdvisorRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}
