@@ -64,7 +64,9 @@ class Graph:
 
 CLS_NAME_TO_TYPE = {
     "Arch_Amazon-Elastic-Container-Service_64": "AWS::ECS::Cluster",
-    "Arch_Amazon-Simple-Storage-Service_64": "AWS::S3::Bucket"
+    "Arch_Amazon-Simple-Storage-Service_64": "AWS::S3::Bucket",
+    "Arch_AWS-Lambda_64": "AWS::Lambda::Function",
+    "Arch_Amazon-RDS_64": "AWS::RDS::DBInstance"
 }
 
 # Make directories if they don't exist
@@ -98,11 +100,16 @@ def get_detected_types(result) -> list[str]:
     for box in result.boxes: # type: ignore
         class_id = int(box.cls) # Get the class id for the current box
         class_name = model.names[class_id]# Get the class name from the model's names list
-        detected_classes_types.append(CLS_NAME_TO_TYPE[class_name])
+        try:
+            detected_classes_types.append(CLS_NAME_TO_TYPE[class_name])
+        except:
+            print(class_name, "not in Mongo yet !!!!")
     return detected_classes_types
 
 def fetch_document_from_mongo(type_name):
-    document = icons_collection.find_one({"type": type_name})
+    document = icons_collection.find_one({"Type": type_name})
+    if not document:
+        raise LookupError(f'[{type_name}] does not exist in Database')
     return document
 
 def get_or_makeNode(type_name, graph:Graph, queue:deque) -> Node:
@@ -125,7 +132,7 @@ def build_graph_from_types(class_types):
     node_queue = deque()
     graph = Graph()
     for class_type in class_types:
-        unit_template = icons_collection.find_one({"type": class_type})
+        unit_template = icons_collection.find_one({"Type": class_type})
         if not unit_template:
             print(f"No additional details found for class {class_type}")
             continue
@@ -174,12 +181,24 @@ def create_template(result):
         for nbr_id in node.dependency_edges:
             graph.nodes[nbr_id].replaceMap[node.type_name] = node_name
         
-        data['Parameters'] += node.parameters
-        data['Resources'] += node.resources
-        data['Outputs'] += node.outputs
+        for i, dep_type in enumerate(node.dependencies):
+            dep_name = node.replaceMap[dep_type]
+            node_parameters = node.parameters or ''
+            node_resources = node.resources or ''
+            node_outputs = node.outputs or ''
+            node_parameters.replace(f'$${i + 2}', dep_name)
+            node_resources.replace(f'$${i + 2}', dep_name)
+            node_outputs.replace(f'$${i + 2}', dep_name)
+
+        node_parameters.replace('$$1', node_name)
+        node_resources.replace('$$1', node_name)
+        node_outputs.replace('$$1', node_name)
+
+        data['Parameters'] += node_parameters
+        data['Resources'] += node_resources
+        data['Outputs'] += node_outputs
 
     return data
-    print(data)
 
 # Predict using best weights from the model
 model = YOLO(weight_for_model)
