@@ -9,13 +9,14 @@ import json
 class Node:
     ID = 0  # Static variable to assign unique IDs to each node
 
-    def __init__(self, type_name, parameters='', resources='', outputs='', dependencies=None):
+    def __init__(self, type_name, parameters='', resources='', outputs='', conditions='', dependencies=None):
         self.id = Node.ID
         Node.ID += 1
         self.type_name = type_name
         self.parameters = parameters
         self.resources = resources
         self.outputs = outputs
+        self.conditions = conditions
         self.dependencies = [] if dependencies is None else dependencies # dependency types
         self.dependency_edges = []  # Stores IDs of dependent nodes
         self.replaceMap = {}
@@ -66,7 +67,8 @@ CLS_NAME_TO_TYPE = {
     "Arch_Amazon-Elastic-Container-Service_64": "AWS::ECS::Cluster",
     "Arch_Amazon-Simple-Storage-Service_64": "AWS::S3::Bucket",
     "Arch_AWS-Lambda_64": "AWS::Lambda::Function",
-    "Arch_Amazon-RDS_64": "AWS::RDS::DBInstance"
+    "Arch_Amazon-RDS_64": "AWS::RDS::DBInstance",
+    "Arch_AWS-Fargate_64": "AWS::ECS::Cluster"
 }
 
 # Make directories if they don't exist
@@ -120,9 +122,10 @@ def get_or_makeNode(type_name, graph:Graph, queue:deque) -> Node:
         unit_template = fetch_document_from_mongo(type_name)
         dep_node:Node = Node(type_name,
             parameters=unit_template.get("Parameters"),
-            resources=unit_template.get("Parameters"),
+            resources=unit_template.get("Resources"),
             outputs=unit_template.get("Outputs"),
             dependencies=unit_template.get("Dependencies"),
+            conditions=unit_template.get("Conditions"),
         )
         graph.add_node(dep_node)
         queue.append(dep_node)
@@ -138,9 +141,10 @@ def build_graph_from_types(class_types):
             continue
         node = Node(class_type,
             parameters=unit_template.get("Parameters"),
-            resources=unit_template.get("Parameters"),
+            resources=unit_template.get("Resources"),
             outputs=unit_template.get("Outputs"),
             dependencies=unit_template.get("Dependencies"),
+            conditions=unit_template.get("Conditions"),
         )
         graph.add_node(node)
         node_queue.append(node)
@@ -162,6 +166,7 @@ def create_template(result):
     data = {
         "AWSTemplateFormatVersion": '2010-09-09',
         "Description": "CloudFormation Template",
+        "Conditions": '',
         "Parameters": '',
         "Resources": '',
         "Outputs": ''
@@ -174,29 +179,38 @@ def create_template(result):
     
     sorted_nodes:list[Node] = graph.topological_sort_out_degree()
     print(sorted_nodes)
-    input()
+    # input()
     for node in sorted_nodes:
         node_name = createName(node.type_name, graph=graph)
         node.replaceMap[node.type_name] = node_name
         for nbr_id in node.dependency_edges:
             graph.nodes[nbr_id].replaceMap[node.type_name] = node_name
         
+        node_parameters = node.parameters or ''
+        node_resources = node.resources or ''
+        node_outputs = node.outputs or ''
+        node_conditions = node.conditions or ''
+
         for i, dep_type in enumerate(node.dependencies):
             dep_name = node.replaceMap[dep_type]
-            node_parameters = node.parameters or ''
-            node_resources = node.resources or ''
-            node_outputs = node.outputs or ''
-            node_parameters.replace(f'$${i + 2}', dep_name)
-            node_resources.replace(f'$${i + 2}', dep_name)
-            node_outputs.replace(f'$${i + 2}', dep_name)
+            node_parameters = node_parameters.replace(f'$${i + 2}', dep_name)
+            node_resources = node_resources.replace(f'$${i + 2}', dep_name)
+            node_outputs = node_outputs.replace(f'$${i + 2}', dep_name)
+            node_conditions = node_conditions.replace(f'$${i + 2}', dep_name)
 
-        node_parameters.replace('$$1', node_name)
-        node_resources.replace('$$1', node_name)
-        node_outputs.replace('$$1', node_name)
+        node_parameters = node_parameters.replace('$$1', node_name)
+        node_resources = node_resources.replace('$$1', node_name)
+        node_outputs = node_outputs.replace('$$1', node_name)
+        node_conditions = node_conditions.replace(f'$$1', node_name)
 
-        data['Parameters'] += node_parameters
-        data['Resources'] += node_resources
-        data['Outputs'] += node_outputs
+        if node_conditions:
+            data['Conditions'] += '\n  ' + node_conditions
+        if node_parameters:
+            data['Parameters'] += '\n  ' + node_parameters
+        if node_resources:
+            data['Resources'] += '\n  ' + node_resources
+        if node_outputs:
+            data['Outputs'] += '\n  ' + node_outputs
 
     return data
 
@@ -211,7 +225,8 @@ for i, result in enumerate(results):
     data = create_template(result)
     
     with open(output_path + f"/template{i}.yaml", 'w') as file:
-        yaml.dump(data, file, default_flow_style=False)  # default_flow_style=False makes the output more readable
-
-    with open(output_path + f"/template{i}.json", 'w') as file:
-        file.write(json.dumps(data, indent=4))
+        for k, v in data.items():
+            # if k in ['Description', 'AWSTemplateFormatVersion']:
+            #     file.write(f"{k}: {v}\n")
+            # else:
+            file.write(f"{k}: {v.replace('\\n', '\n  ')}\n")
