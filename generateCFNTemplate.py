@@ -22,13 +22,13 @@ class Node:
     def setData(self, data):
         node_name = self.replaceMap[self.type_name]
         for key in self.unit_template:
-            if key in ('Type', '_id', 'Depenedencies'):
+            if key in ('Type', '_id', 'Dependencies'):
                 continue
             value:str = self.unit_template[key]
-            value.replace('$$1', node_name)
+            value = value.replace('$$1', node_name)
             for i, dep_type in enumerate(self.dependencies):
                 dep_name = self.replaceMap[dep_type]
-                value.replace(f'$${i + 2}', dep_name)
+                value = value.replace(f'$${i + 2}', dep_name)
 
             data[key] += f'\n  {value}'
 
@@ -44,12 +44,16 @@ class Graph:
 
     def add_node(self, node:Node):
         self.nodes[node.id] = node
-        self.stored_types.get(node.type_name, []).append(node.id)
+        self.stored_types.setdefault(node.type_name, []).append(node.id)
 
     def add_edge(self, from_node:Node, to_node:Node):
         """adds the edge in the reverse direction"""
         to_node.dependency_edges.append(from_node.id)
         self.in_degree[from_node.id] += 1
+
+    def edge_exists(self, from_node:Node, to_node:Node):
+        """Checks if an edge exists"""
+        return from_node.id in to_node.dependency_edges
 
     def topological_sort_out_degree(self):
         zero_in_degree_queue = deque([node for node in self.nodes.values() if self.in_degree[node.id] == 0])
@@ -82,29 +86,29 @@ CLS_NAME_TO_TYPE = {
 }
 
 LLM_SUGGESTIONS = {
-    'AWS::ECS::Cluster': [
-        'AWS::ECS::TaskDefinition',
-        'AWS::ECS::Service'
-    ],
+    # 'AWS::ECS::Cluster': [
+    #     'AWS::ECS::TaskDefinition',
+    #     'AWS::ECS::Service'
+    # ],
 
-    'AWS::EC2::VPC': [
-        'AWS::EC2::InternetGateway',
-        'AWS::EC2::RouteTable',
-        'AWS::EC2::Route',
-        'AWS::EC2::VPCGatewayAttachment',
-        'AWS::EC2::SubnetRouteTableAssociation'
-    ],
+    # 'AWS::EC2::VPC': [
+    #     'AWS::EC2::InternetGateway',
+    #     'AWS::EC2::RouteTable',
+    #     'AWS::EC2::Route',
+    #     'AWS::EC2::VPCGatewayAttachment',
+    #     'AWS::EC2::SubnetRouteTableAssociation'
+    # ],
 
     'AWS::S3::Bucket': [
         'AWS::S3::BucketPolicy'
         ],
 
-    'AWS::Lambda::Function': [
-        'AWS::ApiGateway::RestApi',
-        'AWS::ApiGateway::Resource',
-        'AWS::ApiGateway::MethodForLambda',
-        'AWS::Lambda::Permission'
-    ]
+    # 'AWS::Lambda::Function': [
+    #     'AWS::ApiGateway::RestApi',
+    #     'AWS::ApiGateway::Resource',
+    #     'AWS::ApiGateway::MethodForLambda',
+    #     'AWS::Lambda::Permission'
+    # ]
 }
 
 # Make directories if they don't exist
@@ -157,7 +161,8 @@ def createNode(type_name) -> Node:
 
 def get_or_makeNode(type_name, graph:Graph, queue:deque) -> Node:
     if type_name in graph.stored_types:
-        dep_node_id = graph.stored_types[type_name]
+        dep_node_id = graph.stored_types[type_name][0] # Always chooses first existing node. Need to change with either groups info or something else
+        graph.stored_types[type_name] = graph.stored_types[type_name][1:]+graph.stored_types[type_name][:1] # Left rotate the nodes list of type in graph just so all nodes don't point to same one
         dep_node:Node = graph.nodes[dep_node_id]
     else:
         dep_node:Node = createNode(type_name)
@@ -184,7 +189,13 @@ def build_graph_from_types(class_types):
         for dependency_type in node.dependencies:
             dep_node = get_or_makeNode(dependency_type, graph=graph, queue=node_queue)
             print(f"Adding Edge for dependency: {dep_node}")
-            graph.add_edge(node, dep_node)
+
+            # Need this..., better way do this would be to remove add edge after LLM suggestion but then we would have to implement
+            # singleton resources and since all resources cannot be shared. Like bucketpolicy will be added only once
+            # but bucket policies cannot be shared. So since only 1 bucketPolicy is there in queue it will be assinged to one bucket only, but we need
+            # 2 policies for each bucket if there are 2 buckets
+            if not graph.edge_exists(dep_node, node):
+                graph.add_edge(node, dep_node)
 
         # Add LLM suggestion nodes
         if node.type_name in LLM_SUGGESTIONS:
@@ -202,8 +213,12 @@ def createName(type_name:str, graph:Graph, type_dict={}):
 
 def create_template(result):
     data = {
-        "AWSTemplateFormatVersion": '2010-09-09',
+        "AWSTemplateFormatVersion": "2010-09-09",
         "Description": "CloudFormation Template",
+        "Conditions": "",
+        "Parameters": "",
+        "Resources": "",
+        "Outputs": ""
     }
 
     # Get detected classes
@@ -216,6 +231,13 @@ def create_template(result):
         node.replaceMap[node.type_name] = node_name
         for nbr_id in node.dependency_edges:
             graph.nodes[nbr_id].replaceMap[node.type_name] = node_name
+
+            # Need to add mapping from node -> dependencies...
+            # Bucket -> BucketPolicy ( suggested )
+            # BucketPolicy -> Bucket ( Depends )
+            # So buckets have mapping to policy, but bucketpolicy needs mapping to buckets
+            # So again.... we come back to needing to implement some resouces to be singleton and some to be shared
+            node.replaceMap[graph.nodes[nbr_id].type_name] = createName(graph.nodes[nbr_id].type_name, graph=graph) # Bandaid for now. Wrong cause it messes up numbers
         node.setData(data)
 
     return data
