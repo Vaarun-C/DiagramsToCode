@@ -162,7 +162,7 @@ def createNode(type_name) -> Node:
 def get_or_makeNode(type_name, graph:Graph, queue:deque) -> Node:
     if type_name in graph.stored_types:
         dep_node_id = graph.stored_types[type_name][0] # Always chooses first existing node. Need to change with either groups info or something else
-        graph.stored_types[type_name] = graph.stored_types[type_name][1:]+graph.stored_types[type_name][:1] # Left rotate the nodes list of type in graph just so all nodes don't point to same one
+        # graph.stored_types[type_name] = graph.stored_types[type_name][1:]+graph.stored_types[type_name][:1] # Left rotate the nodes list of type in graph just so all nodes don't point to same one
         dep_node:Node = graph.nodes[dep_node_id]
     else:
         dep_node:Node = createNode(type_name)
@@ -202,7 +202,7 @@ def build_graph_from_types(class_types):
             for sug_type in LLM_SUGGESTIONS[node.type_name]:
                 sug_node = get_or_makeNode(sug_type, graph=graph, queue=node_queue)
                 print(f"Adding Edge for LLM suggestion: {sug_node}")
-                graph.add_edge(node, sug_node)
+                graph.add_edge(sug_node, node)
     
     return graph
 
@@ -237,7 +237,7 @@ def create_template(result):
             # BucketPolicy -> Bucket ( Depends )
             # So buckets have mapping to policy, but bucketpolicy needs mapping to buckets
             # So again.... we come back to needing to implement some resouces to be singleton and some to be shared
-            node.replaceMap[graph.nodes[nbr_id].type_name] = createName(graph.nodes[nbr_id].type_name, graph=graph) # Bandaid for now. Wrong cause it messes up numbers
+            # node.replaceMap[graph.nodes[nbr_id].type_name] = createName(graph.nodes[nbr_id].type_name, graph=graph) # Bandaid for now. Wrong cause it messes up numbers
         node.setData(data)
 
     return data
