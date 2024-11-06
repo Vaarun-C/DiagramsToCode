@@ -7,6 +7,9 @@ import copy
 import networkx as nx
 import matplotlib.pyplot as plt
 
+URI = "mongodb+srv://CapTheStone:VarunVikas@viewme.vzrbu.mongodb.net/?retryWrites=true&w=majority&appName=viewme"
+icons_collection = None
+
 class Node:
     ID = 0  # Static variable to assign unique IDs to each node
 
@@ -116,7 +119,7 @@ LLM_SUGGESTIONS = {
 
     'AWS::S3::Bucket': [
         'AWS::S3::BucketPolicy'
-        ],
+    ],
 
     'AWS::Lambda::Function': [
         'AWS::ApiGateway::RestApi',
@@ -139,31 +142,17 @@ SHAREABLE_RESOURCES = {
     'AWS::ApiGateway::RestApi'
 }
 
-# Make directories if they don't exist
-input_path = 'testArchitectureDiagrams'
-output_path = 'testCFNTemplates'
-weight_for_model = "298_icons_best.pt"
-architecture_path = "./test/test3.png"
-assert weight_for_model in os.listdir(), "Model Weights missing!"
-
-uri = "mongodb+srv://CapTheStone:VarunVikas@viewme.vzrbu.mongodb.net/?retryWrites=true&w=majority&appName=viewme"
-client = MongoClient(uri, server_api=ServerApi('1'))
-
-# Send a ping to confirm a successful connection
-try:
-    client.admin.command('ping')
-    print("Pinged your deployment. You successfully connected to MongoDB!")
-except Exception as e:
-    print(e)
-    print("CONNECTION ERROR!!")
-    quit()
-
-db = client['Templates']
-icons_collection = db['Templates[PROD]_cleaned']
-
-# Make directories if they don't exist
-os.makedirs(input_path, exist_ok=True)
-os.makedirs(output_path, exist_ok=True)
+def connect_to_mongo():
+    client = MongoClient(URI, server_api=ServerApi('1'))
+    # Send a ping to confirm a successful connection
+    try:
+        client.admin.command('ping')
+        print("Pinged your deployment. You successfully connected to MongoDB!")
+        return client
+    except Exception as e:
+        print(e)
+        print("CONNECTION ERROR!!")
+        quit()
 
 def get_detected_types(result) -> list[str]:
     detected_classes_types = []
@@ -289,16 +278,39 @@ def create_template(result, file_name):
 
     return data
 
-# Predict using best weights from the model
-model = YOLO(weight_for_model)
-all_classes = set(range(298))
-removed_classes = set([57]) #
-allowed_classes = list(all_classes-removed_classes)
-results = model.predict(architecture_path, save=True, line_width=1, classes=allowed_classes, conf=0.6)
+def runModelOn(path,*, weights):
+    all_classes = set(range(298))
+    removed_classes = set([57]) #
+    allowed_classes = list(all_classes-removed_classes)
 
-for i, result in enumerate(results):
-    data = create_template(result, result.path.split('/')[-1])
+    # Predict using best weights from the model
+    model = YOLO(weights)
+    results = model.predict(path, save=True, line_width=1, classes=allowed_classes, conf=0.6)
+    return results
     
-    with open(output_path + f"/template{i}.yaml", 'w') as file:
-        for k, v in data.items():
-            file.write(f"{k}: {v.replace('\\n', '\n')}\n")
+def main():
+    global icons_collection
+    input_path = 'testArchitectureDiagrams'
+    output_path = 'testCFNTemplates'
+    weight_for_model = "298_icons_best.pt"
+    architecture_path = "./test/test3.png"
+    assert weight_for_model in os.listdir(), "Model Weights missing!"
+
+    # Make directories if they don't exist
+    os.makedirs(input_path, exist_ok=True)
+    os.makedirs(output_path, exist_ok=True)
+
+    client = connect_to_mongo()
+    db = client['Templates']
+    icons_collection = db['Templates[PROD]_cleaned']
+
+    results = runModelOn(input_path, weights=weight_for_model)
+    for i, result in enumerate(results):
+        data = create_template(result, result.path.split('/')[-1])
+
+        with open(output_path + f"/template{i}.yaml", 'w') as file:
+            for k, v in data.items():
+                file.write(f"{k}: {v.replace('\\n', '\n')}\n")
+
+if '__main__' == __name__:
+    main()
