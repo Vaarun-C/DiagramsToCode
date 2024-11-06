@@ -18,6 +18,7 @@ class Node:
         self.dependencies = unit_template.get("Dependencies", []) # dependency types
         self.dependency_edges = []  # Stores IDs of dependent nodes
         self.replaceMap = {}
+        self.consumedBy = set() # set of all types that have their dependency assigned to this node
 
     def setData(self, data):
         node_name = self.replaceMap[self.type_name]
@@ -192,41 +193,48 @@ def createNode(type_name) -> Node:
     node:Node = Node(type_name, unit_template)
     return node
 
-def get_or_makeNode(type_name, graph:Graph, queue:deque) -> Node:
-    if (len(graph.stored_types.get(type_name, [])) > 0):
-        dep_node_id = graph.stored_types[type_name][0] # Always chooses first existing node. Need to change with either groups info or something else
-        if type_name not in SHAREABLE_RESOURCES:
-            graph.stored_types[type_name].pop(0)
-        dep_node:Node = graph.nodes[dep_node_id]
-    else:
-        dep_node:Node = createNode(type_name)
+def get_or_makeNode(type_name, dep_type_name, graph:Graph, queue:deque) -> Node:
+    if (len(graph.stored_types.get(dep_type_name, [])) == 0):
+        dep_node:Node = createNode(dep_type_name)
         graph.add_node(dep_node)
         queue.append(dep_node)
+    else:
+        # Always chooses first existing node. Need to change with either groups info or something else
+        candidate_dep_node_ids = graph.stored_types[dep_type_name]
+        if dep_type_name in SHAREABLE_RESOURCES:
+            dep_node_id = candidate_dep_node_ids[0] 
+        else: 
+            # dep_type_name in Unique
+            for candidate_node_id in candidate_dep_node_ids:
+                candidate_node = graph.nodes[candidate_node_id]
+                if type_name not in candidate_node.consumedBy:
+                    candidate_node.consumedBy |= type_name
+                    dep_node_id = candidate_node_id
+                    break
+        dep_node:Node = graph.nodes[dep_node_id]
     return dep_node
 
 def build_graph_from_types(class_types:list[str]):
     node_queue = deque()
     graph = Graph()
 
-    class_types.extend(get_LLM_types(class_types=class_types))
+    suggested_types = get_LLM_types(class_types=class_types)
+    class_types.extend(suggested_types)
 
     for class_type in class_types:
         try:
             node:Node = createNode(class_type)
             graph.add_node(node)
             node_queue.append(node)
-            # get_or_makeNode(class_type, graph, node_queue)
-
         except LookupError as e:
             print(f"No additional details found for class {class_type}", e)
     
     while node_queue:
         node:Node = node_queue.popleft()
-
         print(f"Creating Node for: {node}")
         # Add dependency nodes
         for dependency_type in node.dependencies:
-            dep_node = get_or_makeNode(dependency_type, graph=graph, queue=node_queue)
+            dep_node = get_or_makeNode(node.type_name, dependency_type, graph=graph, queue=node_queue)
             print(f"Adding Edge for dependency: {dep_node}")
             graph.add_edge(node, dep_node)
 
