@@ -10,21 +10,30 @@ import colorama
 class Node:
     ID = 0  # Static variable to assign unique IDs to each node
 
-    def __init__(self, type_name, parameters='', resources='', outputs='', conditions='', dependencies=None):
+    def __init__(self, type_name:str, unit_template:dict):
         self.id = Node.ID
         Node.ID += 1
         self.type_name = type_name
-        self.parameters = parameters
-        self.resources = resources
-        self.outputs = outputs
-        self.conditions = conditions
-        self.dependencies = [] if dependencies is None else dependencies # dependency types
+        self.unit_template = unit_template
+        self.dependencies = unit_template.get("Dependencies", []) # dependency types
         self.dependency_edges = []  # Stores IDs of dependent nodes
         self.replaceMap = {}
 
+    def setData(self, data):
+        node_name = self.replaceMap[self.type_name]
+        for key in self.unit_template:
+            if key in ('Type', '_id', 'Depenedencies'):
+                continue
+            value:str = self.unit_template[key]
+            value.replace('$$1', node_name)
+            for i, dep_type in enumerate(self.dependencies):
+                dep_name = self.replaceMap[dep_type]
+                value.replace(f'$${i + 2}', dep_name)
+
+            data[key] += f'\n  {value}'
 
     def __repr__(self):
-        return f"Node(type_name={self.type_name}, id={self.id})"
+        return f"Node({self.type_name}, id={self.id})"
 
 
 class Graph:
@@ -141,19 +150,17 @@ def fetch_document_from_mongo(type_name):
         raise LookupError(f'[{type_name}] does not exist in Database')
     return document
 
+def createNode(type_name) -> Node:
+    unit_template = fetch_document_from_mongo(type_name)
+    node:Node = Node(type_name, unit_template)
+    return node
+
 def get_or_makeNode(type_name, graph:Graph, queue:deque) -> Node:
     if type_name in graph.stored_types:
         dep_node_id = graph.stored_types[type_name]
         dep_node:Node = graph.nodes[dep_node_id]
     else:
-        unit_template = fetch_document_from_mongo(type_name)
-        dep_node:Node = Node(type_name,
-            parameters=unit_template.get("Parameters"),
-            resources=unit_template.get("Resources"),
-            outputs=unit_template.get("Outputs"),
-            dependencies=unit_template.get("Dependencies"),
-            conditions=unit_template.get("Conditions"),
-        )
+        dep_node:Node = createNode(type_name)
         graph.add_node(dep_node)
         queue.append(dep_node)
     return dep_node
@@ -162,19 +169,12 @@ def build_graph_from_types(class_types):
     node_queue = deque()
     graph = Graph()
     for class_type in class_types:
-        unit_template = icons_collection.find_one({"Type": class_type})
-        if not unit_template:
-            print(f"No additional details found for class {class_type}")
-            continue
-        node = Node(class_type,
-            parameters=unit_template.get("Parameters"),
-            resources=unit_template.get("Resources"),
-            outputs=unit_template.get("Outputs"),
-            dependencies=unit_template.get("Dependencies"),
-            conditions=unit_template.get("Conditions"),
-        )
-        graph.add_node(node)
-        node_queue.append(node)
+        try:
+            node:Node = createNode(class_type)
+            graph.add_node(node)
+            node_queue.append(node)
+        except LookupError as e:
+            print(f"No additional details found for class {class_type}", e)
     
     while node_queue:
         node:Node = node_queue.popleft()
@@ -204,10 +204,6 @@ def create_template(result):
     data = {
         "AWSTemplateFormatVersion": '2010-09-09',
         "Description": "CloudFormation Template",
-        "Conditions": '',
-        "Parameters": '',
-        "Resources": '',
-        "Outputs": ''
     }
 
     # Get detected classes
@@ -220,32 +216,7 @@ def create_template(result):
         node.replaceMap[node.type_name] = node_name
         for nbr_id in node.dependency_edges:
             graph.nodes[nbr_id].replaceMap[node.type_name] = node_name
-        
-        node_parameters = node.parameters or ''
-        node_resources = node.resources or ''
-        node_outputs = node.outputs or ''
-        node_conditions = node.conditions or ''
-
-        for i, dep_type in enumerate(node.dependencies):
-            dep_name = node.replaceMap[dep_type]
-            node_parameters = node_parameters.replace(f'$${i + 2}', dep_name)
-            node_resources = node_resources.replace(f'$${i + 2}', dep_name)
-            node_outputs = node_outputs.replace(f'$${i + 2}', dep_name)
-            node_conditions = node_conditions.replace(f'$${i + 2}', dep_name)
-
-        node_parameters = node_parameters.replace('$$1', node_name)
-        node_resources = node_resources.replace('$$1', node_name)
-        node_outputs = node_outputs.replace('$$1', node_name)
-        node_conditions = node_conditions.replace(f'$$1', node_name)
-
-        if node_conditions:
-            data['Conditions'] += '\n  ' + node_conditions
-        if node_parameters:
-            data['Parameters'] += '\n  ' + node_parameters
-        if node_resources:
-            data['Resources'] += '\n  ' + node_resources
-        if node_outputs:
-            data['Outputs'] += '\n  ' + node_outputs
+        node.setData(data)
 
     return data
 
