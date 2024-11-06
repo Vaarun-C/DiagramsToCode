@@ -5,6 +5,7 @@ from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from collections import defaultdict, deque
 import json
+import colorama
 
 class Node:
     ID = 0  # Static variable to assign unique IDs to each node
@@ -69,6 +70,32 @@ CLS_NAME_TO_TYPE = {
     "Arch_AWS-Lambda_64": "AWS::Lambda::Function",
     "Arch_Amazon-RDS_64": "AWS::RDS::DBInstance",
     "Arch_AWS-Fargate_64": "AWS::ECS::Cluster"
+}
+
+LLM_SUGGESTIONS = {
+    'AWS::ECS::Cluster': [
+        'AWS::ECS::TaskDefinition',
+        'AWS::ECS::Service'
+    ],
+
+    'AWS::EC2::VPC': [
+        'AWS::EC2::InternetGateway',
+        'AWS::EC2::RouteTable',
+        'AWS::EC2::Route',
+        'AWS::EC2::VPCGatewayAttachment',
+        'AWS::EC2::SubnetRouteTableAssociation'
+    ],
+
+    'AWS::S3::Bucket': [
+        'AWS::S3::BucketPolicy'
+        ],
+
+    'AWS::Lambda::Function': [
+        'AWS::ApiGateway::RestApi',
+        'AWS::ApiGateway::Resource',
+        'AWS::ApiGateway::MethodForLambda',
+        'AWS::Lambda::Permission'
+    ]
 }
 
 # Make directories if they don't exist
@@ -151,9 +178,20 @@ def build_graph_from_types(class_types):
     
     while node_queue:
         node:Node = node_queue.popleft()
+
+        print(f"Creating Node for: {node}")
+        # Add dependency nodes
         for dependency_type in node.dependencies:
             dep_node = get_or_makeNode(dependency_type, graph=graph, queue=node_queue)
+            print(f"Adding Edge for dependency: {dep_node}")
             graph.add_edge(node, dep_node)
+
+        # Add LLM suggestion nodes
+        if node.type_name in LLM_SUGGESTIONS:
+            for sug_type in LLM_SUGGESTIONS[node.type_name]:
+                sug_node = get_or_makeNode(sug_type, graph=graph, queue=node_queue)
+                print(f"Adding Edge for LLM suggestion: {sug_node}")
+                graph.add_edge(node, sug_node)
     
     return graph
 
@@ -174,12 +212,9 @@ def create_template(result):
 
     # Get detected classes
     detected_classes_types:list[str] = get_detected_types(result)
-    
     graph = build_graph_from_types(detected_classes_types)
-    
     sorted_nodes:list[Node] = graph.topological_sort_out_degree()
-    print(sorted_nodes)
-    # input()
+
     for node in sorted_nodes:
         node_name = createName(node.type_name, graph=graph)
         node.replaceMap[node.type_name] = node_name
@@ -226,7 +261,4 @@ for i, result in enumerate(results):
     
     with open(output_path + f"/template{i}.yaml", 'w') as file:
         for k, v in data.items():
-            # if k in ['Description', 'AWSTemplateFormatVersion']:
-            #     file.write(f"{k}: {v}\n")
-            # else:
             file.write(f"{k}: {v.replace('\\n', '\n  ')}\n")
