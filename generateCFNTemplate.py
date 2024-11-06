@@ -6,6 +6,7 @@ from pymongo.server_api import ServerApi
 from collections import defaultdict, deque
 import json
 import colorama
+import copy
 
 class Node:
     ID = 0  # Static variable to assign unique IDs to each node
@@ -30,7 +31,7 @@ class Node:
                 dep_name = self.replaceMap[dep_type]
                 value = value.replace(f'$${i + 2}', dep_name)
 
-            data[key] += f'\n  {value}'
+            data[key] += f'\n{value}'
 
     def __repr__(self):
         return f"Node({self.type_name}, id={self.id})"
@@ -41,9 +42,11 @@ class Graph:
         self.nodes:dict[int,Node] = {} # ID -> Node
         self.stored_types:dict[str,list[int]] = {} # type -> list[ID]
         self.in_degree = defaultdict(int)
+        self.type_dict = {}
 
     def add_node(self, node:Node):
         self.nodes[node.id] = node
+        # if node.type_name in SHAREABLE_RESOURCES:
         self.stored_types.setdefault(node.type_name, []).append(node.id)
 
     def add_edge(self, from_node:Node, to_node:Node):
@@ -76,7 +79,6 @@ class Graph:
         else:
             raise ArithmeticError("Cycle Detected! Topological Sort Not possible")
 
-
 CLS_NAME_TO_TYPE = {
     "Arch_Amazon-Elastic-Container-Service_64": "AWS::ECS::Cluster",
     "Arch_Amazon-Simple-Storage-Service_64": "AWS::S3::Bucket",
@@ -86,29 +88,41 @@ CLS_NAME_TO_TYPE = {
 }
 
 LLM_SUGGESTIONS = {
-    # 'AWS::ECS::Cluster': [
-    #     'AWS::ECS::TaskDefinition',
-    #     'AWS::ECS::Service'
-    # ],
+    'AWS::ECS::Cluster': [
+        'AWS::ECS::TaskDefinition',
+        'AWS::ECS::Service'
+    ],
 
-    # 'AWS::EC2::VPC': [
-    #     'AWS::EC2::InternetGateway',
-    #     'AWS::EC2::RouteTable',
-    #     'AWS::EC2::Route',
-    #     'AWS::EC2::VPCGatewayAttachment',
-    #     'AWS::EC2::SubnetRouteTableAssociation'
-    # ],
+    'AWS::EC2::VPC': [
+        'AWS::EC2::InternetGateway',
+        'AWS::EC2::RouteTable',
+        'AWS::EC2::Route',
+        'AWS::EC2::VPCGatewayAttachment',
+        'AWS::EC2::SubnetRouteTableAssociation'
+    ],
 
     'AWS::S3::Bucket': [
         'AWS::S3::BucketPolicy'
         ],
 
-    # 'AWS::Lambda::Function': [
-    #     'AWS::ApiGateway::RestApi',
-    #     'AWS::ApiGateway::Resource',
-    #     'AWS::ApiGateway::MethodForLambda',
-    #     'AWS::Lambda::Permission'
-    # ]
+    'AWS::Lambda::Function': [
+        'AWS::ApiGateway::RestApi',
+        'AWS::ApiGateway::Resource',
+        'AWS::ApiGateway::MethodForLambda',
+        'AWS::Lambda::Permission'
+    ]
+}
+
+SHAREABLE_RESOURCES = {
+    'AWS::EC2::VPC',
+    'AWS::EC2::Subnet',
+    'AWS::EC2::InternetGateway',
+    'AWS::EC2::VPCGatewayAttachment',
+    'AWS::EC2::RouteTable',
+    'AWS::EC2::Route',
+    'AWS::IAM::Role',
+    'AWS::DynamoDB::Table',
+    'AWS::ECS::Cluster'
 }
 
 # Make directories if they don't exist
@@ -131,7 +145,7 @@ except Exception as e:
     quit()
 
 db = client['Templates']
-icons_collection = db['Templates[PROD]']
+icons_collection = db['Templates[PROD]_cleaned']
 
 # Make directories if they don't exist
 os.makedirs(input_path, exist_ok=True)
@@ -158,11 +172,15 @@ def createNode(type_name) -> Node:
     unit_template = fetch_document_from_mongo(type_name)
     node:Node = Node(type_name, unit_template)
     return node
-
+# {
+#     bucket: [, 3],
+#     policy: [8, 9]
+# }
 def get_or_makeNode(type_name, graph:Graph, queue:deque) -> Node:
-    if type_name in graph.stored_types:
+    if (len(graph.stored_types.get(type_name, [])) > 0):
         dep_node_id = graph.stored_types[type_name][0] # Always chooses first existing node. Need to change with either groups info or something else
-        # graph.stored_types[type_name] = graph.stored_types[type_name][1:]+graph.stored_types[type_name][:1] # Left rotate the nodes list of type in graph just so all nodes don't point to same one
+        if type_name not in SHAREABLE_RESOURCES:
+            graph.stored_types[type_name].pop(0)
         dep_node:Node = graph.nodes[dep_node_id]
     else:
         dep_node:Node = createNode(type_name)
@@ -173,11 +191,24 @@ def get_or_makeNode(type_name, graph:Graph, queue:deque) -> Node:
 def build_graph_from_types(class_types):
     node_queue = deque()
     graph = Graph()
+
+    new_types = copy.deepcopy(class_types)
+
+    # Add LLM suggestion nodes
     for class_type in class_types:
+        if class_type in LLM_SUGGESTIONS:
+            for sug_type in LLM_SUGGESTIONS[class_type]:
+                new_types.append(sug_type)
+                # sug_node = get_or_makeNode(sug_type, graph=graph, queue=node_queue)
+                # print(f"Adding Edge for LLM suggestion: {sug_node}")
+                # graph.add_edge(sug_node, node)
+
+    for class_type in new_types:
         try:
             node:Node = createNode(class_type)
             graph.add_node(node)
             node_queue.append(node)
+
         except LookupError as e:
             print(f"No additional details found for class {class_type}", e)
     
@@ -194,21 +225,14 @@ def build_graph_from_types(class_types):
             # singleton resources and since all resources cannot be shared. Like bucketpolicy will be added only once
             # but bucket policies cannot be shared. So since only 1 bucketPolicy is there in queue it will be assinged to one bucket only, but we need
             # 2 policies for each bucket if there are 2 buckets
-            if not graph.edge_exists(dep_node, node):
-                graph.add_edge(node, dep_node)
-
-        # Add LLM suggestion nodes
-        if node.type_name in LLM_SUGGESTIONS:
-            for sug_type in LLM_SUGGESTIONS[node.type_name]:
-                sug_node = get_or_makeNode(sug_type, graph=graph, queue=node_queue)
-                print(f"Adding Edge for LLM suggestion: {sug_node}")
-                graph.add_edge(sug_node, node)
+            # if not graph.edge_exists(dep_node, node):
+            graph.add_edge(node, dep_node)
     
     return graph
 
-def createName(type_name:str, graph:Graph, type_dict={}):
-    type_dict[type_name] = type_dict.get(type_name,0) + 1
-    name = 'My'+type_name.split("::")[-1] + str(type_dict[type_name])
+def createName(type_name:str, graph:Graph):
+    graph.type_dict[type_name] = graph.type_dict.get(type_name,0) + 1
+    name = 'My'+type_name.split("::")[-1] + str(graph.type_dict[type_name])
     return name
 
 def create_template(result):
@@ -231,13 +255,6 @@ def create_template(result):
         node.replaceMap[node.type_name] = node_name
         for nbr_id in node.dependency_edges:
             graph.nodes[nbr_id].replaceMap[node.type_name] = node_name
-
-            # Need to add mapping from node -> dependencies...
-            # Bucket -> BucketPolicy ( suggested )
-            # BucketPolicy -> Bucket ( Depends )
-            # So buckets have mapping to policy, but bucketpolicy needs mapping to buckets
-            # So again.... we come back to needing to implement some resouces to be singleton and some to be shared
-            # node.replaceMap[graph.nodes[nbr_id].type_name] = createName(graph.nodes[nbr_id].type_name, graph=graph) # Bandaid for now. Wrong cause it messes up numbers
         node.setData(data)
 
     return data
@@ -254,4 +271,4 @@ for i, result in enumerate(results):
     
     with open(output_path + f"/template{i}.yaml", 'w') as file:
         for k, v in data.items():
-            file.write(f"{k}: {v.replace('\\n', '\n  ')}\n")
+            file.write(f"{k}: {v.replace('\\n', '\n')}\n")
