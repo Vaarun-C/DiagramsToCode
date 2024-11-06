@@ -27,7 +27,7 @@ function UploadButton({
       <Button
         onClick={handleButtonClick}
         endContent={<MdFileUpload />}
-        className='flex border-2 items-center gap-2 px-4 py-1 rounded-md hover:bg-gray-700 hover:text-white transition-all duration-200'
+        className='flex border-2 items-center gap-2 px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-white hover:text-black hover:border-gray-700 transition-all duration-200'
       >
         Upload Image
       </Button>
