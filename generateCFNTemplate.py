@@ -208,7 +208,7 @@ def get_or_makeNode(type_name, dep_type_name, graph:Graph, queue:deque) -> Node:
             for candidate_node_id in candidate_dep_node_ids:
                 candidate_node = graph.nodes[candidate_node_id]
                 if type_name not in candidate_node.consumedBy:
-                    candidate_node.consumedBy |= type_name
+                    candidate_node.consumedBy.add(type_name)
                     dep_node_id = candidate_node_id
                     break
         dep_node:Node = graph.nodes[dep_node_id]
