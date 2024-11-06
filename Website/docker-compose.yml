@@ -1,0 +1,70 @@
+version: "1"
+services:
+  gateway:
+    image: kong:latest
+    environment:
+      KONG_DATABASE: "off"  # Using DB-less mode for declarative configuration
+      KONG_DECLARATIVE_CONFIG: /app/kong.yml
+    ports:
+      - "8080:8000"  # Expose Kong's proxy port for frontend access
+    volumes:
+      - ./api-gateway/kong.yml:/app/kong.yml
+    depends_on:
+      - awsicons
+      - generateawstemplate
+      - llm
+    networks:
+      - app-network
+  frontend:
+    build:
+      context: ./diagrams-to-code
+      dockerfile: /diagrams-to-code/Dockerfile
+    ports:
+      - "3000:3000"                    # Expose frontend on port 3000
+    environment:
+      - NEXT_PUBLIC_API_URL=http://gateway:8080  # Directs frontend requests to Kong
+    depends_on:
+      - gateway
+    networks:
+      - app-network
+  awsicons:
+    build:
+      dockerfile: Dockerfile
+      context: ./services/awsicons
+    env_file:
+      - ./services/awsicons/.env
+    networks:
+      - app-network
+
+  generateawstemplate:
+    build:
+      dockerfile: Dockerfile
+      context: ./services/generateawstemplate
+    env_file:
+      - ./services/generateawstemplate/.env
+    networks:
+      - app-network
+
+  llm:
+    build:
+      dockerfile: Dockerfile
+      context: ./services/llm
+    env_file:
+      - ./services/llm/.env
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:6.0
+    container_name: database-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: CapTheStone
+      MONGO_INITDB_ROOT_PASSWORD: VarunVikas
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

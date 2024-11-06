@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 
 URI = "mongodb+srv://CapTheStone:VarunVikas@viewme.vzrbu.mongodb.net/?retryWrites=true&w=majority&appName=viewme"
 icons_collection = None
+model_names = None
 
 class Node:
     ID = 0  # Static variable to assign unique IDs to each node
@@ -126,7 +127,7 @@ LLM_SUGGESTIONS = {
         'AWS::ApiGateway::Resource',
         'AWS::ApiGateway::MethodForLambda',
         'AWS::Lambda::Permission'
-    ]
+    ],
 }
 
 SHAREABLE_RESOURCES = {
@@ -158,7 +159,7 @@ def get_detected_types(result) -> list[str]:
     detected_classes_types = []
     for box in result.boxes: # type: ignore
         class_id = int(box.cls) # Get the class id for the current box
-        class_name = model.names[class_id]# Get the class name from the model's names list
+        class_name = model_names[class_id]# Get the class name from the model's names list
         try:
             detected_classes_types.append(CLS_NAME_TO_TYPE[class_name])
         except:
@@ -279,6 +280,8 @@ def create_template(result, file_name):
     return data
 
 def runModelOn(path,*, weights):
+    global model_names
+
     all_classes = set(range(298))
     removed_classes = set([57]) #
     allowed_classes = list(all_classes-removed_classes)
@@ -286,25 +289,24 @@ def runModelOn(path,*, weights):
     # Predict using best weights from the model
     model = YOLO(weights)
     results = model.predict(path, save=True, line_width=1, classes=allowed_classes, conf=0.6)
+    model_names = model.names
     return results
     
 def main():
     global icons_collection
-    input_path = 'testArchitectureDiagrams'
     output_path = 'testCFNTemplates'
     weight_for_model = "298_icons_best.pt"
-    architecture_path = "./test/test3.png"
+    architecture_path = "./test/distributed-load-testing-on-aws-architecture.dc386721ef6865bf5ed7c3e68a9af324a3bb2d83.png"
     assert weight_for_model in os.listdir(), "Model Weights missing!"
 
     # Make directories if they don't exist
-    os.makedirs(input_path, exist_ok=True)
     os.makedirs(output_path, exist_ok=True)
 
     client = connect_to_mongo()
     db = client['Templates']
     icons_collection = db['Templates[PROD]_cleaned']
 
-    results = runModelOn(input_path, weights=weight_for_model)
+    results = runModelOn(architecture_path, weights=weight_for_model)
     for i, result in enumerate(results):
         data = create_template(result, result.path.split('/')[-1])
 
