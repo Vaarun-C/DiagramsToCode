@@ -1,9 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile, Form
 from collections import defaultdict, deque
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from pydantic import BaseModel
 from typing import List
+import httpx
+import asyncio
 
 app = FastAPI()
 
@@ -109,6 +111,10 @@ def connect_to_mongo():
         print("CONNECTION ERROR!!")
         quit()
 
+client = connect_to_mongo()
+db = client['Templates']
+icons_collection = db['Templates[PROD]_cleaned']
+
 def fetch_document_from_mongo(type_name):
     document = icons_collection.find_one({"Type": type_name})
     if not document:
@@ -209,10 +215,31 @@ def create_template(file_name, detected_classes_types):
     return data
 
 @app.post("/generateawstemplate")
-async def root(all_services: ClassList):
-    global icons_collection
+async def upload_architecture_diagrams(
+    UUID: str = Form(...),
+    ArchitectureDiagram: UploadFile = File(...),
+):
+    async def forward_to_icon_and_llmservice(file: UploadFile):
+        # Use httpx to make async requests
+        async with httpx.AsyncClient() as client:
+            # Prepare form data for Service 2
+            form_data = {"architectureDiagram": await file.read()}
+            icon_response = await client.post("http://0.0.0.0:8000/getawsicons", files=form_data)
 
-    client = connect_to_mongo()
-    db = client['Templates']
-    icons_collection = db['Templates[PROD]_cleaned']
-    return {"message": create_template(all_services.file_name, all_services.all_types)}
+            icon_res = icon_response.json()
+            form_data = {"items": icon_res['message']}
+
+            llm_response = await client.post("http://0.0.0.0:8001/getllmsuggestion", data=form_data)
+            llm_res = llm_response.json()
+
+            template_response = await asyncio.to_thread(create_template, file.filename, icon_res['message'] + llm_res['message'])
+
+            return {"file_name": file.filename, "status": llm_response.status_code, "response": template_response}
+
+    # Create a list of tasks to forward each file
+    tasks = [forward_to_icon_and_llmservice(file) for file in [ArchitectureDiagram]]
+
+    # Execute all tasks concurrently and collect responses
+    template_responses = await asyncio.gather(*tasks)
+    print("I AM SLEEPY", template_responses)
+    return {"results": template_responses}

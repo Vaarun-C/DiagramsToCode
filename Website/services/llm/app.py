@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Form
 from pydantic import BaseModel
 from typing import List
 
@@ -38,9 +38,10 @@ LLM_SUGGESTIONS = {
 }
 
 @app.post("/getllmsuggestion")
-async def root(class_types: ClassList):
+async def root(items: List[str] = Form(...)):
+    print(items)
     new_types = []
-    for class_type in class_types.items:
+    for class_type in items:
         new_types.extend(LLM_SUGGESTIONS.get(class_type, []))
 
     return {"message": new_types}

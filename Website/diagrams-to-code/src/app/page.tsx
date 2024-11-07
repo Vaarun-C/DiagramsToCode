@@ -45,16 +45,48 @@ export default function Home() {
   };
 
   const handleUpload = async () => {
+    
     if (Object.keys(uploadedFiles).length === 0)
       alert("No Architecture Diagrams have been uploaded")
     else {
-      // sendDiagrams(uploadedFiles)
-      let icon_data = await recognizeIcons();
-      // const mock_data = ['AWS::S3::Bucket', 'AWS::Lambda::Function']
-      let llm_data = await getLLMsuggestions(icon_data.message);
-      let template = await generateAWSTemplate([...icon_data.message, ...llm_data.message])
-      console.log("GENERATED TEMPLATE: ")
-      console.log(template)
+      Object.entries(uploadedFiles).forEach(([uuid, file]) => {
+        const formData = new FormData();
+        formData.append('ArchitectureDiagram', file);
+        formData.append('UUID', uuid);
+
+        console.log("BEFORE: ", formData)
+
+        fetch('/api/templateService', {
+          method: 'POST',
+          body: formData, // Attach FormData (multipart/form-data)
+        })
+        .then(async (response) => {
+          if (!response.ok) {
+              throw new Error(`Failed to upload ${file.name}: ${response.statusText}`);
+          }
+          const data = await response.json();
+          const uuid = data.responses[0].uuid
+          const template = data.responses[0].template
+
+          const formattedTemplate = Object.entries(template)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join("");
+
+          // console.log("SLEEP", formattedTemplate)
+
+          setYamlCodes((prevYamlCodes) => ({
+            ...prevYamlCodes,
+            [uuid]: formattedTemplate,
+          }));
+          
+          console.log(`Upload successful for ${file.name}:`, JSON.stringify(data.message));
+          // Show or handle the result here, such as updating the UI
+        })
+        .catch((error) => {
+          console.error(`Error uploading ${file.name}:`, error);
+          // Handle the error as needed, e.g., show an alert or update the UI
+        });
+      });
     }
       
   }
@@ -93,18 +125,44 @@ export default function Home() {
     }
   }
 
-  const generateAWSTemplate = async (all_services: string[]) => {
-    try {
-      const response = await fetch('/api/templateService', {
-          method: 'POST',
-          body: JSON.stringify(all_services), // Attach FormData (multipart/form-data)
-      });
+  const generateAWSTemplate = async () => {//(all_services: string[]) => {
+    // try {
+    //   const response = await fetch('/api/templateService', {
+    //       method: 'POST',
+    //       body: JSON.stringify(all_services), // Attach FormData (multipart/form-data)
+    //   });
 
-      const data = await response.json();
-      return data
-    } catch (error) {
-        console.error('Error uploading image:', error);
-    }
+    //   const data = await response.json();
+    //   return data
+    // } catch (error) {
+    //     console.error('Error uploading image:', error);
+    // }
+    const uploadPromises = uploadedFiles.map(async (file) => {
+      const formData = new FormData();
+      formData.append('Diagram', file);
+
+      try {
+          const response = await fetch('/api/service1', {
+              method: 'POST',
+              body: formData, // Attach FormData (multipart/form-data)
+          });
+          
+          // Ensure you check if the response is ok before parsing
+          if (!response.ok) {
+              throw new Error(`Failed to upload ${file.name}: ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          return data;
+      } catch (error) {
+          console.error(`Error uploading ${file.name}:`, error);
+          return { error: `Error uploading ${file.name}` }; // Return error info to handle later
+      }
+    });
+
+    // Wait for all promises to complete and return the results
+    const results = await Promise.all(uploadPromises);
+    return results;
   }
 
   return (
