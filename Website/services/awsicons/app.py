@@ -3,10 +3,19 @@ from fastapi.responses import JSONResponse
 from PIL import Image
 import io
 from ultralytics import YOLO
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 model_names = None
 model = YOLO("298_icons_best.pt")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Or specify allowed domains
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 CLS_NAME_TO_TYPE = {
     "Arch_Amazon-Elastic-Container-Service_64": "AWS::ECS::Cluster",
@@ -19,6 +28,7 @@ CLS_NAME_TO_TYPE = {
 
 @app.post("/getawsicons")
 async def root(architectureDiagram: UploadFile = File(...)):
+    print("ENDPOINT HIT!!!")
     global model_names
 
     # Read the image file and convert to PIL Image

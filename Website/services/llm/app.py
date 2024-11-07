@@ -37,7 +37,7 @@ LLM_SUGGESTIONS = {
     ]
 }
 
-@app.post("/getllmsuggestion/")
+@app.post("/getllmsuggestion")
 async def root(class_types: ClassList):
     new_types = []
     for class_type in class_types.items:
