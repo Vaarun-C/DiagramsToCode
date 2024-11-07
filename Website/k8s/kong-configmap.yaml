@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-config
+  namespace: app-namespace
+data:
+  kong.yml: |
+    _format_version: "2.1"
+    services:
+      - name: awsicons
+        url: http://awsicons:8000
+        routes:
+          - name: awsicons-route
+            paths:
+              - /getawsicons
+
+      - name: generateawstemplate
+        url: http://generateawstemplate:8001
+        routes:
+          - name: generateawstemplate-route
+            paths:
+              - /generateawstemplate
+
+      - name: llm
+        url: http://llm:8002
+        routes:
+          - name: llm-route
+            paths:
+              - /getllmsuggestions

@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: app-namespace
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /  # Optional, rewrites the URL path
+spec:
+  rules:
+    - host: diagramstocode.local
+      http:
+        paths:
+          - path: /awsicons
+            pathType: Prefix
+            backend:
+              service:
+                name: awsicons
+                port:
+                  number: 80
+          - path: /generateawstemplate
+            pathType: Prefix
+            backend:
+              service:
+                name: generateawstemplate
+                port:
+                  number: 80
+          - path: /llm
+            pathType: Prefix
+            backend:
+              service:
+                name: llm
+                port:
+                  number: 80
+          - path: /frontend
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 3000  # Adjust to your frontend's service port

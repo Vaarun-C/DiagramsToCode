@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  namespace: app-namespace
+spec:
+  selector:
+    app: kong
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8000

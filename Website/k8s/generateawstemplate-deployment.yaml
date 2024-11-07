@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: generateawstemplate
+  namespace: app-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: generateawstemplate
+  template:
+    metadata:
+      labels:
+        app: generateawstemplate
+    spec:
+      containers:
+        - name: generateawstemplate
+          image: capthestone/website-generateawstemplate:latest
