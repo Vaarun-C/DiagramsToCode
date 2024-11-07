@@ -1,4 +1,3 @@
-version: "1"
 services:
   gateway:
     image: kong:latest
@@ -18,7 +17,6 @@ services:
   frontend:
     build:
       context: ./diagrams-to-code
-      dockerfile: /diagrams-to-code/Dockerfile
     ports:
       - "3000:3000"                    # Expose frontend on port 3000
     environment:
@@ -29,7 +27,6 @@ services:
       - app-network
   awsicons:
     build:
-      dockerfile: Dockerfile
       context: ./services/awsicons
     env_file:
       - ./services/awsicons/.env
@@ -38,7 +35,6 @@ services:
 
   generateawstemplate:
     build:
-      dockerfile: Dockerfile
       context: ./services/generateawstemplate
     env_file:
       - ./services/generateawstemplate/.env
@@ -47,7 +43,6 @@ services:
 
   llm:
     build:
-      dockerfile: Dockerfile
       context: ./services/llm
     env_file:
       - ./services/llm/.env

@@ -1,5 +1,5 @@
 # Use a lightweight Python base image
-FROM python:3.10-slim
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
 
 # Set the working directory
 WORKDIR /app
@@ -7,7 +7,8 @@ WORKDIR /app
 # Copy requirements file and install dependencies
 COPY requirements.txt .
 RUN apt-get update \
-    && pip install --no-cache-dir --upgrade pip
+    && pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
 COPY . .
@@ -16,4 +17,4 @@ COPY . .
 EXPOSE 8001
 
 # Command to run the application
-CMD ["python", "app.py"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8001"]
