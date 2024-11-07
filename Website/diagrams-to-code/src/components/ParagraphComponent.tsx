@@ -9,26 +9,34 @@ function Paragraph({
   onFilesUploaded,
   handleDeleteFile,
   handleUpload,
+  handleSelectedCard,
 }: {
-  uploadedFiles: File[];
+  uploadedFiles: { [key: string]: File };
   onFilesUploaded: (files: File[]) => void;
-  handleDeleteFile: (files: File) => void;
+  handleDeleteFile: (uuid: string) => void;
   handleUpload: () => void;
+  handleSelectedCard: (uuid: string) => void;
 }) {
   return (
-    <div className='p-4 bg-slate-200 h-full relative'>
+    <div className='p-4 bg-slate-200 h-full relative rounded-md'>
       <div className='flex justify-between'>
-      <UploadButton onFilesUploaded={onFilesUploaded} />
-      <GenerateButton handleUpload={handleUpload}/>
+        <UploadButton onFilesUploaded={onFilesUploaded} />
+        <GenerateButton handleUpload={handleUpload} />
       </div>
-      {uploadedFiles.length === 0 ? (
-        <div className="flex items-center justify-center h-full text-gray-500 text-lg">
+      {Object.keys(uploadedFiles).length === 0 ? (
+        <div className='flex items-center justify-center h-full text-gray-500 text-lg'>
           No Architecture Diagrams uploaded
         </div>
       ) : (
-        <div className="flex flex-wrap gap-3 gap-y-3 mt-2 max-h-full overflow-y-scroll no-scrollbar">
-          {uploadedFiles.map((file, index) => (
-            <Card key={index} file={file} onDelete={handleDeleteFile} />
+        <div className='flex flex-wrap gap-3 gap-y-3 mt-2 max-h-[92%] overflow-y-scroll no-scrollbar'>
+          {Object.entries(uploadedFiles).map(([uuid, file]) => (
+            <Card
+              key={uuid}
+              file={file}
+              uuid={uuid}
+              onDelete={handleDeleteFile}
+              handleSelect={handleSelectedCard}
+            />
           ))}
         </div>
       )}

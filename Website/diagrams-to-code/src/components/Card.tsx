@@ -6,10 +6,12 @@ import { TiDeleteOutline } from 'react-icons/ti';
 
 interface CardProps {
   file: File;
-  onDelete: (file: File) => void;
+  uuid: string;
+  onDelete: (uuid: string) => void;
+  handleSelect: (uuid:string) => void;
 }
 
-const Card: React.FC<CardProps> = ({ file, onDelete }) => {
+const Card: React.FC<CardProps> = ({ file, uuid, onDelete, handleSelect }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   // const [hovered, setHovered] = useState(false);
@@ -17,14 +19,9 @@ const Card: React.FC<CardProps> = ({ file, onDelete }) => {
   // const [cardHeight, setCardHeight] = useState<number>(192);
 
   useEffect(() => {
-    // Create object URL after component mounts on the client side
     const objectUrl = URL.createObjectURL(file);
     setImageUrl(objectUrl);
-
-    // Clean up the object URL when the component unmounts
-    return () => {
-      URL.revokeObjectURL(objectUrl);
-    };
+    return () => { URL.revokeObjectURL(objectUrl) };
   }, [file]);
 
   const handleImageLoad = (
@@ -48,12 +45,11 @@ const Card: React.FC<CardProps> = ({ file, onDelete }) => {
   return (
     <div
       ref={containerRef}
+      onClick={()=>handleSelect(uuid)}
       className={`relative w-5 h-48 overflow-hidden rounded-lg shadow-xl cursor-pointer group `}
-      style={{
+      style={{ transition: 'width 0.3s ease'}} // Smooth transition effect
       //   width: hovered ? cardWidth : '192px', // Initial width, expands on hover
       //   height: hovered ? cardHeight : '192px', // Initial width, expands on hover
-        transition: 'width 0.3s ease', // Smooth transition effect
-      }}
       // onMouseEnter={() => setHovered(true)}
       // onMouseLeave={() => setHovered(false)}
     >
@@ -70,12 +66,12 @@ const Card: React.FC<CardProps> = ({ file, onDelete }) => {
 
       {/* Overlay with filename on hover */}
       <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 transition-opacity duration-300 group-hover:opacity-100'>
-        <span className='text-white break-words max-w-[90%]'>{file.name}</span>
+        <span className='text-white text-lg break-words max-w-[90%]'>{file.name}</span>
       </div>
 
       {/* Delete button, visible on hover */}
       <button
-        onClick={() => onDelete(file)}
+        onClick={() => onDelete(uuid)}
         className='absolute top-2 left-2  bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300'
       >
         <TiDeleteOutline size={25} className='text-red-600' />

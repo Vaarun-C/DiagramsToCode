@@ -1,4 +1,5 @@
 'use client';
+import { v4 as uuidv4 } from 'uuid';
 import CodeEditor from '@components/CodeEditor';
 import FileUploadWrapper from '@components/FileUploadWrapper';
 import ParagraphComponent from '@components/ParagraphComponent';
@@ -7,21 +8,44 @@ import { useState } from 'react';
 import { sendDiagrams } from './api/handler';
 
 export default function Home() {
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: File }>({});
+  const [yamlCodes, setYamlCodes] = useState<{ [key: string]: string }>({'':"No template Code Generated"});
+  const [selectedUUID, setSelectedUUID] = useState<string>('');
 
   const handleFilesUploaded = (files: File[]) => {
-    setUploadedFiles((prevFiles) => [...prevFiles, ...files]);
+    const newFiles = Array.from(files).reduce((acc, file) => {
+      const uuid = uuidv4();
+      acc[uuid] = file;
+      return acc;
+    }, {} as { [key: string]: File });
+    setUploadedFiles((prevFiles) => ({...prevFiles, ...newFiles}));
     console.log(files);
   };
 
-  const handleDeleteFile = (fileToDelete: File) => {
-    setUploadedFiles((prevFiles) =>
-      prevFiles.filter((file) => file !== fileToDelete)
-    );
+  const handleDeleteFile = (fileUUIDToDelete: string) => {
+    setUploadedFiles(prevFiles => {
+      const updatedFiles = { ...prevFiles };
+      delete updatedFiles[fileUUIDToDelete];
+      return updatedFiles;
+    });
+    if (selectedUUID === fileUUIDToDelete){
+      setSelectedUUID('')
+    }
+  };
+
+  const handleSelectedCard = (newSelectedUUID: string) => {
+    setSelectedUUID(newSelectedUUID);
+  };
+
+  const onCodeChange = (newCode:string) => {
+    setYamlCodes((prevYamlCodes) => ({
+      ...prevYamlCodes,
+      [selectedUUID]: newCode,
+    }));
   };
 
   const handleUpload = async () => {
-    if (uploadedFiles.length == 0)
+    if (Object.keys(uploadedFiles).length === 0)
       alert("No Architecture Diagrams have been uploaded")
     else {
       // sendDiagrams(uploadedFiles)
@@ -92,10 +116,11 @@ export default function Home() {
             onFilesUploaded={handleFilesUploaded}
             handleDeleteFile={handleDeleteFile}
             handleUpload={handleUpload}
+            handleSelectedCard={handleSelectedCard}
           />
         </div>
         <div className='w-1/2 p-4'>
-          <CodeEditor />
+          <CodeEditor code={yamlCodes[selectedUUID] || ''} onCodeChange={onCodeChange}/>
         </div>
       </div>
     </FileUploadWrapper>
