@@ -5,22 +5,23 @@
     "AlexaSkill": {
       "Type": "AWS::AlexaForBusiness::Skill",
       "Properties": {
-        "SkillId": "your-skill-id",  // Replace with your Alexa skill ID
+        "SkillId": "your-skill-id", 
         "SkillName": "MyAlexaSkill",
         "SkillType": "Custom",
         "AuthenticationConfiguration": {
-          "AccessToken": "your-access-token",  // Replace with your access token
+          "AccessToken": "your-access-token"
         },
-        "VendorId": "your-vendor-id"  // Replace with your vendor ID
+        "VendorId": "your-vendor-id" 
+        
       }
     },
     "AlexaDevice": {
       "Type": "AWS::AlexaForBusiness::Device",
       "Properties": {
         "DeviceName": "MyAlexaDevice",
-        "DeviceType": "Echo",  // Specify the device type
-        "DeviceId": "your-device-id",  // Replace with your device ID
-        "RoomArn": "your-room-arn"  // Replace with your room ARN
+        "DeviceType": "Echo", 
+        "DeviceId": "your-device-id", 
+        "RoomArn": "your-room-arn" 
       }
     }
   },

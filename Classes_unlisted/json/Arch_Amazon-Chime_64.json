@@ -6,9 +6,9 @@
       "Type": "AWS::Chime::Meeting",
       "Properties": {
         "ClientRequestToken": {
-          "Fn::Sub": "${AWS::StackName}-${AWS::Region}"  // Unique token for the meeting
+          "Fn::Sub": "${AWS::StackName}-${AWS::Region}"  
         },
-        "MediaRegion": "us-east-1"  // Choose the media region
+        "MediaRegion": "us-east-1"  
       }
     },
     "ChimeMeetingAppInstance": {
@@ -17,7 +17,7 @@
         "AppInstanceArn": {
           "Fn::Sub": "arn:aws:chime:${AWS::Region}:${AWS::AccountId}:app-instance/${AWS::StackName}-app-instance"
         },
-        "Name": "MyChimeAppInstance"  // Replace with xyz app instance name
+        "Name": "MyChimeAppInstance" 
       }
     },
     "ChimeMessagingChannel": {
@@ -26,8 +26,8 @@
         "AppInstanceArn": {
           "Ref": "ChimeMeetingAppInstance"
         },
-        "Name": "MyChimeChannel",  // Replace with your desired channel name
-        "Mode": "UNRESTRICTED"  // Choose channel mode: UNRESTRICTED or RESTRICTED
+        "Name": "MyChimeChannel", 
+        "Mode": "UNRESTRICTED"
       }
     }
   }

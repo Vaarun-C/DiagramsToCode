@@ -5,9 +5,9 @@
     "DataZoneProject": {
       "Type": "AWS::DataZone::Project",
       "Properties": {
-        "Name": "MyDataZoneProject",  // Replace with your desired project name
+        "Name": "MyDataZoneProject", 
         "Description": "Sample project for Amazon DataZone",
-        "ProjectType": "DATA"  // Options: DATA, ANALYTICS, etc.
+        "ProjectType": "DATA"  
       }
     },
     "DataAsset": {
@@ -16,14 +16,14 @@
         "ProjectId": {
           "Ref": "DataZoneProject"
         },
-        "Name": "MyDataAsset",  // Replace with your desired data asset name
+        "Name": "MyDataAsset", 
         "Description": "Sample data asset description",
-        "AssetType": "DATASET",  // Options may vary based on the use case
+        "AssetType": "DATASET", 
         "DataSource": {
-          "DataSourceType": "S3",  // Specify the data source type
+          "DataSourceType": "S3",  
           "DataSourceDetails": {
-            "BucketName": "my-data-zone-bucket",  // Replace with your S3 bucket name
-            "Prefix": "data/"  // Optional prefix for the data
+            "BucketName": "my-data-zone-bucket",  
+            "Prefix": "data/" 
           }
         }
       }

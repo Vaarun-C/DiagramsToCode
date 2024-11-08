@@ -9,8 +9,8 @@
         "RepositoryDescription": "A sample CodeCommit repository.",
         "Code": {
           "S3": {
-            "Bucket": "YOUR_BUCKET_NAME",  // Replace with your S3 bucket name
-            "Key": "path/to/initial_code.zip"  // Replace with the S3 key for your initial code (if any)
+            "Bucket": "YOUR_BUCKET_NAME",  
+            "Key": "path/to/initial_code.zip"  
           }
         }
       }

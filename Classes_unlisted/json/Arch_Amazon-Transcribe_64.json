@@ -62,18 +62,18 @@
         "TranscriptionJobName": {
           "Fn::Sub": "TranscriptionJob-${AWS::AccountId}"
         },
-        "LanguageCode": "en-US",  // Adjust language code as needed
+        "LanguageCode": "en-US",  
         "Media": {
           "MediaFileUri": {
-            "Fn::Sub": "s3://${TranscriptionBucket.BucketName}/audio-file.wav"  // Update with your audio file path
+            "Fn::Sub": "s3://${TranscriptionBucket.BucketName}/audio-file.wav" 
           }
         },
         "OutputBucketName": {
           "Ref": "TranscriptionBucket"
         },
         "Settings": {
-          "ShowSpeakerLabel": true,  // Optional: Set to true for speaker labeling
-          "MaxSpeakerLabels": 2      // Optional: Number of speakers to label
+          "ShowSpeakerLabel": true, 
+          "MaxSpeakerLabels": 2     
         }
       }
     }

@@ -5,12 +5,12 @@
     "RePostApplication": {
       "Type": "AWS::rePost::Application",
       "Properties": {
-        "Name": "MyRePostApp",  // Replace with your desired application name
+        "Name": "MyRePostApp",  
         "Description": "This is my AWS rePost application",
         "Tags": [
           {
             "Key": "Environment",
-            "Value": "Production"  // Replace with appropriate tag key and value
+            "Value": "Production"  
           }
         ]
       }

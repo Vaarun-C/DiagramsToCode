@@ -5,9 +5,9 @@
     "MyLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
-        "FunctionName": "MyLambdaFunction",  // Replace with your desired function name
-        "Runtime": "nodejs14.x",  // Replace with your desired runtime
-        "Handler": "index.handler",  // Adjust based on your Lambda function
+        "FunctionName": "MyLambdaFunction",  
+        "Runtime": "nodejs14.x",  
+        "Handler": "index.handler", 
         "Role": {
           "Fn::GetAtt": [
             "LambdaExecutionRole",
@@ -58,7 +58,7 @@
     "MyExpressWorkflow": {
       "Type": "AWS::StepFunctions::StateMachine",
       "Properties": {
-        "StateMachineName": "MyExpressWorkflow",  // Replace with your desired workflow name
+        "StateMachineName": "MyExpressWorkflow",
         "DefinitionString": {
           "Fn::Sub": "{ \"StartAt\": \"InvokeLambda\", \"States\": { \"InvokeLambda\": { \"Type\": \"Task\", \"Resource\": \"${MyLambdaFunction.Arn}\", \"End\": true } } }"
         },

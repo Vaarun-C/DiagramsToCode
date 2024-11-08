@@ -28,8 +28,8 @@
                   "Effect": "Allow",
                   "Action": [
                     "sagemaker:*",
-                    "s3:*",  // Adjust S3 permissions as necessary
-                    "cloudwatch:*"  // Adjust CloudWatch permissions as necessary
+                    "s3:*", 
+                    "cloudwatch:*" 
                   ],
                   "Resource": "*"
                 }

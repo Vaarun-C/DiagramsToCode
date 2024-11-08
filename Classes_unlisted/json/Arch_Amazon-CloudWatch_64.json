@@ -8,7 +8,7 @@
         "LogGroupName": {
           "Fn::Sub": "/aws/cloudwatch/my-log-group-${AWS::AccountId}"
         },
-        "RetentionInDays": 14  // Adjust retention as necessary
+        "RetentionInDays": 14 
       }
     },
     "CloudWatchAlarm": {

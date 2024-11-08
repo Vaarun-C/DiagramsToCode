@@ -5,11 +5,7 @@
     "LakeFormationDataLakeSettings": {
       "Type": "AWS::LakeFormation::DataLakeSettings",
       "Properties": {
-        "DataLakeAdmins": [
-          {
-            "Ref": "DataLakeAdminRole"
-          }
-        ],
+
         "CreateDatabaseDefaultPermissions": [
           {
             "DataLakePrincipal": {

@@ -8,9 +8,7 @@
         "MeshName": "MyAppMesh",
         "Spec": {
           "EgressFilter": {
-            "OutboundTrafficPolicy": {
-              "Type": "ALLOW_ALL"
-            }
+            
           }
         }
       }
@@ -74,7 +72,7 @@
         },
         "VirtualRouterName": "MyVirtualRouter",
         "Spec": {
-          "Listener": {
+          "Listeners": {
             "PortMapping": {
               "Port": 8080,
               "Protocol": "http"
@@ -101,12 +99,8 @@
             "Action": {
               "WeightedTargets": [
                 {
-                  "Weight": 1,
-                  "VirtualServiceRef": {
-                    "VirtualServiceName": {
-                      "Ref": "VirtualService"
-                    }
-                  }
+                  "Weight": 1
+                 
                 }
               ]
             }

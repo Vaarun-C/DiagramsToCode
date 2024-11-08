@@ -5,22 +5,23 @@
     "AppFlowFlow": {
       "Type": "AWS::AppFlow::Flow",
       "Properties": {
-        "FlowName": "MyAppFlow",  // Replace with your desired flow name
+        "Tasks": [],
+        "FlowName": "MyAppFlow",  
         "SourceFlowConfig": {
-          "ConnectorType": "Salesforce",  // Replace with your source connector type
+          "ConnectorType": "Salesforce",  
           "SourceConnectorProperties": {
-            "Object": "Account"  // Replace with your source object
+            "Object": "Account"  
           }
         },
-        "DestinationFlowConfig": {
-          "ConnectorType": "S3",  // Replace with your destination connector type
+        "DestinationFlowConfigList": {
+          "ConnectorType": "S3", 
           "DestinationConnectorProperties": {
-            "BucketName": "my-s3-bucket",  // Replace with your S3 bucket name
-            "BucketPrefix": "appflow-data/"  // Optional: Specify a prefix for S3 objects
+            "BucketName": "my-s3-bucket", 
+            "BucketPrefix": "appflow-data/"  
           }
         },
         "TriggerConfig": {
-          "TriggerType": "OnDemand"  // Options: OnDemand, Scheduled
+          "TriggerType": "OnDemand" 
         }
       }
     }

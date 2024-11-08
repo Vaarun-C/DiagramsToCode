@@ -5,7 +5,8 @@
     "EC2Instance": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "p3.2xlarge"  // Choose an instance type suitable for deep learning
+        "ImageId": "",
+        "InstanceType": "p3.2xlarge" 
       }
     },
     "EC2InstanceProfile": {

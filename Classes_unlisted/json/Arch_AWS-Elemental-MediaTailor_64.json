@@ -6,15 +6,11 @@
       "Type": "AWS::MediaTailor::PlaybackConfiguration",
       "Properties": {
         "Name": "MyPlaybackConfiguration",
-        "VideoContentSourceUrl": "https://example.com/your-video-source",  // Replace with your video source URL
-        "AdDecisionServerUrl": "https://example.com/ad-server",  // Replace with your ad decision server URL
-        "Slates": [
-          {
-            "SlateAdUrl": "https://example.com/slate-ad"  // Replace with your slate ad URL
-          }
-        ],
+        "VideoContentSourceUrl": "https://example.com/your-video-source",  
+        "AdDecisionServerUrl": "https://example.com/ad-server",
         "Tags": {
-          "Environment": "Production"  // Optional tags
+          "Environment": "Production",
+          "":"" 
         }
       }
     }

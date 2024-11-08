@@ -12,7 +12,7 @@
             {
               "Effect": "Allow",
               "Principal": {
-                "Service": "lambda.amazonaws.com"  // Change to your service if needed
+                "Service": "lambda.amazonaws.com"  
               },
               "Action": "sts:AssumeRole"
             }
@@ -27,7 +27,7 @@
                 {
                   "Effect": "Allow",
                   "Action": [
-                    "rekognition:*"  // Allows all Rekognition actions
+                    "rekognition:*"  
                   ],
                   "Resource": "*"
                 }
@@ -40,7 +40,7 @@
     "ImageBucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-rekognition-bucket"  // Replace with a unique bucket name
+        "BucketName": "my-rekognition-bucket"  
       }
     }
   },

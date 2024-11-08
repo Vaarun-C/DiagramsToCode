@@ -7,8 +7,8 @@
       "Properties": {
         "EnvironmentName": "MyFinSpaceEnvironment",
         "Description": "A sample FinSpace environment for financial data analysis.",
-        "KmsKeyId": "YOUR_KMS_KEY_ID",  // Replace with your KMS key ID
-        "S3BucketName": "YOUR_S3_BUCKET_NAME",  // Replace with your S3 bucket name
+        "KmsKeyId": "YOUR_KMS_KEY_ID",  
+        "S3BucketName": "YOUR_S3_BUCKET_NAME", 
         "Tags": [
           {
             "Key": "Environment",

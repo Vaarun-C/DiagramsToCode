@@ -5,9 +5,9 @@
     "MyResource": {
       "Type": "AWS::CloudControlApi::Resource",
       "Properties": {
-        "TypeName": "AWS::S3::Bucket",  // Replace with the desired resource type
+        "TypeName": "AWS::S3::Bucket", 
         "Properties": {
-          "BucketName": "my-unique-bucket-name",  // Replace with your desired bucket name
+          "BucketName": "my-unique-bucket-name",
           "VersioningConfiguration": {
             "Status": "Enabled"
           }

@@ -5,19 +5,19 @@
     "MyExpressLinkProfile": {
       "Type": "AWS::IoTExpressLink::Profile",
       "Properties": {
-        "ProfileName": "MyExpressLinkProfile",  // Replace with your desired profile name
+        "ProfileName": "MyExpressLinkProfile", 
         "Description": "Sample ExpressLink profile",
         "Connectivity": {
           "WiFi": {
-            "Ssid": "MyWiFiSSID",  // Replace with your Wi-Fi SSID
-            "Password": "MyWiFiPassword"  // Replace with your Wi-Fi password
+            "Ssid": "", 
+            "Password": "" 
           }
         },
         "CertificateArn": {
-          "Ref": "MyCertificateArn"  // Replace with your IoT certificate ARN
+          "Ref": "MyCertificateArn" 
         },
         "RoleArn": {
-          "Ref": "MyRoleArn"  // Replace with your IAM role ARN
+          "Ref": "MyRoleArn"
         }
       }
     }

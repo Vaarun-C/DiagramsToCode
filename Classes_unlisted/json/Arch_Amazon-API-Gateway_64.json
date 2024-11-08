@@ -40,11 +40,6 @@
           "Type": "MOCK",
           "RequestTemplates": {
             "application/json": "{ \"statusCode\": 200 }"
-          },
-          "Responses": {
-            "200": {
-              "StatusCode": "200"
-            }
           }
         }
       }

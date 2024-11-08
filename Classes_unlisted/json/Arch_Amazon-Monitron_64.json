@@ -5,20 +5,20 @@
     "MonitronModel": {
       "Type": "AWS::Monitron::Model",
       "Properties": {
-        "ModelName": "MyMonitronModel",  // Replace with your desired model name
+        "ModelName": "MyMonitronModel", 
         "ModelDescription": "A sample model for Amazon Monitron"
       }
     },
     "MonitronJob": {
       "Type": "AWS::Monitron::MonitoringJob",
       "Properties": {
-        "JobName": "MyMonitoringJob",  // Replace with your desired monitoring job name
+        "JobName": "MyMonitoringJob", 
         "ModelArn": { "Fn::GetAtt": ["MonitronModel", "Arn"] },
-        "Frequency": "P1D",  // Frequency of monitoring, e.g., daily
-        "StartTime": "2024-01-01T00:00:00Z",  // Replace with your desired start time
-        "EndTime": "2024-12-31T23:59:59Z",  // Replace with your desired end time
+        "Frequency": "P1D", 
+        "StartTime": "2024-01-01T00:00:00Z", 
+        "EndTime": "2024-12-31T23:59:59Z", 
         "NotificationConfig": {
-          "NotificationTopicArn": "arn:aws:sns:us-east-1:123456789012:MySNSTopic"  // Replace with your SNS topic ARN
+          "NotificationTopicArn": "arn:aws:sns:us-east-1:123456789012:MySNSTopic" 
         }
       }
     }

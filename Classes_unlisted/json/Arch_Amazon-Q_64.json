@@ -5,9 +5,9 @@
     "QuantumTask": {
       "Type": "AWS::Quantum::Task",
       "Properties": {
-        "Name": "MyQuantumTask",  // Replace with task name
-        "Action": "AWS::Quantum::Action",  // Specify the action to perform
-        "Device": "arn:aws:quantum::device:device-name",  // Replace with your device ARN
+        "Name": "MyQuantumTask",  
+        "Action": "AWS::Quantum::Action", 
+        "Device": "arn:aws:quantum::device:device-name"
       }
     }
   }

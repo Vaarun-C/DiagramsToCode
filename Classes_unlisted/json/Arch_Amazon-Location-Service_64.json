@@ -9,7 +9,7 @@
           "Fn::Sub": "MyGeoTracker-${AWS::AccountId}"
         },
         "Description": "Tracker for monitoring location data",
-        "PricingPlan": "RequestBasedUsage"  // Options: RequestBasedUsage, MobileAssetTracking
+        "PricingPlan": "RequestBasedUsage"
       }
     },
     "GeoFenceCollection": {
@@ -19,9 +19,7 @@
           "Fn::Sub": "MyGeofenceCollection-${AWS::AccountId}"
         },
         "Description": "Collection for geofences",
-        "PricingPlan": "RequestBasedUsage",  // Options: RequestBasedUsage, MobileAssetTracking
-        "DataSource": "Esri"  // Example data source
-      }
+        "PricingPlan": "RequestBasedUsage"      }
     }
   },
   "Outputs": {

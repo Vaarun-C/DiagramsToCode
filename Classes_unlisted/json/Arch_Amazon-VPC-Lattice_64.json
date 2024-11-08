@@ -7,7 +7,7 @@
       "Properties": {
         "CidrBlock": "10.0.0.0/16",
         "EnableDnsSupport": true,
-        "EnableDnsHostname": true,
+        "EnableDnsHostnames": true,
         "Tags": [
           {
             "Key": "Name",
@@ -19,16 +19,7 @@
     "VpcLatticeService": {
       "Type": "AWS::VPCLattice::Service",
       "Properties": {
-        "Name": "MyVpcLatticeService",
-        "VpcId": {
-          "Ref": "Vpc"
-        },
-        "Type": "HTTP",  // Change to "HTTPS" as needed
-        "HealthCheck": {
-          "Protocol": "HTTP",
-          "Path": "/health",
-          "Port": 80
-        }
+        "Name": "MyVpcLatticeService"
       }
     }
   },

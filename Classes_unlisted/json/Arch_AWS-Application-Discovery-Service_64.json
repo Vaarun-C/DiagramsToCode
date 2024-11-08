@@ -5,11 +5,11 @@
     "ApplicationDiscoveryConfiguration": {
       "Type": "AWS::ApplicationDiscovery::Configuration",
       "Properties": {
-        "ConfigurationName": "MyDiscoveryConfiguration",  // Replace with your desired configuration name
+        "ConfigurationName": "MyDiscoveryConfiguration",  
         "Tags": [
           {
             "Key": "Environment",
-            "Value": "Production"  // Replace with appropriate tag key and value
+            "Value": "Production"  
           }
         ]
       }

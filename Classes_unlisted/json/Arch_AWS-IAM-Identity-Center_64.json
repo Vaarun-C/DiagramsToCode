@@ -14,7 +14,7 @@
     "IdentityStore": {
       "Type": "AWS::SSO::IdentityStore",
       "Properties": {
-        "IdentityStoreType": "AWS_SSO"  // Options: "AWS_SSO", "EXTERNAL"
+        "IdentityStoreType": "AWS_SSO"
       }
     }
   },

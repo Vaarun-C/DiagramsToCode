@@ -5,7 +5,7 @@
     "DataInterchangeBucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-b2b-data-interchange-bucket"  // Replace with a unique bucket name
+        "BucketName": "my-b2b-data-interchange-bucket" 
       }
     },
     "ApiGateway": {

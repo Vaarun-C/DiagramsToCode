@@ -5,35 +5,23 @@
     "IoTEventsInput": {
       "Type": "AWS::IoTEvents::Input",
       "Properties": {
-        "InputName": "MyIoTEventInput",  // Replace with your desired input name
+        "InputName": "MyIoTEventInput", 
         "InputDescription": "Input for monitoring IoT events.",
         "InputDefinition": {
-          "Attributes": [
-            {
-              "Name": "temperature",
-              "Type": "DOUBLE"
-            },
-            {
-              "Name": "humidity",
-              "Type": "DOUBLE"
-            }
-          ]
+          "Attributes": []
         }
       }
     },
     "IoTEventsDetectorModel": {
       "Type": "AWS::IoTEvents::DetectorModel",
       "Properties": {
-        "DetectorModelName": "MyIoTEventDetector",  // Replace with your desired detector model name
+        "DetectorModelName": "MyIoTEventDetector",
         "DetectorModelDefinition": {
           "InitialStateName": "Monitoring",
           "States": [
             {
               "StateName": "Monitoring",
               "OnInput": {
-                "InputName": {
-                  "Ref": "IoTEventsInput"
-                },
                 "TransitionEvents": [
                   {
                     "EventName": "TemperatureTooHigh",
@@ -50,43 +38,12 @@
                   }
                 ]
               },
-              "OnExit": {
-                "Actions": [
-                  {
-                    "SetTimer": {
-                      "TimerName": "ResetTimer",
-                      "Seconds": 300
-                    }
-                  }
-                ]
-              },
-              "OnTimeout": {
-                "Actions": [
-                  {
-                    "SetVariable": {
-                      "VariableName": "Alert",
-                      "Value": "'Normal Temperature'"
-                    }
-                  }
-                ]
-              },
-              "OnEnter": {
-                "Actions": [
-                  {
-                    "SetVariable": {
-                      "VariableName": "Alert",
-                      "Value": "'Monitoring'"
-                    }
-                  }
-                ]
-              }
+              "OnExit": {},
+              "OnEnter": {}
             },
             {
               "StateName": "Alerting",
               "OnInput": {
-                "InputName": {
-                  "Ref": "IoTEventsInput"
-                },
                 "TransitionEvents": [
                   {
                     "EventName": "TemperatureNormal",

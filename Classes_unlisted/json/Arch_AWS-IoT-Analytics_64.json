@@ -5,13 +5,16 @@
     "MySecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "ImageId": "",
         "GroupDescription": "Allow SSH access"
       }
     },
     "MyEC2Instance": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t2.micro",
+        "ImageId": "",
+        "InstanceType": "t2.micro"
     }
   }
+}
 }

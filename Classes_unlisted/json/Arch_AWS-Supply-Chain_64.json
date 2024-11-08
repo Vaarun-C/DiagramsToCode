@@ -5,13 +5,13 @@
     "SupplyChainConfiguration": {
       "Type": "AWS::SupplyChain::SupplyChainConfiguration",
       "Properties": {
-        "Name": "MySupplyChain",  // Replace with your desired supply chain name
+        "Name": "MySupplyChain", 
         "Description": "Configuration for my supply chain",
         "Source": {
-          "SourceType": "S3",  // Specify your source type
+          "SourceType": "S3",  
           "SourceDetails": {
-            "BucketName": "my-supply-chain-bucket",  // Replace with your S3 bucket name
-            "Prefix": "data/"  // Optional prefix for source data
+            "BucketName": "my-supply-chain-bucket", 
+            "Prefix": "data/" 
           }
         }
       }
@@ -22,7 +22,7 @@
         "SupplyChainConfigurationId": {
           "Ref": "SupplyChainConfiguration"
         },
-        "ExecutionStatus": "ACTIVE"  // Options: ACTIVE, PAUSED, etc.
+        "ExecutionStatus": "ACTIVE"
       }
     }
   }

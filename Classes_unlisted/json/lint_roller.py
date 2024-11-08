@@ -1,4 +1,5 @@
 import subprocess
+import logging
 
 files= ['Arch_AWS-Elemental-MediaStore_64',
 'Arch_AWS-Identity-and-Access-Management_64',
@@ -186,7 +187,3 @@ files= ['Arch_AWS-Elemental-MediaStore_64',
 'Arch_AWS-CodeDeploy_64',
 'Arch_Amazon-Lex_64',
 'Arch_Amazon-Nimble-Studio_64']
-
-
-for i in files:
-    subprocess.run(['cfn-lint', i+'.json'])

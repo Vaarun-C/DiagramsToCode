@@ -5,12 +5,12 @@
     "RedshiftCluster": {
       "Type": "AWS::Redshift::Cluster",
       "Properties": {
-        "ClusterIdentifier": "my-redshift-cluster",  // Replace with your desired cluster identifier
-        "NodeType": "dc2.large",  // Specify the node type (e.g., dc2.large)
-        "MasterUsername": "masteruser",  // Replace with your master username
-        "MasterUserPassword": "Password123!",  // Replace with your master user password
-        "DBName": "mydatabase",  // Replace with your desired database name
-        "ClusterType": "single-node",  // Options: single-node, multi-node
+        "ClusterIdentifier": "my-redshift-cluster",  
+        "NodeType": "dc2.large", 
+        "MasterUsername": "masteruser",  
+        "MasterUserPassword": "Password123!",  
+        "DBName": "mydatabase",
+        "ClusterType": "single-node"
       }
     },
     "RedshiftSecurityGroup": {

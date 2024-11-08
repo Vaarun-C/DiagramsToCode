@@ -5,9 +5,9 @@
     "QLDBLedger": {
       "Type": "AWS::QLDB::Ledger",
       "Properties": {
-        "Name": "MyQLDBLedger",  // Replace with ledger name
-        "PermissionsMode": "ALLOW_ALL",  // Options: ALLOW_ALL or ENFORCE
-        "DeletionProtection": true  // Prevent accidental deletion
+        "Name": "MyQLDBLedger", 
+        "PermissionsMode": "ALLOW_ALL", 
+        "DeletionProtection": true  
       }
     }
   },

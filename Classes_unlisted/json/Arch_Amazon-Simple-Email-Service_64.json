@@ -5,7 +5,7 @@
     "EmailIdentity": {
       "Type": "AWS::SES::EmailIdentity",
       "Properties": {
-        "EmailIdentity": "example@example.com"  // Replace with your email address
+        "EmailIdentity": "example@example.com" 
       }
     }
   },

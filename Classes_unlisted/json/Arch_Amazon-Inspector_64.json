@@ -72,7 +72,7 @@
         },
         "DurationInSeconds": "3600",
         "RulesPackageArns": [
-          "arn:aws:inspector:us-east-1:123456789012:rulespackage/0-12345678"  // Replace with actual ARN
+          "arn:aws:inspector:us-east-1:123456789012:rulespackage/0-12345678" 
         ],
         "UserAttributesForFindings": []
       }

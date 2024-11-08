@@ -6,12 +6,10 @@
       "Type": "AWS::AppStream::Fleet",
       "Properties": {
         "Name": "MyAppStreamFleet",
-        "InstanceType": "stream.standard.small",  // Replace with your desired instance type
+        "InstanceType": "stream.standard.small", 
         "FleetType": "ON_DEMAND",
-        "ComputeCapacity": {
-          "Desired": 1
-        },
-        "ImageArn": "arn:aws:appstream:us-west-2:123456789012:image/MyImage",  // Replace with your image ARN 
+        "ComputeCapacity": {},
+        "ImageArn": "arn:aws:appstream:us-west-2:123456789012:image/MyImage" 
       }
     },
     "AppStreamStack": {
@@ -27,7 +25,7 @@
           }
         ],
         "Tags": {
-          "Key": "Value"  // Add any necessary tags
+          "Key": "Value"  
         }
       }
     }

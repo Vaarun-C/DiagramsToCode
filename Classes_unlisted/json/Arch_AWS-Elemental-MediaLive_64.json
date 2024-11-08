@@ -14,29 +14,21 @@
         "Type": "RTMP_PUSH",
         "Sources": [
           {
-            "Url": "rtmp://example.com/live"  // Replace with your input URL
+            "Url": "rtmp://example.com/live" 
           }
         ]
       }
     },
     "MediaLiveInputSecurityGroup": {
       "Type": "AWS::MediaLive::InputSecurityGroup",
-      "Properties": {
-        "InputSecurityGroupName": "MyInputSecurityGroup",
-        "Tags": [
-          {
-            "Key": "Environment",
-            "Value": "Production"
-          }
-        ]
-      }
+      "Properties": {}
     },
     "MediaLiveChannel": {
       "Type": "AWS::MediaLive::Channel",
       "Properties": {
         "ChannelClass": "SINGLE_PIPELINE",
         "Name": "MyChannel",
-        "RoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_MEDIALIVE_ROLE",  // Replace with your IAM role ARN
+        "RoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_MEDIALIVE_ROLE",  
         "InputAttachments": [
           {
             "InputId": {
@@ -50,7 +42,7 @@
               "Name": "HLS",
               "OutputGroupSettings": {
                 "HlsGroupSettings": {
-                  "Destination": "s3://YOUR_S3_BUCKET/outputs/"  // Replace with your S3 bucket
+                  "Destination": "s3://YOUR_S3_BUCKET/outputs/" 
                 }
               },
               "Outputs": [
@@ -67,18 +59,7 @@
         },
         "Destinations": [
           {
-            "Id": "destination1",
-            "DestinationSettings": [
-              {
-                "Id": "destination1",
-                "DestinationType": "S3",
-                "DestinationSettings": {
-                  "S3Settings": {
-                    "S3Uri": "s3://YOUR_S3_BUCKET/outputs/"  // Replace with your S3 bucket
-                  }
-                }
-              }
-            ]
+            "Id": "destination1"
           }
         ]
       }

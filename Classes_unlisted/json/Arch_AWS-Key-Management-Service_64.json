@@ -5,7 +5,7 @@
     "KMSKey": {
       "Type": "AWS::KMS::Key",
       "Properties": {
-        "Description": "My KMS Key",  // Description for the key
+        "Description": "My KMS Key", 
         "KeyPolicy": {
           "Version": "2012-10-17",
           "Statement": [

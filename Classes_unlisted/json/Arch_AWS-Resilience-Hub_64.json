@@ -10,11 +10,11 @@
         "ResourceMappings": [
           {
             "ResourceType": "AWS::EC2::Instance",
-            "ResourceId": "i-0123456789abcdef0"  // Replace with your EC2 instance ID
+            "ResourceId": "i-0123456789abcdef0" 
           },
           {
             "ResourceType": "AWS::S3::Bucket",
-            "ResourceId": "my-bucket-name"  // Replace with your S3 bucket name
+            "ResourceId": "my-bucket-name"  
           }
         ]
       }

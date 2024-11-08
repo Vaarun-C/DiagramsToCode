@@ -6,7 +6,7 @@
       "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
       "Properties": {
         "Name": "MyApplicationLoadBalancer",
-        "Scheme": "internet-facing"  // Can be "internet-facing" or "internal"
+        "Scheme": "internet-facing" 
       }
     },
     "TargetGroup": {

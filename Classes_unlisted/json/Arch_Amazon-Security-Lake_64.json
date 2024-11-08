@@ -5,23 +5,13 @@
     "SecurityLake": {
       "Type": "AWS::SecurityLake::DataLake",
       "Properties": {
-        "DataLakeConfiguration": {
-          "DataLakeSources": [
-            {
-              "Source": {
-                "Type": "AWS",
-                "Name": "MyDataLakeSource"
-              }
-            }
-          ],
-          "EnableDataLake": true
-        }
+       
       }
     },
     "DataLakeS3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-security-lake-bucket-123456",  // Ensure the bucket name is globally unique
+        "BucketName": "my-security-lake-bucket-123456", 
         "VersioningConfiguration": {
           "Status": "Enabled"
         },

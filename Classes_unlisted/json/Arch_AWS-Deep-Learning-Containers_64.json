@@ -5,27 +5,27 @@
     "ECSCluster": {
       "Type": "AWS::ECS::Cluster",
       "Properties": {
-        "ClusterName": "MyDLCluster"  // Replace with your desired cluster name
+        "ClusterName": "MyDLCluster" 
       }
     },
     "TaskDefinition": {
       "Type": "AWS::ECS::TaskDefinition",
       "Properties": {
-        "Family": "MyDLTaskDefinition",  // Replace with your desired task definition name
+        "Family": "MyDLTaskDefinition",
         "NetworkMode": "awsvpc",
         "RequiresCompatibilities": [
           "FARGATE"
         ],
-        "Cpu": "256",  // Adjust based on your needs
-        "Memory": "512",  // Adjust based on your needs
+        "Cpu": "256", 
+        "Memory": "512", 
         "ContainerDefinitions": [
           {
             "Name": "MyDLContainer",
-            "Image": "763104351884.dkr.ecr.<region>.amazonaws.com/pytorch-training:1.9.1-cpu-py37-ubuntu18.04",  // Replace with your desired DL container image
+            "Image": "763104351884.dkr.ecr.<region>.amazonaws.com/pytorch-training:1.9.1-cpu-py37-ubuntu18.04",  
             "Essential": true,
             "EntryPoint": [
               "python3",
-              "my_script.py"  // Replace with your entry point script
+              "my_script.py" 
             ],
             "LogConfiguration": {
               "LogDriver": "awslogs",
@@ -46,8 +46,8 @@
     "LogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "MyDLLogGroup",  // Replace with your desired log group name
-        "RetentionInDays": 7  // Adjust retention period as needed
+        "LogGroupName": "MyDLLogGroup",
+        "RetentionInDays": 7
       }
     }
   }

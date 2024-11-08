@@ -5,7 +5,7 @@
     "S3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-data-exchange-bucket-123456",  // Ensure the bucket name is globally unique
+        "BucketName": "my-data-exchange-bucket-123456",
         "VersioningConfiguration": {
           "Status": "Enabled"
         },

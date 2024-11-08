@@ -8,9 +8,7 @@
         "Name": {
           "Fn::Sub": "MyOpsWorksStack-${AWS::AccountId}"
         },
-        "Region": {
-          "Ref": "AWS::Region"
-        },
+
         "ServiceRoleArn": {
           "Ref": "ServiceRoleArn"
         },
@@ -35,7 +33,7 @@
         },
         "Type": "web",
         "Shortname": "web",
-        "InstanceType": "t2.micro",
+      
         "AutoAssignElasticIps": true,
         "AutoAssignPublicIps": true,
         "CustomRecipes": {
@@ -56,10 +54,10 @@
         "Name": {
           "Fn::Sub": "MyApp-${AWS::AccountId}"
         },
-        "Type": "rails",  // Change according to your application type
+        "Type": "rails", 
         "AppSource": {
           "Type": "git",
-          "Url": "https://github.com/your-repo.git",  // Replace with your app repository URL
+          "Url": "https://github.com/your-repo.git", 
           "Revision": "master"
         }
       }

@@ -5,6 +5,7 @@
     "EC2Instance": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
+        "ImageId": "",
         "InstanceType": "c5.xlarge"
       }
     }

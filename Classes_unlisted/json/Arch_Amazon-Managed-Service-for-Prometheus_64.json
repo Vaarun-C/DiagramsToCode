@@ -5,11 +5,11 @@
     "PrometheusWorkspace": {
       "Type": "AWS::Prometheus::Workspace",
       "Properties": {
-        "WorkspaceName": "MyPrometheusWorkspace",  // Replace with your desired workspace name
+        "WorkspaceName": "MyPrometheusWorkspace",  
         "Tags": [
           {
             "Key": "Environment",
-            "Value": "Development"  // Modify tags as needed
+            "Value": "Development" 
           }
         ]
       }

@@ -5,7 +5,7 @@
     "SecurityHub": {
       "Type": "AWS::SecurityHub::Hub",
       "Properties": {
-        "EnableDefaultStandards": true  // Enables default standards (CIS AWS Foundations, PCI DSS, etc.)
+        "EnableDefaultStandards": true
       }
     }
   },

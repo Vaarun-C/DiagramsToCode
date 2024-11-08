@@ -15,7 +15,7 @@
       "Properties": {
         "BundleName": "MyWorkSpacesBundle",
         "BundleDescription": "Bundle for WorkSpaces Thin Client.",
-        "ImageId": "wsi-abc12345",  // Replace with your actual WorkSpaces image ID
+        "ImageId": "wsi-abc12345", 
         "RootVolumeSizeGib": 80,
         "UserVolumeSizeGib": 10,
         "ComputeType": "VALUE"
@@ -31,7 +31,7 @@
         "BundleId": {
           "Ref": "WorkSpacesBundle"
         },
-        "VolumeEncryptionKey": "arn:aws:kms:region:account-id:key/key-id"  // Optional: Replace with your KMS key ARN
+        "VolumeEncryptionKey": "arn:aws:kms:region:account-id:key/key-id" 
       }
     }
   }

@@ -5,21 +5,11 @@
     "OpenSearchDomain": {
       "Type": "AWS::OpenSearchService::Domain",
       "Properties": {
-<<<<<<< HEAD
         "DomainName": "my-opensearch-domain",  
         "EBSOptions": {
           "EBSEnabled": true,
           "VolumeType": "gp2",
           "VolumeSize": 10  
-=======
-        "DomainName": "my-opensearch-domain",  // Replace with whateverrrrrrr domain name
-        "ElasticsearchVersion": "7.10",  // Specify the version of OpenSearch
-        "NodeToNodeEncryptionOptions": {
-          "Enabled": true
-        },
-        "EncryptionAtRestOptions": {
-          "Enabled": true
->>>>>>> e65d1f9108cc0bad3624f267255ba03bdf3d2e9b
         },
         "AccessPolicies": [
           {

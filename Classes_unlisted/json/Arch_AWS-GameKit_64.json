@@ -5,23 +5,23 @@
     "GameAssetsBucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-game-assets-bucket"  // Replace with a unique bucket name
+        "BucketName": "my-game-assets-bucket" 
       }
     },
     "GameStateTable": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
-        "TableName": "GameState",  // Replace with your desired table name
+        "TableName": "GameState", 
         "AttributeDefinitions": [
           {
             "AttributeName": "PlayerId",
-            "AttributeType": "S"  // String type
+            "AttributeType": "S" 
           }
         ],
         "KeySchema": [
           {
             "AttributeName": "PlayerId",
-            "KeyType": "HASH"  // Partition key
+            "KeyType": "HASH"  
           }
         ],
         "ProvisionedThroughput": {

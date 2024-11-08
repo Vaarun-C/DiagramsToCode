@@ -5,10 +5,10 @@
     "HealthImagingDataset": {
       "Type": "AWS::HealthImaging::Dataset",
       "Properties": {
-        "DatasetName": "MyHealthImagingDataset",  // Replace with your dataset name
+        "DatasetName": "MyHealthImagingDataset",  
         "Description": "A dataset for managing medical images.",
-        "S3Bucket": "my-health-imaging-bucket",  // Replace with your S3 bucket name
-        "KmsKeyId": "alias/aws/healthimaging"  // Optional: specify a KMS key for encryption
+        "S3Bucket": "my-health-imaging-bucket", 
+        "KmsKeyId": "alias/aws/healthimaging" 
       }
     }
   },

@@ -5,7 +5,7 @@
     "PrivateCertificateAuthority": {
       "Type": "AWS::ACMPCA::CertificateAuthority",
       "Properties": {
-        "CertificateAuthorityType": "SUBORDINATE",  // Can be "ROOT" or "SUBORDINATE"
+        "Type": "",
         "KeyAlgorithm": "RSA_2048",
         "SigningAlgorithm": "SHA256WITHRSA",
         "Subject": {

@@ -5,9 +5,9 @@
     "BlockchainNetwork": {
       "Type": "AWS::ManagedBlockchain::Network",
       "Properties": {
-        "Name": "MyBlockchainNetwork",  // Replace with your desired network name
+        "Name": "MyBlockchainNetwork",  
         "Framework": "HYPERLEDGER_FABRIC",
-        "FrameworkVersion": "1.4",  // Choose your desired framework version
+        "FrameworkVersion": "1.4",  
         "VotingPolicy": {
           "ApprovalThresholdPolicy": {
             "ThresholdPercentage": 50,
@@ -22,12 +22,12 @@
         "NetworkId": {
           "Ref": "BlockchainNetwork"
         },
-        "Name": "MyMember",  // Replace with your desired member name
+        "Name": "MyMember",  
         "FrameworkAttributes": {
           "Fabric": {
             "AdminUsername": "admin",
             "AdminPassword": {
-              "Ref": "AdminPassword"  // Use a parameter for sensitive data
+              "Ref": "AdminPassword"  
             }
           }
         }

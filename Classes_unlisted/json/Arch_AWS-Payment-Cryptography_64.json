@@ -5,15 +5,15 @@
     "PaymentCryptographyKey": {
       "Type": "AWS::PaymentCryptography::Key",
       "Properties": {
-        "KeySpec": "SYMMETRIC_DEFAULT",  // Specify the key specification
-        "KeyUsage": "ENCRYPT_DECRYPT",     // Specify key usage
+        "KeySpec": "SYMMETRIC_DEFAULT", 
+        "KeyUsage": "ENCRYPT_DECRYPT",     
         "KeyPolicy": {
           "Version": "2012-10-17",
           "Statement": [
             {
               "Effect": "Allow",
               "Principal": {
-                "AWS": "arn:aws:iam::123456789012:role/MyPaymentCryptographyRole"  // Replace with your IAM role ARN
+                "AWS": "arn:aws:iam::123456789012:role/MyPaymentCryptographyRole" 
               },
               "Action": "kms:*",
               "Resource": "*"

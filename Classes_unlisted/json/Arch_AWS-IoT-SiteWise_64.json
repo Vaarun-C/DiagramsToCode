@@ -9,7 +9,7 @@
         "GatewayPlatform": {
           "Greengrass": {
             "GroupArn": {
-              "Ref": "GreengrassGroupArn"  // Replace with your Greengrass Group ARN
+              "Ref": "SiteWiseGateway" 
             }
           }
         }
@@ -23,17 +23,20 @@
         "AssetModelProperties": [
           {
             "Name": "temperature",
+            "Type": {
+              "TypeName": ""
+            },
+
             "DataType": "DOUBLE",
-            "Unit": "Celsius",
-            "Alias": "Temperature",
-            "Notification": "ON_CHANGE"
+            "Unit": "Celsius"
           },
           {
+            "Type":{
+              "TypeName": ""
+            },
             "Name": "humidity",
             "DataType": "DOUBLE",
-            "Unit": "Percent",
-            "Alias": "Humidity",
-            "Notification": "ON_CHANGE"
+            "Unit": "Percent"
           }
         ]
       }

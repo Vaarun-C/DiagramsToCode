@@ -5,7 +5,7 @@
     "TransferS3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-transfer-family-bucket"  // Replace with a unique bucket name
+        "BucketName": "my-transfer-family-bucket" 
       }
     },
     "TransferServer": {
@@ -24,7 +24,7 @@
     "TransferUser": {
       "Type": "AWS::Transfer::User",
       "Properties": {
-        "UserName": "transfer-user",  // Replace with your desired username
+        "UserName": "transfer-user", 
         "ServerId": {
           "Ref": "TransferServer"
         },

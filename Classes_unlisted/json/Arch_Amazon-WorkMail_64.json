@@ -5,14 +5,14 @@
     "WorkMailOrganization": {
       "Type": "AWS::WorkMail::Organization",
       "Properties": {
-        "Alias": "myworkmail",  // Replace with your desired WorkMail alias
-        "ClientToken": "unique-token"  // Use a unique token for idempotency
+        "Alias": "myworkmail", 
+        "ClientToken": "unique-token" 
       }
     },
     "EmailDomain": {
       "Type": "AWS::WorkMail::Domain",
       "Properties": {
-        "DomainName": "example.com",  // Replace with your email domain
+        "DomainName": "example.com", 
         "OrganizationId": { "Ref": "WorkMailOrganization" }
       }
     }
