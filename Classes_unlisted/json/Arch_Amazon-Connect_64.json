@@ -6,11 +6,11 @@
       "Type": "AWS::Connect::Instance",
       "Properties": {
         "InstanceAlias": "MyConnectInstance",
-        "IdentityManagementType": "CONNECT_MANAGED",  // Use CONNECT_MANAGED or SAML
-        "InboundCallsEnabled": true,
-        "OutboundCallsEnabled": true,
-        "AutoAcceptEnabled": true,
-        "Description": "A sample Amazon Connect instance for handling calls."
+        "IdentityManagementType": "CONNECT_MANAGED",
+        "Attributes": {
+          "InboundCalls": true,
+          "OutboundCalls": true
+        }
       }
     }
   },

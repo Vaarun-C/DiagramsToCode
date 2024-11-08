@@ -6,17 +6,17 @@
       "Type": "AWS::MainframeModernization::Application",
       "Properties": {
         "Name": "MyMainframeApp",
-        "RuntimeEnvironment": "ZLINUX",  // Change based on your application needs
+        "RuntimeEnvironment": "ZLINUX", 
         "SourceCode": {
-          "S3Bucket": "your-s3-bucket",  // Replace with your S3 bucket
-          "S3Key": "path/to/source.zip"   // Replace with the path to your source code
+          "S3Bucket": "your-s3-bucket", 
+          "S3Key": "path/to/source.zip"  
         },
         "ApplicationConfiguration": {
           "SourceCodeRepository": {
             "CodeRepository": {
               "RepositoryType": "S3",
               "S3Bucket": "your-s3-bucket",
-              "S3Key": "path/to/repo.zip"  // Replace with the path to your code repository
+              "S3Key": "path/to/repo.zip" 
             }
           }
         }
@@ -34,12 +34,12 @@
         "ComputeResources": [
           {
             "Type": "EC2",
-            "InstanceType": "t3.medium",  // Choose appropriate instance type
+            "InstanceType": "t3.medium",
             "MinCount": 1,
             "MaxCount": 2,
             "SubnetIds": [
               {
-                "Ref": "MySubnet"  // Replace with your actual subnet IDs
+                "Ref": "MySubnet"
               }
             ]
           }

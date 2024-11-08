@@ -5,9 +5,8 @@
     "LiveInput": {
       "Type": "AWS::MediaLive::Input",
       "Properties": {
-        "Name": "MyLiveInput",  // Replace with your desired input name
-        "Type": "RTMP_PULL",
-        "InputSecurityGroupId": { "Ref": "LiveInputSecurityGroup" }  // Define security group resource below
+        "Name": "MyLiveInput",  
+        "Type": "RTMP_PULL"  
       }
     },
     "LiveInputSecurityGroup": {
@@ -15,7 +14,7 @@
       "Properties": {
         "WhitelistRules": [
           {
-            "Cidr": "0.0.0.0/0"  // Adjust for your security needs
+            "Cidr": "0.0.0.0/0"  
           }
         ]
       }
@@ -23,8 +22,8 @@
     "LiveChannel": {
       "Type": "AWS::MediaLive::Channel",
       "Properties": {
-        "Name": "MyLiveChannel",  // Replace with your desired channel name
-        "RoleArn": { "Fn::GetAtt": ["MediaLiveRole", "Arn"] },  // Define IAM Role below
+        "Name": "MyLiveChannel",  
+        "RoleArn": { "Fn::GetAtt": ["MediaLiveRole", "Arn"] },  
         "InputAttachments": [
           {
             "InputId": { "Ref": "LiveInput" }
@@ -35,21 +34,11 @@
             {
               "Name": "Apple HLS",
               "OutputGroupSettings": {
-                "Type": "HLS_GROUP_SETTINGS",
                 "HlsGroupSettings": {
-                  "Destination": "s3://my-output-bucket"  // Replace with your output bucket
+                  "Destination": ""  
                 }
               },
-              "Outputs": [
-                {
-                  "NameModifier": "_1",
-                  "VideoSettings": {},
-                  "AudioSettings": {},
-                  "ContainerSettings": {
-                    "Container": "M3U8"
-                  }
-                }
-              ]
+              "Outputs": []
             }
           ]
         }
@@ -83,7 +72,7 @@
                     "s3:PutObject",
                     "s3:PutObjectAcl"
                   ],
-                  "Resource": "arn:aws:s3:::my-output-bucket/*"  // Replace with your output bucket ARN
+                  "Resource": "arn:aws:s3:::my-output-bucket/*" 
                 }
               ]
             }

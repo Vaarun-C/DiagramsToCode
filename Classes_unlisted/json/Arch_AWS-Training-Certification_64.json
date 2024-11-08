@@ -5,7 +5,7 @@
     "TrainingMaterialsBucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-training-certification-bucket"  // Replace with a unique bucket name
+        "BucketName": "my-training-certification-bucket" 
       }
     },
     "TrainingRole": {
@@ -17,7 +17,7 @@
             {
               "Effect": "Allow",
               "Principal": {
-                "Service": "lambda.amazonaws.com"  // Example: Replace based on use case
+                "Service": "lambda.amazonaws.com"
               },
               "Action": "sts:AssumeRole"
             }

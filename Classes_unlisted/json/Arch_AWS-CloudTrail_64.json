@@ -5,20 +5,20 @@
     "CloudTrailS3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-cloudtrail-bucket"  // Replace with a unique bucket name
+        "BucketName": "my-cloudtrail-bucket" 
       }
     },
     "MyCloudTrail": {
       "Type": "AWS::CloudTrail::Trail",
       "Properties": {
-        "TrailName": "MyCloudTrail",  // Replace with your desired trail name
+        "TrailName": "MyCloudTrail",
         "S3BucketName": {
           "Ref": "CloudTrailS3Bucket"
         },
         "IncludeGlobalServiceEvents": true,
         "IsMultiRegionTrail": true,
         "EnableLogFileValidation": true,
-        "IsOrganizationTrail": false  // Set to true if you want to log events from all accounts in your organization
+        "IsOrganizationTrail": false 
       }
     }
   },

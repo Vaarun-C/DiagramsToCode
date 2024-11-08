@@ -16,14 +16,14 @@
         },
         "DesiredCount": 1,
         "LaunchType": "FARGATE",
-        "TaskDefinition": "YOUR_TASK_DEFINITION",  // Replace with your ECS task definition
+        "TaskDefinition": "YOUR_TASK_DEFINITION", 
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
             "Subnets": [
-              "YOUR_SUBNET_ID"  // Replace with your subnet ID
+              "YOUR_SUBNET_ID" 
             ],
             "SecurityGroups": [
-              "YOUR_SECURITY_GROUP_ID"  // Replace with your security group ID
+              "YOUR_SECURITY_GROUP_ID" 
             ],
             "AssignPublicIp": "ENABLED"
           }
@@ -38,7 +38,7 @@
         "ResourceId": {
           "Fn::Sub": "service/${MyEcsCluster}/${MyEcsService}"
         },
-        "RoleARN": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_APPLICATION_AUTO_SCALING_ROLE",  // Replace with your IAM role ARN
+        "RoleARN": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_APPLICATION_AUTO_SCALING_ROLE", 
         "ScalableDimension": "ecs:service:DesiredCount",
         "ServiceNamespace": "ecs"
       }
@@ -52,7 +52,7 @@
           "Ref": "ScalableTarget"
         },
         "TargetTrackingScalingPolicyConfiguration": {
-          "TargetValue": 50.0,  // Target CPU utilization percentage
+          "TargetValue": 50.0, 
           "PredefinedMetricSpecification": {
             "PredefinedMetricType": "ECSServiceAverageCPUUtilization"
           },

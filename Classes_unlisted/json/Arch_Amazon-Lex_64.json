@@ -27,7 +27,7 @@
                   "Effect": "Allow",
                   "Action": [
                     "polly:SynthesizeSpeech",
-                    "lambda:InvokeFunction"  // If using Lambda for fulfillment
+                    "lambda:InvokeFunction" 
                   ],
                   "Resource": "*"
                 }
@@ -54,7 +54,7 @@
           "MaxAttempts": 2
         },
         "FailureReason": "Intent recognition failed.",
-        "VoiceId": "Joanna",  // Change to your preferred voice
+        "VoiceId": "Joanna", 
         "Intents": [
           {
             "IntentName": {
@@ -77,7 +77,7 @@
           "What can you do?"
         ],
         "FulfillmentActivity": {
-          "Type": "ReturnIntent"  // Or "CodeHook" if using Lambda for fulfillment
+          "Type": "ReturnIntent" 
         }
       }
     }

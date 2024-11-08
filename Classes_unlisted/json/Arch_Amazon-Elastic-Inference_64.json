@@ -10,7 +10,7 @@
           "Fn::Select": [
             0,
             {
-              "Fn::GetAZs": "us-east-1" //change
+              "Fn::GetAZs": "us-east-1" 
             }
           ]
         }
@@ -19,6 +19,7 @@
     "EC2Instance": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
+        "ImageId": "",
         "InstanceType": "p2.xlarge"
       }
     }

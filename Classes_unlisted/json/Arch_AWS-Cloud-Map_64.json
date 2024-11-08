@@ -37,9 +37,8 @@
           "FailureThreshold": 2
         },
         "HealthCheckCustomConfig": {
-          "FailureThreshold": 2,
-          "RequestInterval": 30
-        }
+          "FailureThreshold": 2    
+            }
       }
     }
   },

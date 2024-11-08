@@ -6,20 +6,20 @@
       "Type": "AWS::EMR::Cluster",
       "Properties": {
         "Name": "MyEMRCluster",
-        "ReleaseLabel": "emr-6.10.0",  // Specify the desired EMR release version
+        "ReleaseLabel": "emr-6.10.0", 
         "Applications": [
           {
             "Name": "Hadoop"
           },
           {
-            "Name": "Spark"  // Add other applications as needed
+            "Name": "Spark"  
           }
         ],
         "Instances": {
-          "InstanceGroups": [
+          "CoreInstanceGroup": [
             {
               "InstanceGroupType": "MASTER",
-              "InstanceType": "m5.xlarge",  // Choose appropriate instance type
+              "InstanceType": "m5.xlarge",  
               "InstanceCount": 1
             },
             {
@@ -29,8 +29,8 @@
             }
           ]
         },
-        "JobFlowRole": "EMR_EC2_DefaultRole",  // Ensure the role exists
-        "ServiceRole": "EMR_DefaultRole",  // Ensure the role exists
+        "JobFlowRole": "EMR_EC2_DefaultRole", 
+        "ServiceRole": "EMR_DefaultRole", 
         "VisibleToAllUsers": true
       }
     }
@@ -45,7 +45,7 @@
     "EMRClusterArn": {
       "Description": "ARN of the created EMR cluster.",
       "Value": {
-        "Fn::GetAtt": ["EMRCluster", "Arn"]
+        "Fn::GetAtt": ["EMRCluster", "MasterPublicDNS"]
       }
     }
   }

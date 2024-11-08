@@ -5,7 +5,19 @@
     "CodeBuildProject": {
       "Type": "AWS::CodeBuild::Project",
       "Properties": {
-        "Name": "MyCodeBuildProject"
+        "Name": "MyCodeBuildProject",
+        "Artifacts" : {
+          "Type" : ""
+        },
+        "ServiceRole" : "",
+        "Environment" : {
+          "ComputeType" : "",
+          "Image" : "",
+          "Type" : ""
+        },
+        "Source" : {
+          "Type" : ""
+        }
       }
     }
   }

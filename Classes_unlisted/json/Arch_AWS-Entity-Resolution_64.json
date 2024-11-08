@@ -5,23 +5,23 @@
     "EntityResolutionJob": {
       "Type": "AWS::EntityResolution::Job",
       "Properties": {
-        "JobName": "MyEntityResolutionJob",  // Replace with your job name
+        "JobName": "MyEntityResolutionJob", 
         "InputDataConfig": [
           {
-            "InputDataType": "CSV",  // Specify the input data type
-            "S3Uri": "s3://my-input-bucket/input-data.csv"  // Replace with your S3 input data URI
+            "InputDataType": "CSV", 
+            "S3Uri": "s3://my-input-bucket/input-data.csv" 
           }
         ],
         "OutputDataConfig": {
-          "OutputDataType": "CSV",  // Specify the output data type
-          "S3Uri": "s3://my-output-bucket/output-data.csv"  // Replace with your S3 output data URI
+          "OutputDataType": "CSV", 
+          "S3Uri": "s3://my-output-bucket/output-data.csv"  
         },
-        "RoleArn": "arn:aws:iam::123456789012:role/MyEntityResolutionRole",  // Replace with your IAM role ARN
+        "RoleArn": "arn:aws:iam::123456789012:role/MyEntityResolutionRole", 
         "EntityResolutionJobConfig": {
-          "ResolutionJobType": "DEDUPE",  // Job type: DEDUPE or LINK
+          "ResolutionJobType": "DEDUPE",  
           "Attributes": [
             {
-              "AttributeName": "name",  // Replace with relevant attributes
+              "AttributeName": "name",  
               "AttributeType": "STRING"
             }
           ]

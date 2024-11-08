@@ -5,7 +5,7 @@
     "TelcoNetwork": {
       "Type": "AWS::TelcoNetwork::Network",
       "Properties": {
-        "NetworkName": "MyTelcoNetwork",  // Replace with your desired network name
+        "NetworkName": "MyTelcoNetwork",
         "Description": "Sample Telco Network"
       }
     }

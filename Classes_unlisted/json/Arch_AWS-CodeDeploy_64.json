@@ -46,7 +46,7 @@
         "ApplicationName": {
           "Fn::Sub": "MyCodeDeployApplication-${AWS::AccountId}"
         },
-        "ComputePlatform": "EC2"  // Can be 'EC2' or 'Lambda'
+        "ComputePlatform": "ECS" 
       }
     },
     "CodeDeployDeploymentGroup": {

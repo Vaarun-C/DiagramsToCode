@@ -5,7 +5,7 @@
     "MyAuditManagerFramework": {
       "Type": "AWS::AuditManager::Framework",
       "Properties": {
-        "Name": "MyAuditFramework",  // Replace with your desired framework name
+        "Name": "MyAuditFramework",  
         "Description": "Sample Audit Manager Framework",
         "FrameworkType": "CUSTOM",
         "ControlSets": [
@@ -15,13 +15,13 @@
               {
                 "ControlName": "MyControl",
                 "ControlDescription": "Sample control description",
-                "ControlId": "MyControlId",  // Unique control ID
+                "ControlId": "MyControlId", 
                 "ControlStatus": "ACTIVE",
-                "ControlType": "Process",  // Example control type
+                "ControlType": "Process",
                 "ControlSources": [
                   {
                     "Source": "AWS",
-                    "SourceIdentifier": "AWS service identifier"  // Replace with actual source identifier
+                    "SourceIdentifier": "AWS service identifier" 
                   }
                 ]
               }

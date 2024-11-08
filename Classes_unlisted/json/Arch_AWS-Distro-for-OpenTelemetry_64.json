@@ -6,17 +6,17 @@
       "Type": "AWS::DistroForOpenTelemetry::Collector",
       "Properties": {
         "CollectorName": "MyOpenTelemetryCollector",
-        "RoleArn": "arn:aws:iam::123456789012:role/YourRole",  // Replace with your IAM Role ARN
+        "RoleArn": "arn:aws:iam::123456789012:role/YourRole",  
         "Configuration": {
           "Signal": {
             "OTLP": {
-              "Endpoint": "your-otel-collector-endpoint",  // Replace with your endpoint
-              "Insecure": false  // Set to true if you're using an insecure connection
+              "Endpoint": "your-otel-collector-endpoint",  
+              "Insecure": false  
             }
           }
         },
         "Tags": {
-          "Key": "Value"  // Add any necessary tags
+          "Key": "Value"  
         }
       }
     }

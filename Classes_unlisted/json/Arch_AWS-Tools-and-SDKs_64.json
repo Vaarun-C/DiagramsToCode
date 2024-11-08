@@ -5,7 +5,8 @@
     "EC2Instance": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t3.micro",  // Choose an instance type based on your needs
+        "ImageId": "",
+        "InstanceType": "t3.micro", 
         "UserData": {
           "Fn::Base64": "#!/bin/bash\nyum update -y\nyum install -y aws-cli  // Install the AWS CLI\n# Additional SDKs or tools can be installed here"
         }

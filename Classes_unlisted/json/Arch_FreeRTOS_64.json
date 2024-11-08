@@ -29,7 +29,7 @@
         "ThingName": "MyFreeRTOSThing",
         "AttributePayload": {
           "Attributes": {
-            "Key": "Value"  // Optional attributes for the IoT Thing
+            "Key": "Value"
           }
         }
       }

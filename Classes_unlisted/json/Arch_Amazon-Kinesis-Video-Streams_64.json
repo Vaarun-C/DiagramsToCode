@@ -5,7 +5,7 @@
     "KinesisVideoStream": {
       "Type": "AWS::KinesisVideo::Stream",
       "Properties": {
-        "StreamName": "MyKinesisVideoStream",
+      
         "MediaType": "video/h264",
         "DataRetentionInHours": 24
       }

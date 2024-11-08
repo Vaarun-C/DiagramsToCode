@@ -13,7 +13,7 @@
               "Ref": "NeuronModel"
             },
             "InitialVariantWeight": 1.0,
-            "InstanceType": "ml.inf1.xlarge",  // Choose an appropriate instance type
+            "InstanceType": "ml.inf1.xlarge",
             "InitialInstanceCount": 1
           }
         ]
@@ -24,8 +24,8 @@
       "Properties": {
         "ModelName": "MyNeuronModel",
         "PrimaryContainer": {
-          "Image": "your-neuron-image-uri",  // Replace with the actual Neuron model image URI
-          "ModelDataUrl": "s3://your-bucket/model.tar.gz"  // Replace with your model data S3 URL
+          "Image": "your-neuron-image-uri", 
+          "ModelDataUrl": "s3://your-bucket/model.tar.gz" 
         }
       }
     },

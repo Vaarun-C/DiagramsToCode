@@ -5,8 +5,8 @@
     "WebACL": {
       "Type": "AWS::WAFv2::WebACL",
       "Properties": {
-        "Scope": "REGIONAL",  // Options: REGIONAL or CLOUDFRONT
-        "Name": "MyWebACL",  // Replace with your desired WebACL name
+        "Scope": "REGIONAL", 
+        "Name": "MyWebACL",  
         "Description": "My Web Application Firewall",
         "DefaultAction": {
           "Allow": {}
@@ -22,7 +22,7 @@
             "Priority": 1,
             "Statement": {
               "IPSetReferenceStatement": {
-                "ARN": {
+                "Arn": {
                   "Ref": "IPSet"
                 }
               }
@@ -43,17 +43,12 @@
       "Type": "AWS::WAFv2::IPSet",
       "Properties": {
         "Scope": "REGIONAL",
-        "Name": "MyIPSet",  // Replace with your desired IPSet name
+        "Name": "MyIPSet",  
         "Description": "IP Set for blocking specific IPs",
         "IPAddressVersion": "IPV4",
         "Addresses": [
-          "192.0.2.0/24"  // Replace with the IP address or range you want to block
-        ],
-        "VisibilityConfig": {
-          "SampledRequestsEnabled": true,
-          "CloudWatchMetricsEnabled": true,
-          "MetricName": "MyIPSetMetric"
-        }
+          "192.0.2.0/24"  
+        ]
       }
     }
   }

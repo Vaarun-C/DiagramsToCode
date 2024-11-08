@@ -6,10 +6,10 @@
       "Type": "AWS::CodePipeline::Pipeline",
       "Properties": {
         "Name": "MyCodePipeline",
-        "RoleArn": "arn:aws:iam::123456789012:role/service-role/AWS-CodePipeline-Service",  // Replace with your CodePipeline role ARN
+        "RoleArn": "arn:aws:iam::123456789012:role/service-role/AWS-CodePipeline-Service",  
         "ArtifactStore": {
           "Type": "S3",
-          "Location": "my-artifact-bucket"  // Replace with your S3 bucket for artifacts
+          "Location": "my-artifact-bucket" 
         },
         "Stages": [
           {
@@ -29,8 +29,8 @@
                   }
                 ],
                 "Configuration": {
-                  "S3Bucket": "my-source-bucket",  // Replace with your source S3 bucket
-                  "S3ObjectKey": "source.zip"  // Replace with your source object key
+                  "S3Bucket": "my-source-bucket",  
+                  "S3ObjectKey": "source.zip" 
                 }
               }
             ]
@@ -57,7 +57,7 @@
                   }
                 ],
                 "Configuration": {
-                  "ProjectName": "MyCodeBuildProject"  // Replace with your CodeBuild project name
+                  "ProjectName": "MyCodeBuildProject" 
                 }
               }
             ]

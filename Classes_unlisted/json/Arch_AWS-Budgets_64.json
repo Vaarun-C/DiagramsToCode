@@ -22,30 +22,8 @@
             "IncludeOtherSubscription": true,
             "IncludeSupport": true,
             "IncludeDiscount": true
-          },
-          "Notification": {
-            "NotificationTypes": [
-              "ACTUAL",
-              "FORECASTED"
-            ],
-            "NotificationsWithSubscribers": [
-              {
-                "Notification": {
-                  "NotificationType": "ACTUAL",
-                  "ComparisonOperator": "GREATER_THAN",
-                  "Threshold": 80
-                },
-                "Subscribers": [
-                  {
-                    "SubscriptionType": "SNS",
-                    "Address": {
-                      "Ref": "BudgetNotificationTopic"
-                    }
-                  }
-                ]
-              }
-            ]
           }
+          
         }
       }
     },

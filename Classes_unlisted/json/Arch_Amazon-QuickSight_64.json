@@ -5,45 +5,25 @@
     "QuickSightUser": {
       "Type": "AWS::QuickSight::User",
       "Properties": {
-        "UserName": "quicksight-user",  // Replace with your desired username
-        "Email": "user@example.com",  // Replace with the user's email
-        "IdentityType": "IAM",  // Options: IAM, QUICKSIGHT
-        "Role": "READER",  // Options: READER, AUTHOR, ADMIN
+        "UserName": "quicksight-user",  
+        "Email": "user@example.com",  
+        "IdentityType": "IAM",  
+        "Role": "READER", 
         "AwsAccountId": { "Fn::Sub": "${AWS::AccountId}" }
       }
     },
     "QuickSightDataSource": {
       "Type": "AWS::QuickSight::DataSource",
       "Properties": {
-<<<<<<< HEAD
         "AwsAccountId": { "Fn::Sub": "${AWS::AccountId}" },
         "DataSourceId": "MyDataSource",
         "Name": "MyQuickSightDataSource",
         "Type": "S3",
-=======
-        "DataSourceId": "my-data-source",  // Replace with your desired data source ID
-        "Name": "MyDataSource",  // Replace with your desired data source name
-        "Type": "RDS",  // Specify the data source type (e.g., RDS, S3, etc.)
-        "DataSourceParameters": {
-          "RdsParameters": {
-            "Database": "mydatabase",  // Replace with your database name
-            "InstanceId": "mydbinstance",  // Replace with your DB instance identifier
-            "Port": 3306  // Replace with your DB port
-          }
-        },
-        "Credential": {
-          "CredentialPair": {
-            "Username": "db-username",  // Replace with your DB username
-            "Password": "db-password"  // Replace with your DB password
-          }
-        },
->>>>>>> e65d1f9108cc0bad3624f267255ba03bdf3d2e9b
         "Permissions": [
           {
-            "Principal": { "Fn::Sub": "quicksight-user" },  // Use the QuickSight user created above
+            "Principal": { "Fn::Sub": "quicksight-user" },  
             "Actions": [
               "quicksight:DescribeDataSource",
-<<<<<<< HEAD
               "quicksight:ListDataSources",
               "quicksight:UpdateDataSource",
               "quicksight:DeleteDataSource"
@@ -95,9 +75,6 @@
               "quicksight:ListAnalyses",
               "quicksight:UpdateAnalysis",
               "quicksight:DeleteAnalysis"
-=======
-              "quicksight:UpdateDataSource"
->>>>>>> e65d1f9108cc0bad3624f267255ba03bdf3d2e9b
             ]
           }
         ]

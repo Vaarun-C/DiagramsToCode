@@ -17,7 +17,7 @@
           }
         ],
         "ModelKmsKeyId": {
-          "Ref": "KmsKeyId"  // Optional, if using KMS
+          "Ref": "KmsKeyId" 
         }
       }
     },

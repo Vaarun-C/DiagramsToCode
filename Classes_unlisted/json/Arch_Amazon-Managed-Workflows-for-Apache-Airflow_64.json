@@ -63,7 +63,7 @@
         "Name": {
           "Fn::Sub": "my-mwaa-environment-${AWS::AccountId}"
         },
-        "AirflowVersion": "2.4.0",  // Update to the desired Airflow version
+        "AirflowVersion": "2.4.0", 
         "ExecutionRoleArn": {
           "Fn::GetAtt": [
             "AirflowExecutionRole",
@@ -76,8 +76,8 @@
             "Arn"
           ]
         },
-        "DagS3Path": "dags",  // Change if you want a different path for your DAGs
-        "RequirementsS3Path": "requirements.txt",  // Path to your requirements file
+        "DagS3Path": "dags", 
+        "RequirementsS3Path": "requirements.txt", 
         "LoggingConfiguration": {
           "DagProcessingLogs": {
             "Enabled": true,
@@ -91,7 +91,7 @@
             "Enabled": true,
             "LogLevel": "INFO"
           },
-          "WebServerLogs": {
+          "WebserverLogs": {
             "Enabled": true,
             "LogLevel": "INFO"
           }

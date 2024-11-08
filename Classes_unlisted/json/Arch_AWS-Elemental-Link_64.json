@@ -7,7 +7,6 @@
       "Properties": {
         "Name": "MyElementalLink",
         "Description": "Example Elemental Link instance"
-        // Include other properties as required by your setup
       }
     }
   },

@@ -5,7 +5,7 @@
     "CodeArtifactDomain": {
       "Type": "AWS::CodeArtifact::Domain",
       "Properties": {
-        "DomainName": "MyDomain"
+        "DomainName": "https://aws.com"
       }
     },
     "CodeArtifactRepository": {
@@ -15,7 +15,6 @@
         "DomainName": {
           "Ref": "CodeArtifactDomain"
         },
-        "UpstreamRepositories": [],  // Add upstream repositories if needed
         "Description": "A repository for storing artifacts."
       }
     }

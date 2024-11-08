@@ -5,14 +5,13 @@
     "ChatbotSlackChannelConfiguration": {
       "Type": "AWS::Chatbot::SlackChannelConfiguration",
       "Properties": {
-        "SlackChannelId": "YOUR_SLACK_CHANNEL_ID",  // Replace with your Slack channel ID
-        "SlackWorkspaceId": "YOUR_SLACK_WORKSPACE_ID",  // Replace with your Slack workspace ID
+        "SlackChannelId": "YOUR_SLACK_CHANNEL_ID", 
+        "SlackWorkspaceId": "YOUR_SLACK_WORKSPACE_ID",
         "ConfigurationName": "MyChatbotConfiguration",
-        "IAMRoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_CHATBOT_ROLE",  // Replace with your IAM role ARN
-        "LoggingLevel": "INFO",  // Options: INFO, ERROR, DISABLED
-        "BotEmail": "YOUR_BOT_EMAIL",  // Replace with the email of your Slack bot
+        "IamRoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_CHATBOT_ROLE",
+        "LoggingLevel": "INFO", 
         "SnsTopicArns": [
-          "arn:aws:sns:YOUR_REGION:YOUR_ACCOUNT_ID:YOUR_SNS_TOPIC"  // Replace with your SNS topic ARN
+          "arn:aws:sns:YOUR_REGION:YOUR_ACCOUNT_ID:YOUR_SNS_TOPIC" 
         ]
       }
     }

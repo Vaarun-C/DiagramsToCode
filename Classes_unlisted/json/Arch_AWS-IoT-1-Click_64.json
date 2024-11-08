@@ -5,24 +5,24 @@
     "MyIoT1ClickProject": {
       "Type": "AWS::IoT1Click::Project",
       "Properties": {
-        "ProjectName": "MyIoT1ClickProject",  // Replace with your desired project name
+        "ProjectName": "MyIoT1ClickProject",  
         "Description": "Sample IoT 1-Click project"
       }
     },
     "MyDevice": {
       "Type": "AWS::IoT1Click::Device",
       "Properties": {
-        "DeviceId": "MyIoTDevice",  // Replace with your desired device ID
+        "DeviceId": "MyIoTDevice", 
         "ProjectId": {
           "Ref": "MyIoT1ClickProject"
         },
-        "DeviceType": "button"  // Example device type, adjust as needed
+        "DeviceType": "button"
       }
     },
     "MyFunction": {
       "Type": "AWS::IoT1Click::Function",
       "Properties": {
-        "FunctionName": "MyIoTFunction",  // Replace with your desired function name
+        "FunctionName": "MyIoTFunction", 
         "FunctionDescription": "Sample function triggered by IoT device",
         "FunctionCode": "def lambda_handler(event, context):\n    return { 'statusCode': 200, 'body': 'Function executed successfully!' }",
         "FunctionRole": {

@@ -27,7 +27,7 @@
                 {
                   "Effect": "Allow",
                   "Action": [
-                    "wickr:*"  // Allow all Wickr actions, refine as needed
+                    "wickr:*" 
                   ],
                   "Resource": "*"
                 }

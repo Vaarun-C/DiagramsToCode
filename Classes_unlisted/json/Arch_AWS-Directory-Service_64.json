@@ -5,9 +5,12 @@
     "MySimpleAD": {
       "Type": "AWS::DirectoryService::MicrosoftAD",
       "Properties": {
-        "Name": "example.com",  // Replace with your desired domain name
-        "Password": "YourStrongPassword!",  // Replace with a secure password
-        "Size": "Small"  // Options: Small, Large
+        "Name": "example.com", 
+        "Password": "YourStrongPassword!",
+        "VpcSettings": {
+          "SubnetIds" : [ ],
+          "VpcId" : ""
+        }
       }
     }
   }

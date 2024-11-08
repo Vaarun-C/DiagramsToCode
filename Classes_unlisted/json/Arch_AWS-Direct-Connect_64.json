@@ -6,9 +6,9 @@
       "Type": "AWS::DirectConnect::Connection",
       "Properties": {
         "ConnectionName": "MyDirectConnectConnection",
-        "Location": "YourDirectConnectLocation",  // Replace with your Direct Connect location
-        "Bandwidth": "1Gbps",  // Choose your desired bandwidth
-        "PartnerName": "YourPartnerName"  // Optional, replace with your partner name if applicable
+        "Location": "YourDirectConnectLocation",  
+        "Bandwidth": "1Gbps", 
+        "PartnerName": "YourPartnerName"  
       }
     },
     "VirtualInterface": {
@@ -18,11 +18,11 @@
           "Ref": "DirectConnectConnection"
         },
         "VirtualInterfaceName": "MyPublicVirtualInterface",
-        "Vlan": 101,  // Specify a VLAN ID
-        "Asn": 65000,  // Replace with your ASN
+        "Vlan": 101,  
+        "Asn": 65000, 
         "AddressFamily": "ipv4",
-        "AmazonAddress": "192.168.1.1/30",  // Replace with your Amazon address
-        "CustomerAddress": "192.168.1.2/30",  // Replace with your Customer address
+        "AmazonAddress": "192.168.1.1/30", 
+        "CustomerAddress": "192.168.1.2/30",  
         "VirtualInterfaceType": "public"
       }
     }

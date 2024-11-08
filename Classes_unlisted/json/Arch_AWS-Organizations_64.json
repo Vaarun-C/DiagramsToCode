@@ -5,13 +5,13 @@
     "Organization": {
       "Type": "AWS::Organizations::Organization",
       "Properties": {
-        "FeatureSet": "ALL"  // Use 'ALL' or 'CONSOLIDATED_BILLING'
+        "FeatureSet": "ALL" 
       }
     },
     "OrganizationalUnit": {
       "Type": "AWS::Organizations::OrganizationalUnit",
       "Properties": {
-        "Name": "MyOrganizationalUnit",  // Replace with your desired OU name
+        "Name": "MyOrganizationalUnit",
         "ParentId": {
           "Fn::GetAtt": [
             "Organization",

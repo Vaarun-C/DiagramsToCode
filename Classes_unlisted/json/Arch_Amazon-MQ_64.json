@@ -5,16 +5,16 @@
     "MQBroker": {
       "Type": "AWS::AmazonMQ::Broker",
       "Properties": {
-        "BrokerName": "MyMQBroker",  // Replace with your desired broker name
-        "EngineType": "ACTIVEMQ",  // Options: ACTIVEMQ or RABBITMQ
-        "EngineVersion": "5.15.14",  // Replace with the desired version
-        "DeploymentMode": "SINGLE_INSTANCE",  // Options: SINGLE_INSTANCE or CLUSTER
-        "HostInstanceType": "mq.t2.micro",  // Replace with desired instance type
-        "PubliclyAccessible": true,  // Set to false for private access
+        "BrokerName": "MyMQBroker", 
+        "EngineType": "ACTIVEMQ",  
+        "EngineVersion": "5.15.14", 
+        "DeploymentMode": "SINGLE_INSTANCE", 
+        "HostInstanceType": "mq.t2.micro", 
+        "PubliclyAccessible": true, 
         "Users": [
           {
-            "Username": "admin",  // Replace with your desired username
-            "Password": "MySecurePassword123!",  // Replace with a strong password
+            "Username": "admin", 
+            "Password": "MySecurePassword123!", 
             "ConsoleAccess": true
           }
         ],

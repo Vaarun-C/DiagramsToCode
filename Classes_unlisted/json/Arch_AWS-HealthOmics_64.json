@@ -6,8 +6,8 @@
       "Type": "AWS::EC2::Instance",
       "Properties": {
         "InstanceType": "t2.micro",
-        "ImageId": "ami-0123456789abcdef0",  // Replace with actual Arch_AWS-HealthOmics_64 AMI ID
-        "KeyName": "your-key-pair-name"     // Replace with your key pair name
+        "ImageId": "ami-0123456789abcdef0",  
+        "KeyName": "your-key-pair-name"  
       }
     }
   }

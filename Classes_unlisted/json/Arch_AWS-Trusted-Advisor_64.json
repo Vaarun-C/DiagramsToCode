@@ -12,7 +12,7 @@
             {
               "Effect": "Allow",
               "Principal": {
-                "Service": "lambda.amazonaws.com"  // Change as per your use case
+                "Service": "lambda.amazonaws.com" 
               },
               "Action": "sts:AssumeRole"
             }

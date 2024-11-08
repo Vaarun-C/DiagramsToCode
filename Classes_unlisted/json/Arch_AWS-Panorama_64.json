@@ -7,7 +7,7 @@
       "Properties": {
         "ModelPackageName": "MyModelPackage",
         "ModelData": {
-          "S3Uri": "s3://your-bucket/path/to/model.tar.gz"  // Replace with your model S3 URI
+          "S3Uri": "s3://your-bucket/path/to/model.tar.gz"  
         },
         "Description": "A simple model package for AWS Panorama"
       }
@@ -18,8 +18,8 @@
         "ApplicationName": "MyPanoramaApplication",
         "ModelPackageVersion": { "Fn::GetAtt": ["PanoramaModelPackage", "ModelPackageVersion"] },
         "Description": "A simple AWS Panorama application",
-        "Runtime": "1.0",  // Specify your runtime version
-        "ApplicationType": "CAMERA"  // Set your application type
+        "Runtime": "1.0", 
+        "ApplicationType": "CAMERA" 
       }
     }
   },

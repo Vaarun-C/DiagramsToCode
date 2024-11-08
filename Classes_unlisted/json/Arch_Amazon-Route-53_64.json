@@ -5,7 +5,7 @@
     "PublicHostedZone": {
       "Type": "AWS::Route53::HostedZone",
       "Properties": {
-        "Name": "example.com",  // Replace with your domain name
+        "Name": "example.com", 
         "HostedZoneConfig": {
           "Comment": "Hosted zone for example.com"
         }

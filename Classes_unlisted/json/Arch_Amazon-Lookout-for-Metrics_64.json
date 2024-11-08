@@ -5,18 +5,18 @@
     "MyMetricsAlert": {
       "Type": "AWS::LookoutMetrics::Alert",
       "Properties": {
-        "AlertName": "MyMetricsAlert",  // Replace with your desired alert name
+        "AlertName": "MyMetricsAlert", 
         "AlertDescription": "Sample alert for Lookout for Metrics",
-        "AlertSensitivity": "LOW",  // Options: LOW, MEDIUM, HIGH
+        "AlertSensitivity": "LOW", 
         "AnomalyDetectorArn": {
-          "Ref": "MyAnomalyDetector"  // Reference to the anomaly detector
+          "Ref": "MyAnomalyDetector" 
         },
-        "Frequency": "DAILY",  // Options: HOURLY, DAILY, WEEKLY
+        "Frequency": "DAILY",
         "Actions": [
           {
             "Action": "SNS",
             "NotificationArn": {
-              "Ref": "MySNSArn"  // Reference to an SNS topic ARN for notifications
+              "Ref": "MySNSArn" 
             }
           }
         ]
@@ -25,22 +25,22 @@
     "MyAnomalyDetector": {
       "Type": "AWS::LookoutMetrics::AnomalyDetector",
       "Properties": {
-        "AnomalyDetectorName": "MyAnomalyDetector",  // Replace with your desired detector name
+        "AnomalyDetectorName": "MyAnomalyDetector", 
         "AnomalyDetectorConfig": {
           "MetricSetList": [
             {
-              "MetricSetName": "MyMetricSet",  // Replace with your metric set name
+              "MetricSetName": "MyMetricSet", 
               "MetricSetDataSource": {
                 "S3DataSource": {
-                  "S3Uri": "s3://my-bucket/my-data",  // Replace with your S3 data source
+                  "S3Uri": "s3://my-bucket/my-data", 
                   "RoleArn": {
-                    "Ref": "MyRoleArn"  // Replace with your IAM role ARN
+                    "Ref": "MyRoleArn" 
                   }
                 }
               },
               "DimensionList": [
-                "dimension1",  // Replace with your actual dimensions
-                "dimension2"   // Replace with your actual dimensions
+                "dimension1", 
+                "dimension2"  
               ]
             }
           ]

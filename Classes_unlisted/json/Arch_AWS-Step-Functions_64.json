@@ -5,7 +5,7 @@
     "MyStateMachine": {
       "Type": "AWS::StepFunctions::StateMachine",
       "Properties": {
-        "StateMachineName": "MyStateMachine",  // Replace with your desired state machine name
+        "StateMachineName": "MyStateMachine", 
         "DefinitionString": {
           "Fn::Sub": "{ \"Comment\": \"A simple AWS Step Functions state machine that passes through input.\", \"StartAt\": \"PassState\", \"States\": { \"PassState\": { \"Type\": \"Pass\", \"Result\": \"Hello, World!\", \"End\": true } } }"
         },

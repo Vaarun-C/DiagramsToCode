@@ -7,15 +7,17 @@
       "Properties": {
         "FirewallPolicyName": "MyFirewallPolicy",
         "FirewallPolicy": {
+          "StatelessFragmentDefaultActions" : [],
           "StatelessRuleGroupReferences": [
             {
+              "Priority" : 0,
               "ResourceArn": { "Ref": "StatelessRuleGroup" }
             }
           ],
           "StatelessDefaultActions": [
             "aws:pass"
           ],
-          "StatefullRuleGroupReferences": [
+          "StatefulRuleGroupReferences": [
             {
               "ResourceArn": { "Ref": "StatefulRuleGroup" }
             }
@@ -52,6 +54,8 @@
     "Firewall": {
       "Type": "AWS::NetworkFirewall::Firewall",
       "Properties": {
+        "VpcId" : "",
+        "SubnetMappings" : [],
         "FirewallName": "MyFirewall",
         "FirewallPolicyArn": { "Ref": "FirewallPolicy" },
         "Description": "My Network Firewall"

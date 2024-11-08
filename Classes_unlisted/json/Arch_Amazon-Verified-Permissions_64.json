@@ -5,8 +5,11 @@
     "VerifiedPermissionsPolicyStore": {
       "Type": "AWS::VerifiedPermissions::PolicyStore",
       "Properties": {
-        "PolicyStoreId": "my-policy-store",  // Replace with your desired policy store ID
-        "Description": "My Verified Permissions Policy Store"
+        "PolicyStoreId": "my-policy-store", 
+        "Description": "My Verified Permissions Policy Store",
+        "ValidationSettings" : {
+          "Mode" : "OFF"
+        }
       }
     }
   },

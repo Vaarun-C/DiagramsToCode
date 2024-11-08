@@ -5,9 +5,9 @@
     "CloudHSMCluster": {
       "Type": "AWS::CloudHSM::Hsm",
       "Properties": {
-        "ClusterId": "your-cluster-id",  // Replace with your existing cluster ID 
-        "AvailabilityZone": "us-west-2a",  // Replace with your desired Availability Zone
-        "HsmType": "hsm1.medium"           // Specify the HSM type ???????????????????
+        "ClusterId": "your-cluster-id", 
+        "AvailabilityZone": "us-west-2a", 
+        "HsmType": "hsm1.medium"          
       }
     }
   },

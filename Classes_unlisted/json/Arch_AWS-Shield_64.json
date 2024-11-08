@@ -5,7 +5,7 @@
     "MyLoadBalancer": {
       "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
       "Properties": {
-        "Name": "MyLoadBalancer",
+        "Name": "",
         "Subnets": [
           {
             "Ref": "MySubnet1"
@@ -32,7 +32,7 @@
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "MyVPC"
+          "Ref": "ShieldProtection"
         },
         "CidrBlock": "10.0.1.0/24",
         "AvailabilityZone": {
@@ -49,7 +49,7 @@
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "MyVPC"
+          "Ref": "MyLoadBalancer"
         },
         "CidrBlock": "10.0.2.0/24",
         "AvailabilityZone": {
@@ -67,7 +67,7 @@
       "Properties": {
         "GroupDescription": "Allow HTTP and HTTPS",
         "VpcId": {
-          "Ref": "MyVPC"
+          "Ref": "MyLoadBalancer"
         },
         "SecurityGroupIngress": [
           {
@@ -92,22 +92,8 @@
         "ResourceArn": {
           "Fn::GetAtt": [
             "MyLoadBalancer",
-            "Arn"
+            "DNSName"
           ]
-        },
-        "HealthCheckConfig": {
-          "ResourceArn": {
-            "Fn::GetAtt": [
-              "MyLoadBalancer",
-              "Arn"
-            ]
-          },
-          "HealthCheckInterval": 60,
-          "HealthCheckPath": "/",
-          "HealthCheckProtocol": "HTTP",
-          "HealthCheckTimeout": 5,
-          "HealthyThreshold": 2,
-          "UnhealthyThreshold": 2
         }
       }
     }
@@ -118,7 +104,7 @@
       "Value": {
         "Fn::GetAtt": [
           "MyLoadBalancer",
-          "Arn"
+          "DNSName"
         ]
       }
     },

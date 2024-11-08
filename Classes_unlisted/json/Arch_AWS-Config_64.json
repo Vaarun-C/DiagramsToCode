@@ -64,10 +64,10 @@
           "Ref": "S3BucketName"
         },
         "ConfigSnapshotDeliveryProperties": {
-          "S3KeyPrefix": "config-snapshots"
+        
         },
         "SnsTopicARN": {
-          "Ref": "SnsTopicArn"  // Optional: Specify if you want to set up SNS notifications
+          "Ref": "SnsTopicArn"
         }
       }
     },
@@ -77,7 +77,7 @@
         "ConfigRuleName": "my-config-rule",
         "Source": {
           "Owner": "AWS",
-          "SourceIdentifier": "S3_BUCKET_PUBLIC_READ_PROHIBITED"  // Change to your desired rule identifier
+          "SourceIdentifier": "S3_BUCKET_PUBLIC_READ_PROHIBITED" 
         },
         "InputParameters": "{}"
       }

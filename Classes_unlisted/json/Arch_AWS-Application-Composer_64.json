@@ -12,12 +12,12 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
               "FunctionName": "MyFunction",
-              "Runtime": "nodejs14.x",  // Choose your runtime
+              "Runtime": "nodejs14.x", 
               "Handler": "index.handler",
               "Code": {
                 "ZipFile": "exports.handler = async (event) => {\n  return { statusCode: 200, body: 'Hello from Lambda!' };\n};"
               },
-              "Role": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_LAMBDA_EXECUTION_ROLE"  // Replace with your IAM role ARN
+              "Role": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_LAMBDA_EXECUTION_ROLE" 
             }
           }
         ]

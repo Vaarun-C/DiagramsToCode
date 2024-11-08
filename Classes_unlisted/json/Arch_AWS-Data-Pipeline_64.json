@@ -6,6 +6,7 @@
       "Type": "AWS::DataPipeline::Pipeline",
       "Properties": {
         "Name": "MyDataPipeline",
+        "ParameterObjects" : [],
         "Activate": true
       }
     }

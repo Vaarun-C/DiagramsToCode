@@ -5,7 +5,7 @@
     "S3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-repost-private-bucket"  // Replace with a unique bucket name
+        "BucketName": "my-repost-private-bucket" 
       }
     },
     "LambdaFunction": {
@@ -13,7 +13,7 @@
       "Properties": {
         "FunctionName": "ProcessRePost",
         "Handler": "index.handler",
-        "Runtime": "nodejs14.x",  // Change as needed
+        "Runtime": "nodejs14.x", 
         "Code": {
           "ZipFile": "exports.handler = async (event) => { console.log(\"Event: \", event); return \"Processed event\"; };"
         },

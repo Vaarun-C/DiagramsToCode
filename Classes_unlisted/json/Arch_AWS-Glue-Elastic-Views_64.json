@@ -5,6 +5,7 @@
     "GlueDatabase": {
       "Type": "AWS::Glue::Database",
       "Properties": {
+        "CatalogId" : "",
         "DatabaseInput": {
           "Name": "MyGlueDatabase",
           "Description": "My Glue Database for Elastic Views"
@@ -19,13 +20,13 @@
           "DatabaseName": {
             "Ref": "GlueDatabase"
           },
-          "TableName": "MySourceTable"  // Replace with your source table name
+          "TableName": "MySourceTable" 
         },
         "Destination": {
           "DatabaseName": {
             "Ref": "GlueDatabase"
           },
-          "TableName": "MyDestinationTable"  // Replace with your destination table name
+          "TableName": "MyDestinationTable"  
         },
         "RoleArn": {
           "Fn::GetAtt": ["GlueRole", "Arn"]

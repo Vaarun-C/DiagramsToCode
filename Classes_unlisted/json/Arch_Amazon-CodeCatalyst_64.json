@@ -5,14 +5,15 @@
     "MyCodeCatalystProject": {
       "Type": "AWS::CodeCatalyst::Project",
       "Properties": {
-        "Name": "MyCodeCatalystProject",  // Replace with your desired project name
+        "Name": "MyCodeCatalystProject",  
         "Description": "Sample CodeCatalyst project",
-        "Identifier": "my-codecatalyst-project",  // Must be unique within your organization
+        "Identifier": "my-codecatalyst-project", 
         "ProjectTemplate": {
-          "Name": "BasicTemplate"  // Replace with your desired project template name
+          "Name": "BasicTemplate" 
         },
         "Tags": {
-          "Key1": "Value1"  // Replace with your desired tags
+          "Key1": "Value1" 
+          
         }
       }
     }

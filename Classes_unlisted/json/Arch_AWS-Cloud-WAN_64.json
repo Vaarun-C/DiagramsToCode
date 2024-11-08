@@ -14,23 +14,7 @@
         "GlobalNetworkId": {
           "Ref": "GlobalNetwork"
         },
-        "CoreNetworkPolicy": {
-          "Description": "My Core Network Policy",
-          "Segments": [
-            {
-              "SegmentName": "MySegment",
-              "SegmentType": "ISOLATED",  // or "CONNECTED"
-              "Policy": {
-                "AllowPolicy": [
-                  {
-                    "SourceSegment": "MySegment",
-                    "DestinationSegment": "MyOtherSegment"  // Replace with your other segment name
-                  }
-                ]
-              }
-            }
-          ]
-        },
+        
         "Tags": [
           {
             "Key": "Name",
@@ -45,10 +29,10 @@
         "GlobalNetworkId": {
           "Ref": "GlobalNetwork"
         },
-        "ConnectionId": "my-connection",  // Provide a unique connection ID
+        "ConnectionId": "my-connection", 
         "Bandwidth": {
           "Provider": "AWS",
-          "Value": 100  // Adjust bandwidth as necessary
+          "Value": 100 
         },
         "Tags": [
           {

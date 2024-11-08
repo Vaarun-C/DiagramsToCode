@@ -5,7 +5,7 @@
     "ReplicationServer": {
       "Type": "AWS::MGN::ReplicationServer",
       "Properties": {
-        "ServerType": "t3.micro",  // Choose an appropriate instance type
+        "ServerType": "t3.micro", 
         "SecurityGroupIds": [
           {
             "Ref": "ReplicationSecurityGroup"

@@ -9,7 +9,7 @@
           "Fn::Sub": "MyVehicleModel-${AWS::AccountId}"
         },
         "Description": "A model for my vehicles",
-        "VehicleType": "LightDuty",  // Change to appropriate vehicle type if needed
+        "VehicleType": "LightDuty",
         "ModelManifestArn": {
           "Ref": "ModelManifest"
         }
@@ -22,16 +22,9 @@
           "Fn::Sub": "MyModelManifest-${AWS::AccountId}"
         },
         "Description": "Model manifest for my vehicle data",
-        "ModelManifestArn": {
-          "Ref": "VehicleModel"
-        },
+
         "Nodes": [
-          {
-            "Name": "EngineSpeed",
-            "Type": "ECU",
-            "DataType": "Double",
-            "Unit": "RPM"
-          }
+          ""
         ]
       }
     },
@@ -42,20 +35,26 @@
           "Fn::Sub": "MyCampaign-${AWS::AccountId}"
         },
         "Description": "Campaign to manage data collection",
-        "VehicleModelArn": {
-          "Fn::GetAtt": [
-            "VehicleModel",
-            "Arn"
-          ]
-        },
+
         "SignalCatalogArn": {
           "Ref": "SignalCatalog"
         },
-        "Action": {
-          "ActionType": "SendDataToCloud",
-          "Frequency": 10,  // Frequency in seconds
-          "Duration": 3600  // Duration in seconds
+        "Action": "",
+        "TargetArn" : "",
+        "CollectionScheme" : {
+          "ConditionBasedCollectionScheme" : {
+            "ConditionLanguageVersion" : 1,
+            "Expression" : "String",
+            "MinimumTriggerIntervalMs" : 1,
+            "TriggerMode" : "String"
+          }
+          ,
+          "TimeBasedCollectionScheme" : {
+            "PeriodMs" : 1
+          }
+          
         }
+        
       }
     },
     "SignalCatalog": {
@@ -67,10 +66,45 @@
         "Description": "Catalog for vehicle signals",
         "Nodes": [
           {
-            "Name": "EngineSpeed",
-            "Type": "ECU",
-            "DataType": "Double",
-            "Unit": "RPM"
+            "Actuator" : {
+              "AllowedValues" : [ "" ],
+              "AssignedValue" : "",
+              "DataType" : "",
+              "Description" : "",
+              "FullyQualifiedName" : "",
+              "Max" : 100,
+              "Min" : 1,
+              "Unit" : ""
+            }
+            ,
+            "Attribute" : {
+              "AllowedValues" : [ ""],
+              "AssignedValue" : "",
+              "DataType" : "",
+              "DefaultValue" : "",
+              "Description" : "",
+              "FullyQualifiedName" : "",
+              "Max" : 100,
+              "Min" : 1,
+              "Unit" : ""
+            }
+            ,
+
+            "Branch" : {
+  "Description" : "",
+  "FullyQualifiedName" : ""
+}
+,
+            "Sensor" : {
+              "AllowedValues" : [ "" ],
+              "DataType" : "",
+              "Description" : "",
+              "FullyQualifiedName" : "",
+              "Max" : 1,
+              "Min" : 1,
+              "Unit" : ""
+            }
+            
           }
         ]
       }

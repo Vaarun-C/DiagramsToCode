@@ -5,7 +5,7 @@
     "S3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-firehose-bucket-123456",  // Ensure the bucket name is globally unique
+        "BucketName": "my-firehose-bucket-123456", 
         "VersioningConfiguration": {
           "Status": "Enabled"
         },
@@ -82,7 +82,7 @@
             "SizeInMBs": 5,
             "IntervalInSeconds": 300
           },
-          "CompressionFormat": "UNCOMPRESSED"  // Can be GZIP, Snappy, etc.
+          "CompressionFormat": "UNCOMPRESSED"  
         }
       }
     }

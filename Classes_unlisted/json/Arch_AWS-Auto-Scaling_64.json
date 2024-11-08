@@ -5,16 +5,12 @@
     "LaunchConfiguration": {
       "Type": "AWS::AutoScaling::LaunchConfiguration",
       "Properties": {
-        "ImageId": "ami-0c55b159cbfafe01e",  // Replace with an appropriate AMI ID
+        "ImageId": "ami-0c55b159cbfafe01e", 
         "InstanceType": "t2.micro",
         "KeyName": {
           "Ref": "KeyPairName"
         },
-        "UserData": {
-          "Fn::Base64": {
-            "Fn::Sub": "#!/bin/bash\n    yum update -y\n    # Additional setup commands here"
-          }
-        }
+        "UserData": ""
       }
     },
     "AutoScalingGroup": {
@@ -27,9 +23,7 @@
         "MaxSize": "5",
         "DesiredCapacity": "2",
         "VPCZoneIdentifier": [
-          {
-            "Ref": "SubnetId"
-          }
+          ""
         ],
         "HealthCheckType": "EC2",
         "HealthCheckGracePeriod": "300",
@@ -53,9 +47,7 @@
           "TargetValue": 50.0,
           "PredefinedMetricSpecification": {
             "PredefinedMetricType": "ASGAverageCPUUtilization"
-          },
-          "ScaleOutCooldown": 300,
-          "ScaleInCooldown": 300
+          }
         }
       }
     },
@@ -63,15 +55,13 @@
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "GroupDescription": "Security group for Auto Scaling instances",
-        "VpcId": {
-          "Ref": "VPCId"
-        },
+        "VpcId": "",
         "SecurityGroupIngress": [
           {
             "IpProtocol": "tcp",
             "FromPort": 80,
             "ToPort": 80,
-            "CidrIp": "0.0.0.0/0"  // Adjust as necessary
+            "CidrIp": "0.0.0.0/0"
           }
         ]
       }

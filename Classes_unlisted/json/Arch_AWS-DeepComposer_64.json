@@ -5,7 +5,7 @@
     "DeepComposerBucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-deep-composer-bucket"  // Replace with a unique bucket name
+        "BucketName": "my-deep-composer-bucket" 
       }
     },
     "DeepComposerRole": {

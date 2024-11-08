@@ -5,7 +5,8 @@
     "EC2Instance": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t2.micro"  // Choose instance type
+        "ImageId": "",
+        "InstanceType": "t2.micro" 
         }
       }
     }

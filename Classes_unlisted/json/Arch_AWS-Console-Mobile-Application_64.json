@@ -6,7 +6,7 @@
       "Type": "AWS::MobileHub::Project",
       "Properties": {
         "Name": "MyMobileHubProject",
-        "Region": "us-west-2",  // Replace with the right region
+        "Region": "us-west-2", 
         "Features": [
           "UserSignIn",
           "UserData",

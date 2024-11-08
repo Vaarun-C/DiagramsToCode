@@ -5,7 +5,7 @@
     "IoTButton": {
       "Type": "AWS::IoT::Button",
       "Properties": {
-        "ButtonArn": "arn:aws:iot:us-east-1:123456789012:button/MyButton",  // Replace with your IoT Button ARN
+        "ButtonArn": "arn:aws:iot:us-east-1:123456789012:button/MyButton",  
         "Description": "My AWS IoT Button"
       }
     },

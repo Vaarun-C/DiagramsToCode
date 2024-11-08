@@ -5,8 +5,8 @@
     "OrganizationUnit": {
       "Type": "AWS::Organizations::OrganizationalUnit",
       "Properties": {
-        "Name": "MyOU",  // Replace with your desired organizational unit name
-        "ParentId": "r-examplerootid"  // Replace with your root ID
+        "Name": "MyOU", 
+        "ParentId": "r-examplerootid"
       }
     }
   },

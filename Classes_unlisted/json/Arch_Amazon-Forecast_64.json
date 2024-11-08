@@ -6,18 +6,16 @@
       "Type": "AWS::Forecast::DatasetGroup",
       "Properties": {
         "DatasetGroupName": "MyDatasetGroup",
-        "Domain": "RETAIL"  // Change to your desired domain (e.g., "RETAIL", "CUSTOM", etc.)
+        "Domain": "RETAIL" 
       }
     },
     "Dataset": {
       "Type": "AWS::Forecast::Dataset",
       "Properties": {
+        "Domain" : "",
         "DatasetName": "MyDataset",
-        "DatasetGroupArn": {
-          "Fn::GetAtt": ["DatasetGroup", "DatasetGroupArn"]
-        },
-        "DatasetType": "TARGET_TIME_SERIES",  // Change as needed (e.g., "ITEM_METADATA")
-        "DataFrequency": "D",  // Daily frequency
+        "DatasetType": "TARGET_TIME_SERIES", 
+        "DataFrequency": "D",  
         "Schema": {
           "Attributes": [
             {
@@ -45,11 +43,11 @@
         },
         "DataSource": {
           "S3Config": {
-            "Path": "s3://YOUR_BUCKET/path/to/data.csv",  // Replace with your S3 bucket and file path
-            "RoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_FORECAST_ROLE"  // Replace with your IAM role ARN
+            "Path": "s3://YOUR_BUCKET/path/to/data.csv",
+            "RoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_FORECAST_ROLE"  
           }
         },
-        "TimestampFormat": "yyyy-MM-dd HH:mm:ss"  // Adjust based on your CSV format
+        "TimestampFormat": "yyyy-MM-dd HH:mm:ss" 
       }
     }
   },

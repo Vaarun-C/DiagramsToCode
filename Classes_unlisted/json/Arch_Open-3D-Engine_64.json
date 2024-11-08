@@ -6,7 +6,7 @@
       "Type": "AWS::EC2::Instance",
       "Properties": {
         "InstanceType": "t2.micro",
-        "ImageId": "ami-0c55b159cbfafe01e",  // Replace with an appropriate AMI for O3DE
+        "ImageId": "ami-0c55b159cbfafe01e",
         "KeyName": {
           "Ref": "KeyPairName"
         },

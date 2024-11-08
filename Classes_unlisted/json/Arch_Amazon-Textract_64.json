@@ -5,7 +5,7 @@
     "DocumentS3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "my-textract-documents-bucket"  // Replace with a unique bucket name
+        "BucketName": "my-textract-documents-bucket" 
       }
     },
     "TextractJob": {
@@ -16,7 +16,7 @@
             "Bucket": {
               "Ref": "DocumentS3Bucket"
             },
-            "Name": "my-document.pdf"  // Replace with the actual document name
+            "Name": "my-document.pdf" 
           }
         },
         "FeatureTypes": [
