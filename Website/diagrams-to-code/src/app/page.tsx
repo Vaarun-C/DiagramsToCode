@@ -5,7 +5,6 @@ import FileUploadWrapper from '@components/FileUploadWrapper';
 import ParagraphComponent from '@components/ParagraphComponent';
 
 import { useState } from 'react';
-import { sendDiagrams } from './api/handler';
 
 export default function Home() {
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: File }>({});
@@ -78,7 +77,7 @@ export default function Home() {
             ...prevYamlCodes,
             [uuid]: formattedTemplate,
           }));
-          
+
           console.log(`Upload successful for ${file.name}:`, JSON.stringify(data.message));
           // Show or handle the result here, such as updating the UI
         })
@@ -89,80 +88,6 @@ export default function Home() {
       });
     }
       
-  }
-
-  const recognizeIcons = async () => {
-    if (uploadedFiles.length == 0)
-      alert("No Architecture Diagrams have been uploaded")
-    else {//sendDiagrams(uploadedFiles)
-      const formData = new FormData();
-      formData.append('architectureDiagram', uploadedFiles[0]);
-      try {
-        const response = await fetch('/api/iconsService', {
-            method: 'POST',
-            body: formData, // Attach FormData (multipart/form-data)
-        });
-
-        const data = await response.json();
-        return data
-      } catch (error) {
-          console.error('Error uploading image:', error);
-      }
-    }
-  }
-
-  const getLLMsuggestions = async (diagram_services: string[]) => {
-    try {
-      const response = await fetch('/api/llmService', {
-          method: 'POST',
-          body: JSON.stringify(diagram_services), // Attach FormData (multipart/form-data)
-      });
-
-      const data = await response.json();
-      return data
-    } catch (error) {
-        console.error('Error uploading image:', error);
-    }
-  }
-
-  const generateAWSTemplate = async () => {//(all_services: string[]) => {
-    // try {
-    //   const response = await fetch('/api/templateService', {
-    //       method: 'POST',
-    //       body: JSON.stringify(all_services), // Attach FormData (multipart/form-data)
-    //   });
-
-    //   const data = await response.json();
-    //   return data
-    // } catch (error) {
-    //     console.error('Error uploading image:', error);
-    // }
-    const uploadPromises = uploadedFiles.map(async (file) => {
-      const formData = new FormData();
-      formData.append('Diagram', file);
-
-      try {
-          const response = await fetch('/api/service1', {
-              method: 'POST',
-              body: formData, // Attach FormData (multipart/form-data)
-          });
-          
-          // Ensure you check if the response is ok before parsing
-          if (!response.ok) {
-              throw new Error(`Failed to upload ${file.name}: ${response.statusText}`);
-          }
-          
-          const data = await response.json();
-          return data;
-      } catch (error) {
-          console.error(`Error uploading ${file.name}:`, error);
-          return { error: `Error uploading ${file.name}` }; // Return error info to handle later
-      }
-    });
-
-    // Wait for all promises to complete and return the results
-    const results = await Promise.all(uploadPromises);
-    return results;
   }
 
   return (
