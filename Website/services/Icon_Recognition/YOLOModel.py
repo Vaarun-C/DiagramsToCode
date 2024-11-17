@@ -27,9 +27,7 @@ class yolomodel:
         detection_objects = []
         
         for det in detections:
-            print("DETE", det)
             x_min, y_min, x_max, y_max = det.xyxy[0].tolist()
-            print(f"Class ID: {int(det.cls)}, Coordinates: ({x_min}, {y_min}, {x_max}, {y_max})")
             class_name = self.model_names[int(det.cls)]
 
             try:

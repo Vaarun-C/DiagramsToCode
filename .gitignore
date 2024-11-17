@@ -171,3 +171,5 @@ icons
 scriptingVenv
 yolov5
 geckodriver.exe
+
+.DS_Store
