@@ -69,7 +69,7 @@ export default function Home() {
 
           const formattedTemplate = Object.entries(template)
           .map(([key, value]) => `${key}: ${value}`)
-          .join("");
+          .join("\n");
 
           // console.log("SLEEP", formattedTemplate)
 
@@ -82,8 +82,7 @@ export default function Home() {
           // Show or handle the result here, such as updating the UI
         })
         .catch((error) => {
-          console.error(`Error uploading ${file.name}:`, error);
-          // Handle the error as needed, e.g., show an alert or update the UI
+          console.log(`Error uploading ${file.name}:`);
         });
       });
     }
