@@ -6,19 +6,6 @@ export async function POST(request: NextRequest) {
   const file = formData.get('ArchitectureDiagram');
   console.log('Received file:', file);
 
-//   fetch('http://0.0.0.0:8002/generateawstemplate', {
-//     method: 'POST',
-//     body: formData, // Send the file data to FastAPI
-//   })
-//   .then(response => {
-//     if (!response.ok) {
-//       console.error(`FastAPI call failed with status: ${response.status}`);
-//     }
-//   })
-//   .catch(error => {
-//     console.error('Error in FastAPI call:', error);
-//   });
-
   // Function to handle the fetch call to FastAPI and return the result
   const callFastApi = async (formData: FormData) => {
     try {

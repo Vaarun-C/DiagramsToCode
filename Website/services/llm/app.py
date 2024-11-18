@@ -38,8 +38,8 @@ LLM_SUGGESTIONS = {
 }
 
 @app.post("/getllmsuggestion")
-async def root(items: List[str] = Form(...)):
-    print(items)
+async def get_llm_suggestion(request: ClassList):
+    items = request.items
     new_types = []
     for class_type in items:
         new_types.extend(LLM_SUGGESTIONS.get(class_type, []))
