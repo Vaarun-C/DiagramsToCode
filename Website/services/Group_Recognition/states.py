@@ -19,3 +19,6 @@ class Group:
         if self.group_type is None:
             return f'Group[{(self.x,self.y)=}, {self.w=}, {self.h=}]'
         return f'Group[{self.group_type}][{(self.x,self.y)=}, {self.w=}, {self.h=}]'
+
+    def to_dict(self):
+        return {"pos": [ self.x, self.y, self.w, self.h], "group_type": self.group_type}

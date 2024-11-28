@@ -1,6 +1,7 @@
 import io
 import logging
 import numpy as np
+import cv2
 from fastapi import FastAPI, File, UploadFile, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware

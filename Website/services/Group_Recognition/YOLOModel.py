@@ -15,7 +15,7 @@ class yolomodel:
         self.model_names = self.model.names
 
     def predict(self, architectureDiagram: Image) -> list[detection_object]:
-        all_classes = set(range(3))
+        all_classes = list(range(3))
 
         results = self.model.predict(architectureDiagram, save=False, classes=all_classes, conf=self.conf_thresh)
         detections = results[0].boxes
