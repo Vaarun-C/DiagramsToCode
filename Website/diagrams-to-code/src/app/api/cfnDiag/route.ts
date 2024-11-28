@@ -21,12 +21,13 @@ function execCommand(command: string): Promise<CommandResponse> {
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const yamlCode = formData.get('GeneratedTemplate') as string;
+  const uuid = formData.get('UUID') as string;
   const filePath = path.join(process.cwd(), 'cfndiag', 'output.yaml');
-  const outputPath = path.join(process.cwd(), 'cfndiag', 'graph');
+  const outputPath = path.join(process.cwd(), 'cfndiag', 'graph', uuid);
 
-  const indexPath = path.join(outputPath, 'index.html');
-  const dataJsPath = path.join(outputPath, 'data.js');
-  const iconsJsPath = path.join(outputPath, 'icons.js');
+  // const indexPath = path.join(outputPath, 'index.html');
+  // const dataJsPath = path.join(outputPath, 'data.js');
+  // const iconsJsPath = path.join(outputPath, 'icons.js');
 
   try {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -41,15 +42,17 @@ export async function POST(request: NextRequest) {
     return execCommand(command)
       .then((result: CommandResponse) => {
         try {
-          const htmlContent = fs.readFileSync(indexPath, 'utf8');
-          const dataContent = fs.readFileSync(dataJsPath, 'utf8');
-          const iconContent = fs.readFileSync(iconsJsPath, 'utf8');
+          // const htmlContent = fs.readFileSync(indexPath, 'utf8');
+          // const dataContent = fs.readFileSync(dataJsPath, 'utf8');
+          // const iconContent = fs.readFileSync(iconsJsPath, 'utf8');
           return NextResponse.json(
             {
               message: result[0],
-              htmlContent: htmlContent,
-              dataContent: dataContent,
-              iconContent: iconContent,
+              // htmlContent: htmlContent,
+              // dataContent: dataContent,
+              // iconContent: iconContent,
+              uuid: uuid,
+              outputPath: outputPath,
             },
             result[1]
           );

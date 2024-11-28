@@ -14,15 +14,18 @@ export default function Home() {
   const [yamlCodes, setYamlCodes] = useState<{ [key: string]: string }>({
     '': 'No template Code Generated',
   });
-  const [htmlCodes, setHtmlCodes] = useState<{ [key: string]: string }>({
+  const [outputPath, setOutputPath] = useState<{ [key: string]: string }>({
     '': '',
   });
-  const [datajsCodes, setDatajsCodes] = useState<{ [key: string]: string }>({
-    '': '',
-  });
-  const [iconsjsCodes, setIconsjsCodes] = useState<{ [key: string]: string }>({
-    '': '',
-  });
+  // const [htmlCodes, setHtmlCodes] = useState<{ [key: string]: string }>({
+  //   '': '',
+  // });
+  // const [datajsCodes, setDatajsCodes] = useState<{ [key: string]: string }>({
+  //   '': '',
+  // });
+  // const [iconsjsCodes, setIconsjsCodes] = useState<{ [key: string]: string }>({
+  //   '': '',
+  // });
   const [selectedUUID, setSelectedUUID] = useState<string>('');
 
   const handleFilesUploaded = (files: File[]) => {
@@ -57,9 +60,10 @@ export default function Home() {
     }));
   };
 
-  const sendToCfnDiagService = async (template: string) => {
+  const sendToCfnDiagService = async (template: string, uuid: string) => {
     const formData = new FormData();
     formData.append('GeneratedTemplate', template);
+    formData.append('UUID', uuid);
     try {
       const response = await fetch('/api/cfnDiag', {
         method: 'POST',
@@ -111,23 +115,31 @@ export default function Home() {
               [uuid]: formattedTemplate,
             }));
 
-            const graphData = await sendToCfnDiagService(template);
+            const graphData = await sendToCfnDiagService(
+              formattedTemplate,
+              uuid
+            );
             console.log(graphData);
 
-            setHtmlCodes((prevHtmlCodes) => ({
-              ...prevHtmlCodes,
-              [uuid]: graphData.htmlContent,
+            setOutputPath((prevOutputPath) => ({
+              ...prevOutputPath,
+              [uuid]: graphData.outputPath,
             }));
 
-            setDatajsCodes((prevDatajsCodes) => ({
-              ...prevDatajsCodes,
-              [uuid]: graphData.dataContent,
-            }));
+            // setHtmlCodes((prevHtmlCodes) => ({
+            //   ...prevHtmlCodes,
+            //   [uuid]: graphData.htmlContent,
+            // }));
 
-            setIconsjsCodes((prevIconsjsCodes) => ({
-              ...prevIconsjsCodes,
-              [uuid]: graphData.iconContent,
-            }));
+            // setDatajsCodes((prevDatajsCodes) => ({
+            //   ...prevDatajsCodes,
+            //   [uuid]: graphData.dataContent,
+            // }));
+
+            // setIconsjsCodes((prevIconsjsCodes) => ({
+            //   ...prevIconsjsCodes,
+            //   [uuid]: graphData.iconContent,
+            // }));
 
             // return formattedTemplate;
             // console.log(`Upload successful for ${file.name}:`, JSON.stringify(data.message));
@@ -158,7 +170,12 @@ export default function Home() {
           {/* Cfn Graph Display */}
           <div className='h-1/2 bg-white rounded-md border border-gray-300 overflow-hidden'>
             {selectedUUID ? (
-              <GraphFrame html={htmlCodes[selectedUUID]} js_data={datajsCodes[selectedUUID]} js_icons={iconsjsCodes[selectedUUID]}/>
+              <GraphFrame
+                // html={htmlCodes[selectedUUID]}
+                // js_data={datajsCodes[selectedUUID]}
+                // js_icons={iconsjsCodes[selectedUUID]}
+                path={}
+              />
             ) : (
               <div className='h-full flex items-center justify-center text-gray-500'>
                 Select a file to preview
