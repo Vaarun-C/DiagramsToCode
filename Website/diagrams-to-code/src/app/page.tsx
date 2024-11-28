@@ -174,7 +174,7 @@ export default function Home() {
                 // html={htmlCodes[selectedUUID]}
                 // js_data={datajsCodes[selectedUUID]}
                 // js_icons={iconsjsCodes[selectedUUID]}
-                path={}
+                path={outputPath[selectedUUID]}
               />
             ) : (
               <div className='h-full flex items-center justify-center text-gray-500'>

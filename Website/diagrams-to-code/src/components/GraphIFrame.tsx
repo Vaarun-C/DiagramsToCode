@@ -2,49 +2,52 @@
 import { useEffect, useRef } from 'react';
 
 function GraphFrame({
-  html,
-  js_data,
-  js_icons,
+//   html,
+//   js_data,
+//   js_icons,
+  path
 }: {
-  html: string;
-  js_data: string;
-  js_icons: string;
+//   html: string;
+//   js_data: string;
+//   js_icons: string;
+  path: string;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  useEffect(() => {
-    if (iframeRef.current) {
-      const doc =
-        iframeRef.current.contentDocument ||
-        iframeRef.current.contentWindow?.document;
-      if (doc) {
-        doc.open();
-        doc.write(html);
+//   useEffect(() => {
+//     if (iframeRef.current) {
+//       const doc =
+//         iframeRef.current.contentDocument ||
+//         iframeRef.current.contentWindow?.document;
+//       if (doc) {
+//         doc.open();
+//         doc.write(html);
         
-        const scriptTags = doc.getElementsByTagName('script');
+//         const scriptTags = doc.getElementsByTagName('script');
 
-        for (const scripttag of scriptTags) {
-          if (scripttag.src && scripttag.src.includes('data.js')) {
-            scripttag.removeAttribute('src');
-            scripttag.innerHTML = js_data;
-            break;
-          }
-        }
+//         for (const scripttag of scriptTags) {
+//           if (scripttag.src && scripttag.src.includes('data.js')) {
+//             scripttag.removeAttribute('src');
+//             scripttag.innerHTML = js_data;
+//             break;
+//           }
+//         }
 
-        const script = doc.createElement('script');
-        script.type = 'text/javascript';
-        script.innerHTML = js_icons;
-        doc.head.appendChild(script);
+//         const script = doc.createElement('script');
+//         script.type = 'text/javascript';
+//         script.innerHTML = js_icons;
+//         doc.head.appendChild(script);
 
-        doc.close();
-      }
-    }
-  }, [html, js_data, js_icons]);
+//         doc.close();
+//       }
+//     }
+//   }, [html, js_data, js_icons]);
 
   return (
     // <div className="border rounded shadow-lg">
     <iframe
       ref={iframeRef}
+      src={path+"/index.html"}
       title='Dynamic HTML Content'
       className='w-full h-full'
     />
