@@ -93,7 +93,7 @@ async def root(architectureDiagram: UploadFile = File(...)) -> JSONResponse:
 
         # Return results
         return JSONResponse(
-            content={"status": "success", "groups": detected_groups},
+            content={"status": "success", "groups": [grp.to_dict() for grp in detected_groups]},
             status_code=status.HTTP_200_OK
         )
     except HTTPException:
