@@ -1,8 +1,0 @@
-Resources:
-  $$1:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: !Sub 'alias/$$1-cloudtrail-key'
-      TargetKeyId: !Ref $$2
-Dependencies:
-["AWS::KMS::Key"]

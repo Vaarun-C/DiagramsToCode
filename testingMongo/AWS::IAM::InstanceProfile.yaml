@@ -1,8 +1,0 @@
-Resources:
-  $$1:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Roles:
-        - !Ref $$2
-Dependencies:
-["AWS::IAM::RoleForEMRInstance"]

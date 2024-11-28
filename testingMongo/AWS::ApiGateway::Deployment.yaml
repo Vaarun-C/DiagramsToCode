@@ -1,9 +1,0 @@
-Resources:
-  $$1:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn: ApiMethod
-    Properties:
-      RestApiId: !Ref $$2
-      StageName: dev
-Dependencies:
-["AWS::ApiGateway::RestApi"]

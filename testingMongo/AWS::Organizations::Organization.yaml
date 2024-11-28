@@ -1,9 +1,0 @@
-Resources:
-  $$1:
-    Type: AWS::Organizations::Organization
-    Properties:
-      FeatureSet: ALL
-Outputs:
-  IdFor$$1:
-    Description: 'The ID of the AWS Organization for $$1'
-    Value: !Ref $$1

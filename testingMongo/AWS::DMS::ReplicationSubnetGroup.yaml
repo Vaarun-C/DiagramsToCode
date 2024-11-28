@@ -1,9 +1,0 @@
-Resources:
-  $$1:
-    Type: AWS::DMS::ReplicationSubnetGroup
-    Properties:
-      ReplicationSubnetGroupDescription: 'Subnet group for DMS replication instance for $$1'
-      SubnetIds: 
-        - !Ref $$2
-Dependencies:
-["AWS::EC2::Subnet"]

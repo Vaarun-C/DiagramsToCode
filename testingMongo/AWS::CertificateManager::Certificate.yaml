@@ -1,9 +1,0 @@
-Resources:
-  Certificate:
-    Type: AWS::CertificateManager::Certificate
-    Properties:
-      DomainName: !Ref DomainNameFor$$2
-      ValidationMethod: DNS
-
-Dependencies:
-["AWS::ApiGateway::DomainName"]
