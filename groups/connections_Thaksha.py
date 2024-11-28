@@ -66,4 +66,4 @@ def main(image_path):
 
 if __name__ == "__main__":
     # Replace 'path_to_your_image.png' with the actual path to your PNG image
-    main(r"...")
+    main(r"test1.png")
