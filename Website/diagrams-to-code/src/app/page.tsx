@@ -5,10 +5,24 @@ import FileUploadWrapper from '@components/FileUploadWrapper';
 import ParagraphComponent from '@components/ParagraphComponent';
 
 import { useState } from 'react';
+import GraphFrame from '@components/GraphIFrame';
 
 export default function Home() {
-  const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: File }>({});
-  const [yamlCodes, setYamlCodes] = useState<{ [key: string]: string }>({'':"No template Code Generated"});
+  const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: File }>(
+    {}
+  );
+  const [yamlCodes, setYamlCodes] = useState<{ [key: string]: string }>({
+    '': 'No template Code Generated',
+  });
+  const [htmlCodes, setHtmlCodes] = useState<{ [key: string]: string }>({
+    '': '',
+  });
+  const [datajsCodes, setDatajsCodes] = useState<{ [key: string]: string }>({
+    '': '',
+  });
+  const [iconsjsCodes, setIconsjsCodes] = useState<{ [key: string]: string }>({
+    '': '',
+  });
   const [selectedUUID, setSelectedUUID] = useState<string>('');
 
   const handleFilesUploaded = (files: File[]) => {
@@ -17,18 +31,18 @@ export default function Home() {
       acc[uuid] = file;
       return acc;
     }, {} as { [key: string]: File });
-    setUploadedFiles((prevFiles) => ({...prevFiles, ...newFiles}));
+    setUploadedFiles((prevFiles) => ({ ...prevFiles, ...newFiles }));
     console.log(files);
   };
 
   const handleDeleteFile = (fileUUIDToDelete: string) => {
-    setUploadedFiles(prevFiles => {
+    setUploadedFiles((prevFiles) => {
       const updatedFiles = { ...prevFiles };
       delete updatedFiles[fileUUIDToDelete];
       return updatedFiles;
     });
-    if (selectedUUID === fileUUIDToDelete){
-      setSelectedUUID('')
+    if (selectedUUID === fileUUIDToDelete) {
+      setSelectedUUID('');
     }
   };
 
@@ -36,79 +50,95 @@ export default function Home() {
     setSelectedUUID(newSelectedUUID);
   };
 
-  const onCodeChange = (newCode:string) => {
+  const onCodeChange = (newCode: string) => {
     setYamlCodes((prevYamlCodes) => ({
       ...prevYamlCodes,
       [selectedUUID]: newCode,
     }));
   };
 
-  const sendToCfnDiagService = (template: string) => {
+  const sendToCfnDiagService = async (template: string) => {
     const formData = new FormData();
     formData.append('GeneratedTemplate', template);
-    return fetch('/api/cfnDiag', {
-      method: 'POST',
-      body: formData,
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((result) => {
-        console.log('Response from second endpoint:', result);
-        return result;
+    try {
+      const response = await fetch('/api/cfnDiag', {
+        method: 'POST',
+        body: formData,
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log('Response from second endpoint:', result);
+      return result;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error; // Optionally throw the error to be handled by the caller
+    }
   };
 
   const handleUpload = async () => {
-    
     if (Object.keys(uploadedFiles).length === 0)
-      alert("No Architecture Diagrams have been uploaded")
+      alert('No Architecture Diagrams have been uploaded');
     else {
       Object.entries(uploadedFiles).forEach(([uuid, file]) => {
         const formData = new FormData();
         formData.append('ArchitectureDiagram', file);
         formData.append('UUID', uuid);
 
-        console.log("BEFORE: ", formData)
+        console.log('BEFORE: ', formData);
 
         fetch('/api/templateService', {
           method: 'POST',
           body: formData, // Attach FormData (multipart/form-data)
         })
-        .then(async (response) => {
-          if (!response.ok) {
-              throw new Error(`Failed to upload ${file.name}: ${response.statusText}`);
-          }
-          const data = await response.json();
-          const uuid = data.responses[0].uuid
-          const template = data.responses[0].template
+          .then(async (response) => {
+            if (!response.ok) {
+              throw new Error(
+                `Failed to upload ${file.name}: ${response.statusText}`
+              );
+            }
+            const data = await response.json();
+            const uuid = data.responses[0].uuid;
+            const template = data.responses[0].template;
 
-          const formattedTemplate = Object.entries(template)
-          .map(([key, value]) => `${key}: ${value}`)
-          .join("\n");
+            const formattedTemplate = Object.entries(template)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join('\n');
 
-          setYamlCodes((prevYamlCodes) => ({
-            ...prevYamlCodes,
-            [uuid]: formattedTemplate,
-          }));
+            setYamlCodes((prevYamlCodes) => ({
+              ...prevYamlCodes,
+              [uuid]: formattedTemplate,
+            }));
 
-          return formattedTemplate
-          // console.log(`Upload successful for ${file.name}:`, JSON.stringify(data.message));
-          // // Show or handle the result here, such as updating the UI
-        })
-        .then((template) => {
-          console.log(sendToCfnDiagService(template));
-        })
-        .catch((error) => {
-          console.log(`Error uploading ${file.name}:`);
-        });
+            const graphData = await sendToCfnDiagService(template);
+            console.log(graphData);
+
+            setHtmlCodes((prevHtmlCodes) => ({
+              ...prevHtmlCodes,
+              [uuid]: graphData.htmlContent,
+            }));
+
+            setDatajsCodes((prevDatajsCodes) => ({
+              ...prevDatajsCodes,
+              [uuid]: graphData.dataContent,
+            }));
+
+            setIconsjsCodes((prevIconsjsCodes) => ({
+              ...prevIconsjsCodes,
+              [uuid]: graphData.iconContent,
+            }));
+
+            // return formattedTemplate;
+            // console.log(`Upload successful for ${file.name}:`, JSON.stringify(data.message));
+            // // Show or handle the result here, such as updating the UI
+          })
+          .catch((error) => {
+            console.log(`Error uploading ${file.name}:`);
+          });
       });
     }
-      
-  }
+  };
 
   return (
     <FileUploadWrapper onFilesUploaded={handleFilesUploaded}>
@@ -127,22 +157,21 @@ export default function Home() {
           </div>
           {/* Cfn Graph Display */}
           <div className='h-1/2 bg-white rounded-md border border-gray-300 overflow-hidden'>
-          {selectedUUID ? (
-            <iframe
-              title="Preview"
-              src={`/graph/index.html`}
-              className="w-full h-full"
-            />
-          ) : (
-            <div className="h-full flex items-center justify-center text-gray-500">
-              Select a file to preview
-            </div>
-          )}
+            {selectedUUID ? (
+              <GraphFrame html={htmlCodes[selectedUUID]} js_data={datajsCodes[selectedUUID]} js_icons={iconsjsCodes[selectedUUID]}/>
+            ) : (
+              <div className='h-full flex items-center justify-center text-gray-500'>
+                Select a file to preview
+              </div>
+            )}
           </div>
         </div>
         {/* Right side of Screen */}
         <div className='w-1/2 p-4'>
-          <CodeEditor code={yamlCodes[selectedUUID] || ''} onCodeChange={onCodeChange}/>
+          <CodeEditor
+            code={yamlCodes[selectedUUID] || ''}
+            onCodeChange={onCodeChange}
+          />
         </div>
       </div>
     </FileUploadWrapper>
@@ -168,7 +197,7 @@ export default function Home() {
 //       </div>
 
 //       {/* Bottom: Iframe Section */}
-      
+
 //     </div>
 
 //     {/* Right Panel: Code Editor */}
