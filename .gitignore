@@ -173,3 +173,7 @@ yolov5
 geckodriver.exe
 
 .DS_Store
+
+*.code-workspace
+venv*
+*venv
