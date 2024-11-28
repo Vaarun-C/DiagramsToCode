@@ -1,0 +1,34 @@
+Resources:
+  $$1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - ec2.amazonaws.com
+                - eks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      Policies:
+        - PolicyName: $$1Policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - aps:RemoteWrite
+                  - aps:GetLabels
+                  - aps:GetMetricMetadata
+                  - aps:GetSeries
+                Resource: !GetAtt $$2.Arn
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentFor$$2
+        - Key: Service
+          Value: Prometheus
+Dependencies:
+["AWS::APS::Workspace"]

@@ -1,0 +1,44 @@
+Parameters:
+  WorkspaceAliasFor$$1:
+    Type: String
+    Default: '$$1'
+    Description: 'Alias for the Prometheus Workspace for $$1'
+
+  EnvironmentFor$$1:
+    Type: String
+    Default: 'Development'
+    AllowedValues: 
+      - 'Development'
+      - 'Staging'
+      - 'Production'
+    Description: 'Environment type for the workspace for $$1'
+
+Resources:
+  $$1:
+    Type: AWS::APS::Workspace
+    Properties:
+      Alias: !Ref WorkspaceAliasFor$$1
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentFor$$1
+        - Key: Service
+          Value: Prometheus
+        - Key: ManagedBy
+          Value: CloudFormation
+
+Outputs:
+  WorkspaceIdFor$$1:
+    Description: 'ID of the Prometheus Workspace for $$1'
+    Value: !Ref $$1
+
+  WorkspaceArnFor$$1:
+    Description: 'ARN of the Prometheus Workspace for $$1'
+    Value: !GetAtt $$1.Arn
+
+  RemoteWriteUrlFor$$1:
+    Description: 'Remote Write URL for the Prometheus Workspace for $$1'
+    Value: !GetAtt $$1.PrometheusEndpoint
+
+  QueryUrlFor$$1:
+    Description: 'Query URL for the Prometheus Workspace for $$1'
+    Value: !Sub "${$$1.PrometheusEndpoint}/api/v1/query"

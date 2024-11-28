@@ -1,0 +1,47 @@
+Parameters:
+  EnvironmentFor$$1:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment name for resource tagging for $$1
+    
+  MaxvCpusFor$$1:
+    Type: Number
+    Default: 16
+    Description: Maximum vCPUs for the compute environment for $$1
+    
+  DesiredvCpusFor$$1:
+    Type: Number
+    Default: 4
+    Description: Desired vCPUs for the compute environment for $$1
+
+Resources:
+  $$1:
+    Type: AWS::Batch::ComputeEnvironment
+    Properties:
+      ComputeEnvironmentName: !Sub ${AWS::StackName}-compute-env
+      Type: MANAGED
+      State: ENABLED
+      ComputeResources:
+        Type: EC2
+        MaxvCpus: !Ref MaxvCpusFor$$1
+        DesiredvCpus: !Ref DesiredvCpusFor$$1
+        MinvCpus: 0
+        InstanceTypes:
+          - optimal
+        Subnets:
+          - !Ref $$2
+        InstanceRole: !Ref $$3
+        AllocationStrategy: SPOT_CAPACITY_OPTIMIZED
+        BidPercentage: 60
+      ServiceRole: !GetAtt $$4.Arn
+      Tags:
+        Environment: !Ref EnvironmentFor$$1
+Outputs:
+  ComputeEnvironmentArnFor$$1:
+    Description: ARN of Batch Compute Environment for $$1
+    Value: !Ref $$1
+    Export:
+      Name: !Sub ${AWS::StackName}-compute-env-arn
+Dependencies:
+["AWS::EC2::Subnet", "AWS::IAM::RoleForBatchInstance", "AWS::IAM::RoleForBatchService"]

@@ -1,0 +1,9 @@
+Resources:
+  $$1:
+    Type: AWS::EC2::VPCEndpointService
+    Properties:
+      AcceptanceRequired: false
+      NetworkLoadBalancerArns: 
+        - !Ref $$2
+Dependencies:
+["AWS::ElasticLoadBalancingV2::LoadBalancer"]

@@ -1,0 +1,32 @@
+Resources:
+  $$1:
+    Type: AWS::Batch::JobDefinition
+    Properties:
+      JobDefinitionName: !Sub ${AWS::StackName}-job-definition
+      Type: container
+      PlatformCapabilities:
+        - EC2
+      ContainerProperties:
+        Image: public.ecr.aws/amazonlinux/amazonlinux:2
+        Command:
+          - "echo"
+          - "Hello World"
+        ResourceRequirements:
+          - Type: VCPU
+            Value: "1"
+          - Type: MEMORY
+            Value: "2048"
+        ExecutionRoleArn: !GetAtt $$2.Arn
+      RetryStrategy:
+        Attempts: 3
+      Timeout:
+        AttemptDurationSeconds: 300
+
+Outputs:
+  JobDefinitionArnFor$$1:
+    Description: ARN of Batch Job Definition for $$1
+    Value: !Ref $$1
+    Export:
+      Name: !Sub ${AWS::StackName}-job-definition-arn
+Dependencies:
+["AWS::IAM::RoleForBatchService"]

@@ -1,0 +1,9 @@
+Resources:
+  $$1:
+    Type: AWS::Redshift::ClusterSubnetGroup
+    Properties:
+      Description: Subnet group for Redshift cluster for $$1
+      SubnetIds: 
+        - !Ref $$2
+Dependencies:
+["AWS::EC2::Subnet"]

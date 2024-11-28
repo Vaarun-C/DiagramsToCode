@@ -1,0 +1,12 @@
+Resources:
+  $$1:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref $$2
+      LoadBalancerArn: !Ref $$3
+      Port: 80
+      Protocol: TCP
+Dependencies:
+["AWS::ElasticLoadBalancingV2::TargetGroup", "AWS::ElasticLoadBalancingV2::LoadBalancer"]

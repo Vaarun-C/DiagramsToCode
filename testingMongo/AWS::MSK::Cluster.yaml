@@ -1,0 +1,50 @@
+Parameters:
+  ClusterNameFor$$1:
+    Type: String
+    Default: "$$1"
+    Description: "The name of the MSK cluster for $$1."
+
+  BrokerInstanceTypeFor$$1:
+    Type: String
+    Default: "kafka.m5.large"
+    Description: "The instance type for the Kafka brokers for $$1."
+
+  NumberOfBrokerNodesFor$$1:
+    Type: Number
+    Default: 3
+    Description: "The number of broker nodes in the cluster for $$1."
+
+Resources:
+  $$1:
+    Type: AWS::MSK::Cluster
+    Properties:
+      ClusterName: !Ref ClusterNameFor$$1
+      KafkaVersion: "3.4.0" # Choose a supported Kafka version
+      NumberOfBrokerNodes: !Ref NumberOfBrokerNodesFor$$1
+      BrokerNodeGroupInfo:
+        BrokerAZDistribution: "DEFAULT"
+        ClientSubnets: !Ref $$2
+        InstanceType: !Ref BrokerInstanceTypeFor$$1
+      EncryptionInfo:
+        EncryptionAtRest:
+          DataVolumeKMSKeyId: "alias/aws/kafka" # Default AWS-managed KMS key
+        EncryptionInTransit:
+          ClientBroker: "TLS"
+          InCluster: true
+      LoggingInfo:
+        BrokerLogs:
+          CloudWatchLogs:
+            Enabled: true
+            LogGroup: !Sub "/aws/msk/${ClusterNameFor$$1}"
+          S3:
+            Enabled: false
+          Firehose:
+            Enabled: false
+
+Outputs:
+  ClusterArnFor$$1:
+    Description: "The ARN of the MSK Cluster for $$1"
+    Value: !GetAtt $$1.Arn
+
+Dependencies:
+["AWS::EC2::Subnet"]

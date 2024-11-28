@@ -1,0 +1,29 @@
+Parameters:
+  JobTimeoutFor$$1:
+    Type: Number
+    Default: 2880
+    Description: Job timeout in minutes for $$1
+Resources:
+  $$1:
+    Type: "AWS::Glue::Job"
+    Properties:
+      Role: !GetAtt $$2.Arn
+      Command:
+        Name: "glueetl"
+        ScriptLocation: !Sub "s3://${$$2}/scripts/$$1-script.py"
+        PythonVersion: "3"
+      DefaultArguments:
+        "--TempDir": !Sub "s3://${$$2}/temp/"
+        "--job-bookmark-option": "job-bookmark-enable"
+      MaxRetries: 1
+      Timeout: !Ref JobTimeoutFor$$1
+Outputs:
+  GlueJobNameFor$$1:
+    Description: "The name of the Glue job for $$1"
+    Value: !Ref $$1
+
+Dependencies:
+["AWS::S3::Bucket", "AWS::IAM::RoleForGlueService"]
+
+Disclaimers:
+["The Glue job will fetch a script named $$1-script.py from the scripts folder inside the S3 bucket $$2"]

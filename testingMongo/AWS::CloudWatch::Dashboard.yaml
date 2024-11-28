@@ -1,0 +1,35 @@
+Parameters:
+  InstanceIdFor$$1:
+    Type: String
+    Description: "The ID of the EC2 instance to monitor for $$1"
+
+Resources:
+  $$1:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: '$$1'
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/EC2", "CPUUtilization", "InstanceId", "${InstanceId}" ]
+                ],
+                "period": 300,
+                "stat": "Average",
+                "region": "${AWS::Region}",
+                "title": "EC2 Instance CPU for $$1"
+              }
+            }
+          ]
+        }
+Outputs:
+  DashboardURLFor$$1:
+    Description: 'URL of the CloudWatch Dashboard for $$1'
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=$$1'

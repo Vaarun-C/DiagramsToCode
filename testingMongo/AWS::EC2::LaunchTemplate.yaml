@@ -1,0 +1,67 @@
+Parameters:
+  ImageIdFor$$1:
+    Type: AWS::EC2::Image::Id
+    Description: 'AMI ID for the instances for $$1'
+    Default: ''
+
+  KeyNameFor$$1:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: 'EC2 Key Pair for SSH access for $$1'
+  
+  EnvironmentFor$$1:
+    Type: String
+    Default: 'Development'
+    AllowedValues: 
+      - 'Development'
+      - 'Staging'
+      - 'Production'
+    Description: 'Environment type for the resources for $$1'
+
+  InstanceTypeFor$$1:
+    Type: String
+    Default: 't2.micro'
+    Description: 'EC2 instance type for the launch template for $$1'
+    AllowedValues: 
+      - 't2.micro'
+      - 't2.small'
+      - 't2.medium'
+      - 't3.micro'
+      - 't3.small'
+      - 't3.medium'
+
+Conditions:
+  UseProvidedAMI: !Not [!Equals [!Ref ImageIdFor$$1, '']]
+
+Resources:
+  $$1:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        ImageId: !If 
+          - UseProvidedAMI
+          - !Ref ImageIdFor$$1
+          - !Ref AWS::NoValue
+        InstanceType: !Ref InstanceTypeFor$$1
+        KeyName: !Ref KeyNameFor$$1
+        UserData:
+          Fn::Base64: |
+            #!/bin/bash
+            yum update -y
+            yum install -y aws-cli amazon-cloudwatch-agent
+            /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:/AmazonCloudWatch/DefaultConfig
+        MetadataOptions:
+          HttpTokens: required
+          HttpEndpoint: enabled
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: 30
+              VolumeType: gp3
+              Encrypted: true
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub '${AWS::StackName}-instance'
+              - Key: Environment
+                Value: !Ref EnvironmentFor$$1

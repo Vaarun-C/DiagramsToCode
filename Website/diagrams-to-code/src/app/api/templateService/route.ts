@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
-  console.log('Received file:', formData);
+  // console.log('Received file:', formData);
   const file = formData.get('ArchitectureDiagram');
-  console.log('Received file:', file);
+  // console.log('Received file:', file);
 
   // Function to handle the fetch call to FastAPI and return the result
   const callFastApi = async (formData: FormData) => {

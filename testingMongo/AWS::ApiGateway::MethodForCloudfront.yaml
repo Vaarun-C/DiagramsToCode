@@ -1,0 +1,22 @@
+Resources:
+  $$1:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref $$2
+      ResourceId: !Ref $$3
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationHttpMethod: GET
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: '{"message": "Hello from API Gateway!"}'
+      MethodResponses:
+        - StatusCode: 200
+Dependencies:
+["AWS::ApiGateway::RestApi", "AWS::ApiGateway::Resource"]

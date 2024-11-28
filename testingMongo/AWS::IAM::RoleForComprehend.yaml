@@ -1,0 +1,51 @@
+Parameters:
+  EnvironmentNameFor$$1:
+    Description: An environment name that is prefixed to resource names for $$1
+    Type: String
+    Default: ComprehendEnvironmentFor$$1
+
+  ComprehendJobRoleFor$$1:
+    Description: Name of the IAM role for Comprehend jobs for $$1
+    Type: String
+    Default: ComprehendServiceRoleFor$$1
+
+Resources:
+  $$1:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref ComprehendJobRoleFor$$1
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - comprehend.amazonaws.com
+                - comprehendmedical.amazonaws.com
+            Action: 'sts:AssumeRole'
+      
+      Policies:
+        - PolicyName: ComprehendFullAccessFor$$1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'comprehend:*'
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                  - 's3:ListBucket'
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+
+Outputs:
+  ComprehendServiceRoleArnFor$$1:
+    Description: ARN of the Comprehend Service Role for $$1
+    Value: !GetAtt $$1.Arn
+    Export:
+      Name: !Sub '${EnvironmentNameFor$$1}-ComprehendServiceRoleArn'
+
+Disclaimers:
+["Some Comprehend configurations (like specific jobs or custom classifiers) often require manual setup or dynamic creation", "Actual Comprehend jobs would typically be created programmatically or through the AWS Console"]

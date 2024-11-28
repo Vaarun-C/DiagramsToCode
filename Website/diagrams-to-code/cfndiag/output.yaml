@@ -1,0 +1,990 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for test2.png
+Conditions: 
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+  VersioningEnabledForMyBucket2: !Equals [!Ref EnableVersioningForMyBucket2, true]
+  VersioningEnabledForMyBucket3: !Equals [!Ref EnableVersioningForMyBucket3, true]
+  VersioningEnabledForMyBucket4: !Equals [!Ref EnableVersioningForMyBucket4, true]
+  VersioningEnabledForMyBucket5: !Equals [!Ref EnableVersioningForMyBucket5, true]
+  VersioningEnabledForMyBucket6: !Equals [!Ref EnableVersioningForMyBucket6, true]
+Parameters: 
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  ClusterNameForMyCluster1:
+    Description: The name of the ECS cluster
+    Type: String
+    Default: MyCluster1
+  BucketNameForMyBucket2:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket2:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  BucketNameForMyBucket3:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket3:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  BucketNameForMyBucket4:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket4:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  BucketNameForMyBucket5:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket5:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  BucketNameForMyBucket6:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket6:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  TaskDefinitionNameForMyTaskDefinition1:
+    Description: The name of the ECS task definition
+    Type: String
+    Default: MyTaskDefinition1
+  ContainerNameForMyTaskDefinition1:
+    Description: The name of the container
+    Type: String
+    Default: MyContainerForMyTaskDefinition1
+  ContainerImageForMyTaskDefinition1:
+    Description: The Docker image to use for the container
+    Type: String
+    Default: amazon/amazon-ecs-sample
+  ContainerPortForMyTaskDefinition1:
+    Description: The port on which the container listens
+    Type: Number
+    Default: 80
+  TaskDefinitionNameForMyTaskDefinition2:
+    Description: The name of the ECS task definition
+    Type: String
+    Default: MyTaskDefinition2
+  ContainerNameForMyTaskDefinition2:
+    Description: The name of the container
+    Type: String
+    Default: MyContainerForMyTaskDefinition2
+  ContainerImageForMyTaskDefinition2:
+    Description: The Docker image to use for the container
+    Type: String
+    Default: amazon/amazon-ecs-sample
+  ContainerPortForMyTaskDefinition2:
+    Description: The port on which the container listens
+    Type: Number
+    Default: 80
+  TaskDefinitionNameForMyTaskDefinition3:
+    Description: The name of the ECS task definition
+    Type: String
+    Default: MyTaskDefinition3
+  ContainerNameForMyTaskDefinition3:
+    Description: The name of the container
+    Type: String
+    Default: MyContainerForMyTaskDefinition3
+  ContainerImageForMyTaskDefinition3:
+    Description: The Docker image to use for the container
+    Type: String
+    Default: amazon/amazon-ecs-sample
+  ContainerPortForMyTaskDefinition3:
+    Description: The port on which the container listens
+    Type: Number
+    Default: 80
+  TaskDefinitionNameForMyTaskDefinition4:
+    Description: The name of the ECS task definition
+    Type: String
+    Default: MyTaskDefinition4
+  ContainerNameForMyTaskDefinition4:
+    Description: The name of the container
+    Type: String
+    Default: MyContainerForMyTaskDefinition4
+  ContainerImageForMyTaskDefinition4:
+    Description: The Docker image to use for the container
+    Type: String
+    Default: amazon/amazon-ecs-sample
+  ContainerPortForMyTaskDefinition4:
+    Description: The port on which the container listens
+    Type: Number
+    Default: 80
+  TaskDefinitionNameForMyTaskDefinition5:
+    Description: The name of the ECS task definition
+    Type: String
+    Default: MyTaskDefinition5
+  ContainerNameForMyTaskDefinition5:
+    Description: The name of the container
+    Type: String
+    Default: MyContainerForMyTaskDefinition5
+  ContainerImageForMyTaskDefinition5:
+    Description: The Docker image to use for the container
+    Type: String
+    Default: amazon/amazon-ecs-sample
+  ContainerPortForMyTaskDefinition5:
+    Description: The port on which the container listens
+    Type: Number
+    Default: 80
+  TaskDefinitionNameForMyTaskDefinition6:
+    Description: The name of the ECS task definition
+    Type: String
+    Default: MyTaskDefinition6
+  ContainerNameForMyTaskDefinition6:
+    Description: The name of the container
+    Type: String
+    Default: MyContainerForMyTaskDefinition6
+  ContainerImageForMyTaskDefinition6:
+    Description: The Docker image to use for the container
+    Type: String
+    Default: amazon/amazon-ecs-sample
+  ContainerPortForMyTaskDefinition6:
+    Description: The port on which the container listens
+    Type: Number
+    Default: 80
+  TaskDefinitionNameForMyTaskDefinition7:
+    Description: The name of the ECS task definition
+    Type: String
+    Default: MyTaskDefinition7
+  ContainerNameForMyTaskDefinition7:
+    Description: The name of the container
+    Type: String
+    Default: MyContainerForMyTaskDefinition7
+  ContainerImageForMyTaskDefinition7:
+    Description: The Docker image to use for the container
+    Type: String
+    Default: amazon/amazon-ecs-sample
+  ContainerPortForMyTaskDefinition7:
+    Description: The port on which the container listens
+    Type: Number
+    Default: 80
+  TaskDefinitionNameForMyTaskDefinition8:
+    Description: The name of the ECS task definition
+    Type: String
+    Default: MyTaskDefinition8
+  ContainerNameForMyTaskDefinition8:
+    Description: The name of the container
+    Type: String
+    Default: MyContainerForMyTaskDefinition8
+  ContainerImageForMyTaskDefinition8:
+    Description: The Docker image to use for the container
+    Type: String
+    Default: amazon/amazon-ecs-sample
+  ContainerPortForMyTaskDefinition8:
+    Description: The port on which the container listens
+    Type: Number
+    Default: 80
+  TaskDefinitionNameForMyTaskDefinition9:
+    Description: The name of the ECS task definition
+    Type: String
+    Default: MyTaskDefinition9
+  ContainerNameForMyTaskDefinition9:
+    Description: The name of the container
+    Type: String
+    Default: MyContainerForMyTaskDefinition9
+  ContainerImageForMyTaskDefinition9:
+    Description: The Docker image to use for the container
+    Type: String
+    Default: amazon/amazon-ecs-sample
+  ContainerPortForMyTaskDefinition9:
+    Description: The port on which the container listens
+    Type: Number
+    Default: 80
+  TaskDefinitionNameForMyTaskDefinition10:
+    Description: The name of the ECS task definition
+    Type: String
+    Default: MyTaskDefinition10
+  ContainerNameForMyTaskDefinition10:
+    Description: The name of the container
+    Type: String
+    Default: MyContainerForMyTaskDefinition10
+  ContainerImageForMyTaskDefinition10:
+    Description: The Docker image to use for the container
+    Type: String
+    Default: amazon/amazon-ecs-sample
+  ContainerPortForMyTaskDefinition10:
+    Description: The port on which the container listens
+    Type: Number
+    Default: 80
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+  ServiceNameForMyService1:
+    Description: The name of the ECS service
+    Type: String
+    Default: MyService1
+  DesiredCountForMyService1:
+    Description: The desired number of tasks to run in the service
+    Type: Number
+    Default: 1
+  ServiceNameForMyService2:
+    Description: The name of the ECS service
+    Type: String
+    Default: MyService2
+  DesiredCountForMyService2:
+    Description: The desired number of tasks to run in the service
+    Type: Number
+    Default: 1
+  ServiceNameForMyService3:
+    Description: The name of the ECS service
+    Type: String
+    Default: MyService3
+  DesiredCountForMyService3:
+    Description: The desired number of tasks to run in the service
+    Type: Number
+    Default: 1
+  ServiceNameForMyService4:
+    Description: The name of the ECS service
+    Type: String
+    Default: MyService4
+  DesiredCountForMyService4:
+    Description: The desired number of tasks to run in the service
+    Type: Number
+    Default: 1
+  ServiceNameForMyService5:
+    Description: The name of the ECS service
+    Type: String
+    Default: MyService5
+  DesiredCountForMyService5:
+    Description: The desired number of tasks to run in the service
+    Type: Number
+    Default: 1
+  ServiceNameForMyService6:
+    Description: The name of the ECS service
+    Type: String
+    Default: MyService6
+  DesiredCountForMyService6:
+    Description: The desired number of tasks to run in the service
+    Type: Number
+    Default: 1
+  ServiceNameForMyService7:
+    Description: The name of the ECS service
+    Type: String
+    Default: MyService7
+  DesiredCountForMyService7:
+    Description: The desired number of tasks to run in the service
+    Type: Number
+    Default: 1
+  ServiceNameForMyService8:
+    Description: The name of the ECS service
+    Type: String
+    Default: MyService8
+  DesiredCountForMyService8:
+    Description: The desired number of tasks to run in the service
+    Type: Number
+    Default: 1
+  ServiceNameForMyService9:
+    Description: The name of the ECS service
+    Type: String
+    Default: MyService9
+  DesiredCountForMyService9:
+    Description: The desired number of tasks to run in the service
+    Type: Number
+    Default: 1
+  ServiceNameForMyService10:
+    Description: The name of the ECS service
+    Type: String
+    Default: MyService10
+  DesiredCountForMyService10:
+    Description: The desired number of tasks to run in the service
+    Type: Number
+    Default: 1
+Resources: 
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyCluster1:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: !Ref ClusterNameForMyCluster1
+  MyBucket2:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket2
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket2 
+          - Enabled 
+          - Suspended
+  MyBucket3:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket3
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket3 
+          - Enabled 
+          - Suspended
+  MyBucket4:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket4
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket4 
+          - Enabled 
+          - Suspended
+  MyBucket5:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket5
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket5 
+          - Enabled 
+          - Suspended
+  MyBucket6:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket6
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket6 
+          - Enabled 
+          - Suspended
+  MyRestApi1:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: MyRestApi1
+      Description: API for my Lambda function MyRestApi1
+  MyTaskDefinition1:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskDefinitionNameForMyTaskDefinition1
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Ref ContainerNameForMyTaskDefinition1
+          Image: !Ref ContainerImageForMyTaskDefinition1
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinition1
+          Memory: 512  # Adjust as needed
+          Cpu: 256  # Adjust as needed
+  MyTaskDefinition2:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskDefinitionNameForMyTaskDefinition2
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Ref ContainerNameForMyTaskDefinition2
+          Image: !Ref ContainerImageForMyTaskDefinition2
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinition2
+          Memory: 512  # Adjust as needed
+          Cpu: 256  # Adjust as needed
+  MyTaskDefinition3:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskDefinitionNameForMyTaskDefinition3
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Ref ContainerNameForMyTaskDefinition3
+          Image: !Ref ContainerImageForMyTaskDefinition3
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinition3
+          Memory: 512  # Adjust as needed
+          Cpu: 256  # Adjust as needed
+  MyTaskDefinition4:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskDefinitionNameForMyTaskDefinition4
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Ref ContainerNameForMyTaskDefinition4
+          Image: !Ref ContainerImageForMyTaskDefinition4
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinition4
+          Memory: 512  # Adjust as needed
+          Cpu: 256  # Adjust as needed
+  MyTaskDefinition5:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskDefinitionNameForMyTaskDefinition5
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Ref ContainerNameForMyTaskDefinition5
+          Image: !Ref ContainerImageForMyTaskDefinition5
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinition5
+          Memory: 512  # Adjust as needed
+          Cpu: 256  # Adjust as needed
+  MyTaskDefinition6:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskDefinitionNameForMyTaskDefinition6
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Ref ContainerNameForMyTaskDefinition6
+          Image: !Ref ContainerImageForMyTaskDefinition6
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinition6
+          Memory: 512  # Adjust as needed
+          Cpu: 256  # Adjust as needed
+  MyTaskDefinition7:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskDefinitionNameForMyTaskDefinition7
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Ref ContainerNameForMyTaskDefinition7
+          Image: !Ref ContainerImageForMyTaskDefinition7
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinition7
+          Memory: 512  # Adjust as needed
+          Cpu: 256  # Adjust as needed
+  MyTaskDefinition8:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskDefinitionNameForMyTaskDefinition8
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Ref ContainerNameForMyTaskDefinition8
+          Image: !Ref ContainerImageForMyTaskDefinition8
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinition8
+          Memory: 512  # Adjust as needed
+          Cpu: 256  # Adjust as needed
+  MyTaskDefinition9:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskDefinitionNameForMyTaskDefinition9
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Ref ContainerNameForMyTaskDefinition9
+          Image: !Ref ContainerImageForMyTaskDefinition9
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinition9
+          Memory: 512  # Adjust as needed
+          Cpu: 256  # Adjust as needed
+  MyTaskDefinition10:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskDefinitionNameForMyTaskDefinition10
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Ref ContainerNameForMyTaskDefinition10
+          Image: !Ref ContainerImageForMyTaskDefinition10
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinition10
+          Memory: 512  # Adjust as needed
+          Cpu: 256  # Adjust as needed
+  MyRoleForLambda1:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecutionForMyRoleForLambda1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyBucketPolicy2:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket2
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket2.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyBucketPolicy3:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket3
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket3.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyBucketPolicy4:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket4
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket4.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyBucketPolicy5:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket5
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket5.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyBucketPolicy6:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket6
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket6.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyResource1:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyResource2:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyResource3:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyFunction1:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction1
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyFunction2:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction2
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyFunction3:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction3
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyMethodForLambda1:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource1
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction1.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction1
+      Principal: apigateway.amazonaws.com
+  MyMethodForLambda2:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource2
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction2.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction2
+      Principal: apigateway.amazonaws.com
+  MyMethodForLambda3:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource3
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction3.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission3:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction3
+      Principal: apigateway.amazonaws.com
+  MyService1:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      ServiceName: !Ref ServiceNameForMyService1
+      Cluster: !Ref MyCluster1
+      DesiredCount: !Ref DesiredCountForMyService1
+      TaskDefinition: !Ref MyTaskDefinition1
+      LaunchType: EC2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: !Ref MySubnet1
+          AssignPublicIp: ENABLED  # Change to DISABLED if not needed
+  MyService2:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      ServiceName: !Ref ServiceNameForMyService2
+      Cluster: !Ref MyCluster1
+      DesiredCount: !Ref DesiredCountForMyService2
+      TaskDefinition: !Ref MyTaskDefinition2
+      LaunchType: EC2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: !Ref MySubnet1
+          AssignPublicIp: ENABLED  # Change to DISABLED if not needed
+  MyService3:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      ServiceName: !Ref ServiceNameForMyService3
+      Cluster: !Ref MyCluster1
+      DesiredCount: !Ref DesiredCountForMyService3
+      TaskDefinition: !Ref MyTaskDefinition3
+      LaunchType: EC2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: !Ref MySubnet1
+          AssignPublicIp: ENABLED  # Change to DISABLED if not needed
+  MyService4:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      ServiceName: !Ref ServiceNameForMyService4
+      Cluster: !Ref MyCluster1
+      DesiredCount: !Ref DesiredCountForMyService4
+      TaskDefinition: !Ref MyTaskDefinition4
+      LaunchType: EC2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: !Ref MySubnet1
+          AssignPublicIp: ENABLED  # Change to DISABLED if not needed
+  MyService5:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      ServiceName: !Ref ServiceNameForMyService5
+      Cluster: !Ref MyCluster1
+      DesiredCount: !Ref DesiredCountForMyService5
+      TaskDefinition: !Ref MyTaskDefinition5
+      LaunchType: EC2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: !Ref MySubnet1
+          AssignPublicIp: ENABLED  # Change to DISABLED if not needed
+  MyService6:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      ServiceName: !Ref ServiceNameForMyService6
+      Cluster: !Ref MyCluster1
+      DesiredCount: !Ref DesiredCountForMyService6
+      TaskDefinition: !Ref MyTaskDefinition6
+      LaunchType: EC2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: !Ref MySubnet1
+          AssignPublicIp: ENABLED  # Change to DISABLED if not needed
+  MyService7:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      ServiceName: !Ref ServiceNameForMyService7
+      Cluster: !Ref MyCluster1
+      DesiredCount: !Ref DesiredCountForMyService7
+      TaskDefinition: !Ref MyTaskDefinition7
+      LaunchType: EC2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: !Ref MySubnet1
+          AssignPublicIp: ENABLED  # Change to DISABLED if not needed
+  MyService8:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      ServiceName: !Ref ServiceNameForMyService8
+      Cluster: !Ref MyCluster1
+      DesiredCount: !Ref DesiredCountForMyService8
+      TaskDefinition: !Ref MyTaskDefinition8
+      LaunchType: EC2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: !Ref MySubnet1
+          AssignPublicIp: ENABLED  # Change to DISABLED if not needed
+  MyService9:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      ServiceName: !Ref ServiceNameForMyService9
+      Cluster: !Ref MyCluster1
+      DesiredCount: !Ref DesiredCountForMyService9
+      TaskDefinition: !Ref MyTaskDefinition9
+      LaunchType: EC2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: !Ref MySubnet1
+          AssignPublicIp: ENABLED  # Change to DISABLED if not needed
+  MyService10:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      ServiceName: !Ref ServiceNameForMyService10
+      Cluster: !Ref MyCluster1
+      DesiredCount: !Ref DesiredCountForMyService10
+      TaskDefinition: !Ref MyTaskDefinition10
+      LaunchType: EC2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: !Ref MySubnet1
+          AssignPublicIp: ENABLED  # Change to DISABLED if not needed
+Outputs: 
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  ClusterNameOutputForMyCluster1:
+    Description: The name of the created ECS cluster for MyCluster1
+    Value: !Ref MyCluster1
+  S3BucketNameForMyBucket2:
+    Description: The name of the created S3 bucket for MyBucket2
+    Value: !Ref MyBucket2
+  S3BucketArnForMyBucket2:
+    Description: The ARN of the created S3 bucket for MyBucket2
+    Value: !GetAtt MyBucket2.Arn
+  S3BucketNameForMyBucket3:
+    Description: The name of the created S3 bucket for MyBucket3
+    Value: !Ref MyBucket3
+  S3BucketArnForMyBucket3:
+    Description: The ARN of the created S3 bucket for MyBucket3
+    Value: !GetAtt MyBucket3.Arn
+  S3BucketNameForMyBucket4:
+    Description: The name of the created S3 bucket for MyBucket4
+    Value: !Ref MyBucket4
+  S3BucketArnForMyBucket4:
+    Description: The ARN of the created S3 bucket for MyBucket4
+    Value: !GetAtt MyBucket4.Arn
+  S3BucketNameForMyBucket5:
+    Description: The name of the created S3 bucket for MyBucket5
+    Value: !Ref MyBucket5
+  S3BucketArnForMyBucket5:
+    Description: The ARN of the created S3 bucket for MyBucket5
+    Value: !GetAtt MyBucket5.Arn
+  S3BucketNameForMyBucket6:
+    Description: The name of the created S3 bucket for MyBucket6
+    Value: !Ref MyBucket6
+  S3BucketArnForMyBucket6:
+    Description: The ARN of the created S3 bucket for MyBucket6
+    Value: !GetAtt MyBucket6.Arn
+  ApiUrlForMyRestApi1:
+    Description: URL for the API Gateway for MyRestApi1
+    Value: !Sub "https://${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com/prod/hello"
+  ClusterNameOutputForMyTaskDefinition1:
+    Description: The name of the created ECS cluster for MyTaskDefinition1
+    Value: !Ref MyTaskDefinition1
+  ClusterNameOutputForMyTaskDefinition2:
+    Description: The name of the created ECS cluster for MyTaskDefinition2
+    Value: !Ref MyTaskDefinition2
+  ClusterNameOutputForMyTaskDefinition3:
+    Description: The name of the created ECS cluster for MyTaskDefinition3
+    Value: !Ref MyTaskDefinition3
+  ClusterNameOutputForMyTaskDefinition4:
+    Description: The name of the created ECS cluster for MyTaskDefinition4
+    Value: !Ref MyTaskDefinition4
+  ClusterNameOutputForMyTaskDefinition5:
+    Description: The name of the created ECS cluster for MyTaskDefinition5
+    Value: !Ref MyTaskDefinition5
+  ClusterNameOutputForMyTaskDefinition6:
+    Description: The name of the created ECS cluster for MyTaskDefinition6
+    Value: !Ref MyTaskDefinition6
+  ClusterNameOutputForMyTaskDefinition7:
+    Description: The name of the created ECS cluster for MyTaskDefinition7
+    Value: !Ref MyTaskDefinition7
+  ClusterNameOutputForMyTaskDefinition8:
+    Description: The name of the created ECS cluster for MyTaskDefinition8
+    Value: !Ref MyTaskDefinition8
+  ClusterNameOutputForMyTaskDefinition9:
+    Description: The name of the created ECS cluster for MyTaskDefinition9
+    Value: !Ref MyTaskDefinition9
+  ClusterNameOutputForMyTaskDefinition10:
+    Description: The name of the created ECS cluster for MyTaskDefinition10
+    Value: !Ref MyTaskDefinition10
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+  LambdaFunctionArnForMyFunction1:
+    Description: The ARN of the Lambda function for MyFunction1
+    Value: !GetAtt MyFunction1.Arn
+  LambdaFunctionArnForMyFunction2:
+    Description: The ARN of the Lambda function for MyFunction2
+    Value: !GetAtt MyFunction2.Arn
+  LambdaFunctionArnForMyFunction3:
+    Description: The ARN of the Lambda function for MyFunction3
+    Value: !GetAtt MyFunction3.Arn
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+  ServiceNameOutputForMyService1:
+    Description: The name of the created ECS service for MyService1
+    Value: !Ref MyService1
+  ServiceNameOutputForMyService2:
+    Description: The name of the created ECS service for MyService2
+    Value: !Ref MyService2
+  ServiceNameOutputForMyService3:
+    Description: The name of the created ECS service for MyService3
+    Value: !Ref MyService3
+  ServiceNameOutputForMyService4:
+    Description: The name of the created ECS service for MyService4
+    Value: !Ref MyService4
+  ServiceNameOutputForMyService5:
+    Description: The name of the created ECS service for MyService5
+    Value: !Ref MyService5
+  ServiceNameOutputForMyService6:
+    Description: The name of the created ECS service for MyService6
+    Value: !Ref MyService6
+  ServiceNameOutputForMyService7:
+    Description: The name of the created ECS service for MyService7
+    Value: !Ref MyService7
+  ServiceNameOutputForMyService8:
+    Description: The name of the created ECS service for MyService8
+    Value: !Ref MyService8
+  ServiceNameOutputForMyService9:
+    Description: The name of the created ECS service for MyService9
+    Value: !Ref MyService9
+  ServiceNameOutputForMyService10:
+    Description: The name of the created ECS service for MyService10
+    Value: !Ref MyService10

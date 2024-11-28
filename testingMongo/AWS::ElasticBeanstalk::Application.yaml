@@ -1,0 +1,11 @@
+Parameters:
+  ApplicationNameFor$$1:
+    Type: String
+    Description: Name of the Elastic Beanstalk application for $$1
+
+Resources:
+  $$1:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      ApplicationName: !Ref ApplicationNameFor$$1
+      Description: Elastic Beanstalk Application for $$1

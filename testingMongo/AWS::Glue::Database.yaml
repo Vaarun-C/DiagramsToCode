@@ -1,0 +1,19 @@
+Parameters:
+  DatabaseNameFor$$1:
+    Type: String
+    Default: $$1
+    Description: Name of the Glue database for $$1
+
+Resources:
+  $$1:
+    Type: "AWS::Glue::Database"
+    Properties:
+      CatalogId: !Ref "AWS::AccountId"
+      DatabaseInput:
+        Name: !Ref DatabaseNameFor$$1
+        Description: "Glue database for storing table metadata for $$1."
+
+Outputs:
+  GlueDatabaseName:
+    Description: "The name of the Glue database for $$1"
+    Value: !Ref $$1

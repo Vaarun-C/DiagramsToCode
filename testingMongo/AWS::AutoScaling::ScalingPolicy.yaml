@@ -1,0 +1,12 @@
+Resources:
+  $$1:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref $$2
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: 70.0
+Dependencies:
+["AWS::AutoScaling::AutoScalingGroup"]

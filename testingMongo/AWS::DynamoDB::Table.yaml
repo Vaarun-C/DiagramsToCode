@@ -1,0 +1,17 @@
+Parameters:
+  DynamoDBTableNameFor$$1:
+    Type: String
+    Default: "$$1"
+    Description: "The name of the DynamoDB table for $$1."
+Resources:
+  $$1:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DynamoDBTableNameFor$$1
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST

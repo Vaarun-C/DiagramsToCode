@@ -43,6 +43,25 @@ export default function Home() {
     }));
   };
 
+  const sendToCfnDiagService = (template: string) => {
+    const formData = new FormData();
+    formData.append('GeneratedTemplate', template);
+    return fetch('/api/cfnDiag', {
+      method: 'POST',
+      body: formData,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((result) => {
+        console.log('Response from second endpoint:', result);
+        return result;
+      });
+  };
+
   const handleUpload = async () => {
     
     if (Object.keys(uploadedFiles).length === 0)
@@ -71,15 +90,17 @@ export default function Home() {
           .map(([key, value]) => `${key}: ${value}`)
           .join("\n");
 
-          // console.log("SLEEP", formattedTemplate)
-
           setYamlCodes((prevYamlCodes) => ({
             ...prevYamlCodes,
             [uuid]: formattedTemplate,
           }));
 
-          console.log(`Upload successful for ${file.name}:`, JSON.stringify(data.message));
-          // Show or handle the result here, such as updating the UI
+          return formattedTemplate
+          // console.log(`Upload successful for ${file.name}:`, JSON.stringify(data.message));
+          // // Show or handle the result here, such as updating the UI
+        })
+        .then((template) => {
+          console.log(sendToCfnDiagService(template));
         })
         .catch((error) => {
           console.log(`Error uploading ${file.name}:`);
@@ -92,15 +113,34 @@ export default function Home() {
   return (
     <FileUploadWrapper onFilesUploaded={handleFilesUploaded}>
       <div className='flex h-screen'>
+        {/* Left side of screen */}
         <div className='w-1/2 p-4'>
-          <ParagraphComponent
-            uploadedFiles={uploadedFiles}
-            onFilesUploaded={handleFilesUploaded}
-            handleDeleteFile={handleDeleteFile}
-            handleUpload={handleUpload}
-            handleSelectedCard={handleSelectedCard}
-          />
+          {/* Image Input */}
+          <div className='h-1/2'>
+            <ParagraphComponent
+              uploadedFiles={uploadedFiles}
+              onFilesUploaded={handleFilesUploaded}
+              handleDeleteFile={handleDeleteFile}
+              handleUpload={handleUpload}
+              handleSelectedCard={handleSelectedCard}
+            />
+          </div>
+          {/* Cfn Graph Display */}
+          <div className='h-1/2 bg-white rounded-md border border-gray-300 overflow-hidden'>
+          {selectedUUID ? (
+            <iframe
+              title="Preview"
+              src={`/graph/index.html`}
+              className="w-full h-full"
+            />
+          ) : (
+            <div className="h-full flex items-center justify-center text-gray-500">
+              Select a file to preview
+            </div>
+          )}
+          </div>
         </div>
+        {/* Right side of Screen */}
         <div className='w-1/2 p-4'>
           <CodeEditor code={yamlCodes[selectedUUID] || ''} onCodeChange={onCodeChange}/>
         </div>
@@ -108,3 +148,36 @@ export default function Home() {
     </FileUploadWrapper>
   );
 }
+
+// return (
+//   <div className="h-screen grid grid-rows-1 grid-cols-2 gap-4 p-4">
+//     {/* Left Panel */}
+//     <div className="grid grid-rows-[2fr_1fr] gap-4">
+//       {/* Top: Input Section */}
+//       <div className="bg-slate-200 rounded-md p-4 overflow-auto">
+//         <Paragraph
+//           uploadedFiles={uploadedFiles}
+//           onFilesUploaded={handleFilesUploaded}
+//           handleDeleteFile={handleDeleteFile}
+//           handleUpload={() => {
+//             console.log('Handle Upload');
+//           }}
+//           handleSelectedCard={handleSelectedCard}
+//           selectedUUID={selectedUUID}
+//         />
+//       </div>
+
+//       {/* Bottom: Iframe Section */}
+      
+//     </div>
+
+//     {/* Right Panel: Code Editor */}
+//     <div className="bg-white rounded-md border border-gray-300 p-4">
+//       <CodeEditor
+//         code={yamlCodes[selectedUUID] || ''}
+//         onCodeChange={onCodeChange}
+//       />
+//     </div>
+//   </div>
+// );
+// }

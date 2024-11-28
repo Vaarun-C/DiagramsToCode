@@ -1,0 +1,26 @@
+Parameters:
+  TopicNameFor$$1:
+    Type: String
+    Default: "$$1Topic"
+    Description: "The name of the SNS topic for $$1."
+
+  DisplayNameFor$$1:
+    Type: String
+    Default: "$$1DisplayName"
+    Description: "The display name for the SNS topic for $$1."
+    
+Resources:
+  $$1:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Ref TopicNameFor$$1
+      DisplayName: !Ref DisplayNameFor$$1
+
+Outputs:
+  TopicArnFor$$1:
+    Description: "The ARN of the SNS topic for $$1."
+    Value: !Ref $$1
+
+  TopicNameOutputFor$$1:
+    Description: "The name of the SNS topic for $$1."
+    Value: !Ref TopicNameFor$$1

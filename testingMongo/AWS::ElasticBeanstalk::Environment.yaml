@@ -1,0 +1,31 @@
+Parameters:
+  EnvironmentNameFor$$1:
+    Type: String
+    Description: Name of the Elastic Beanstalk environment for $$1
+
+  SolutionStackNameFor$$1:
+    Type: String
+    Description: Solution stack name for $$1
+    Default: 64bit Amazon Linux 2 v3.5.4 running Python 3.8
+
+Resources:
+  $$1:
+    Type: AWS::ElasticBeanstalk::Environment
+    Properties:
+      ApplicationName: !Ref $$2
+      EnvironmentName: !Ref EnvironmentNameFor$$1
+      SolutionStackName: !Ref SolutionStackNameFor$$1
+      OptionSettings:
+        - Namespace: aws:autoscaling:launchconfiguration
+          OptionName: InstanceType
+          Value: t2.micro
+        - Namespace: aws:elasticbeanstalk:environment
+          OptionName: EnvironmentType
+          Value: LoadBalanced
+
+Outputs:
+  EnvironmentURLFor$$1:
+    Description: URL of the Elastic Beanstalk Environment for $$1
+    Value: !GetAtt $$1.EndpointURL
+Dependencies:
+["AWS::ElasticBeanstalk::Application"]

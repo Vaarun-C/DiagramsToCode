@@ -1,0 +1,26 @@
+Parameters:
+  ReplicationInstanceClassFor$$1:
+    Type: String
+    Default: 'dms.t3.micro'
+    Description: 'The compute and memory capacity of the replication instance for $$1'
+
+  AllocatedStorageFor$$1:
+    Type: Number
+    Default: 50
+    Description: 'The amount of storage (in gigabytes) to be initially allocated for the replication instance for $$1'
+
+Resources:
+  $$1:
+    Type: AWS::DMS::ReplicationInstance
+    Properties:
+      ReplicationInstanceClass: !Ref ReplicationInstanceClassFor$$1
+      AllocatedStorage: !Ref AllocatedStorageFor$$1
+      PubliclyAccessible: false
+      MultiAZ: false
+      ReplicationSubnetGroupIdentifier: !Ref $$2
+Outputs:
+  ReplicationInstanceArnFor$$1:
+    Description: 'ARN of the DMS Replication Instance for $$1'
+    Value: !Ref $$1
+Dependencies:
+["AWS::DMS::ReplicationSubnetGroup"]

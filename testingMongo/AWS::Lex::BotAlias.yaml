@@ -1,0 +1,21 @@
+Parameters:
+  BotAliasNameFor$$1:
+    Type: String
+    Default: "$$1"
+    Description: "The alias name for the Amazon Lex bot for $$1."
+
+Resources:
+  LexBotAliasFor$$1:
+    Type: AWS::Lex::BotAlias
+    Properties:
+      BotAliasName: !Ref BotAliasNameFor$$1
+      BotId: !Ref $$2
+      BotVersion: DRAFT
+
+Outputs:
+  LexBotAliasIdFor$$1:
+    Description: "The ID of the Lex Bot Alias for $$1."
+    Value: !Ref LexBotAliasFor$$1
+
+Dependencies:
+["AWS::Lex::Bot"]

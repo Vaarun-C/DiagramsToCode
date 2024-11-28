@@ -1,0 +1,26 @@
+Resources:
+  $$1:
+    Type: AWS::Organizations::Policy
+    Properties:
+      Content: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "DenyS3PublicAccess",
+              "Effect": "Deny",
+              "Action": [
+                "s3:PutBucketPublicAccessBlock",
+                "s3:PutAccountPublicAccessBlock"
+              ],
+              "Resource": "*",
+              "Condition": {
+                "StringEquals": {
+                  "s3:PublicAccessBlockConfiguration": "false"
+                }
+              }
+            }
+          ]
+        }
+      Name: DenyS3PublicAccess$$1
+      Type: SERVICE_CONTROL_POLICY

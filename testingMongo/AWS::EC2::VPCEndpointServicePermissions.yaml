@@ -1,0 +1,9 @@
+Resources:
+  VPCEndpointServicePermissions:
+    Type: AWS::EC2::VPCEndpointServicePermissions
+    Properties:
+      ServiceId: !Ref VPCEndpointService
+      AllowedPrincipals: 
+        - !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+Dependencies:
+["AWS::EC2::VPCEndpointService"]

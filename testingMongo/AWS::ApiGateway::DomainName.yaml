@@ -1,0 +1,15 @@
+Parameters:
+  DomainNameFor$$1:
+    Type: String
+    Description: The domain name to use for the API for $$1
+Resources:
+  $$1:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref DomainNameFor$$1
+      RegionalCertificateArn: !Ref $$2
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+Dependencies:
+["AWS::CertificateManager::Certificate"]

@@ -1,0 +1,20 @@
+Parameters:
+  EmailAddressFor$$1:
+    Type: String
+    Default: ""
+    Description: "The email address to subscribe to the topic for $$1. Leave blank if no email subscription is required."
+
+Resources:
+  $$1:
+    Type: "AWS::SNS::Subscription"
+    Condition: HasEmailSubscriptionFor$$1
+    Properties:
+      Protocol: "email"
+      Endpoint: !Ref EmailAddressFor$$1
+      TopicArn: !Ref $$2
+
+Conditions:
+  HasEmailSubscriptionFor$$1: !Not [!Equals [!Ref EmailAddressFor$$1, ""]]
+
+Dependencies:
+["AWS::SNS::Topic"]

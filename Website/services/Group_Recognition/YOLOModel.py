@@ -5,7 +5,7 @@ from ultralytics.engine.results import Results
 
 class yolomodel:
     def __init__(self) -> None:       
-        self.model = YOLO("3_categories_best.pt")
+        self.model = YOLO("/Users/varunchandrashekar/Downloads/best.pt")
         self.conf_thresh = 0.8
         self.CLS_NAME_TO_TYPE = {
             "Private-subnet_32": "Private_Subnet",
@@ -17,7 +17,7 @@ class yolomodel:
     def predict(self, architectureDiagram: Image) -> list[detection_object]:
         all_classes = list(range(3))
 
-        results = self.model.predict(architectureDiagram, save=False, classes=all_classes, conf=self.conf_thresh)
+        results = self.model.predict(architectureDiagram, save=True, classes=all_classes, conf=self.conf_thresh)
         detections = results[0].boxes
         detection_objects = []
         
@@ -32,3 +32,7 @@ class yolomodel:
 
             detection_objects.append(detection_object([x_max, y_max, x_min, y_min], class_type, float(det.conf)))
         return detection_objects
+if __name__ == "__main__":
+    y = yolomodel()
+    d = Image.open("/Users/varunchandrashekar/base/Projects/DiagramsToCode/test/test10.png")
+    y.predict(d)

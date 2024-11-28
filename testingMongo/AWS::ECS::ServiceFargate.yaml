@@ -1,0 +1,19 @@
+Resources:
+  $$1:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: $$1
+      Cluster: !Ref $$2
+      TaskDefinition: !Ref $$3
+      DesiredCount: 2
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref $$4
+Outputs:
+  ServiceNameFor$$1:
+    Description: ECS Service Name for $$1
+    Value: !Ref $$1
+Dependencies:
+["AWS::ECS::Cluster", "AWS::ECS::TaskDefinitionFargate", "AWS::EC2::Subnet"]

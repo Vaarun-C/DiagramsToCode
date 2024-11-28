@@ -1,38 +1,38 @@
 import cv2
 import numpy as np
 
-# def rgb():
-#     from random import randint
-#     h = randint(0,360)
-#     x =  (1 - abs((h / 60) % 2 - 1))  # Second largest component
-#     if 0 <= h < 60:
-#         r_, g_, b_ = 1, x, 0
-#     elif 60 <= h < 120:
-#         r_, g_, b_ = x, 1, 0
-#     elif 120 <= h < 180:
-#         r_, g_, b_ = 0, 1, x
-#     elif 180 <= h < 240:
-#         r_, g_, b_ = 0, x, 1
-#     elif 240 <= h < 300:
-#         r_, g_, b_ = x, 0, 1
-#     else:
-#         r_, g_, b_ = 1, 0, x
-#     r = round((r_) * 255)
-#     g = round((g_) * 255)
-#     b = round((b_) * 255)
-#     return (r, g, b)
+def rgb():
+    from random import randint
+    h = randint(0,360)
+    x =  (1 - abs((h / 60) % 2 - 1))  # Second largest component
+    if 0 <= h < 60:
+        r_, g_, b_ = 1, x, 0
+    elif 60 <= h < 120:
+        r_, g_, b_ = x, 1, 0
+    elif 120 <= h < 180:
+        r_, g_, b_ = 0, 1, x
+    elif 180 <= h < 240:
+        r_, g_, b_ = 0, x, 1
+    elif 240 <= h < 300:
+        r_, g_, b_ = x, 0, 1
+    else:
+        r_, g_, b_ = 1, 0, x
+    r = round((r_) * 255)
+    g = round((g_) * 255)
+    b = round((b_) * 255)
+    return (r, g, b)
 
-# def drawRects(image, rectangle_outlines):
-#     # Draw detected rectangle outlines
-#     output_image = cv2.cvtColor(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2BGR)
-#     for i, (x, y, w, h) in enumerate(rectangle_outlines):
-#         cv2.rectangle(output_image, (x, y), (x + w, y + h), rgb(), 2)
-#         cv2.imshow("Detected Rectangle Outlines", output_image)
-#         # print(i)
-#         # cv2.waitKey(0)
-#     cv2.imshow("Detected Rectangle Outlines", output_image)
-#     print(rectangle_outlines)
-#     cv2.waitKey(0)
+def drawRects(image, rectangle_outlines):
+    # Draw detected rectangle outlines
+    output_image = cv2.cvtColor(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2BGR)
+    for i, (x, y, w, h) in enumerate(rectangle_outlines):
+        cv2.rectangle(output_image, (x, y), (x + w, y + h), rgb(), 2)
+        cv2.imshow("Detected Rectangle Outlines", output_image)
+        # print(i)
+        # cv2.waitKey(0)
+    cv2.imshow("Detected Rectangle Outlines", output_image)
+    print(rectangle_outlines)
+    cv2.waitKey(0)
 
 def detectRectangles(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -72,7 +72,7 @@ def detectRectangles(image):
         if w>50 and h>50:
             rectangle_outlines_solid.append((x, y, w, h))
 
-    # drawRects(image, rectangle_outlines_solid)
+    drawRects(image, rectangle_outlines_solid)
 
 
 
@@ -110,7 +110,7 @@ def detectRectangles(image):
         if w>50 and h>50:
             rectangle_outlines_dashed.append((x, y, w, h))
 
-    # drawRects(image, rectangle_outlines_dashed)
+    drawRects(image, rectangle_outlines_dashed)
 
     return rectangle_outlines_solid + rectangle_outlines_dashed
 
@@ -118,5 +118,5 @@ def detectRectangles(image):
 
 
 #? how to run
-# image = cv2.imread('test1.png', cv2.IMREAD_COLOR)
+# image = cv2.imread('groups/test1.png', cv2.IMREAD_COLOR)
 # detectRectangles(image)

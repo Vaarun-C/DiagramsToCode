@@ -1,0 +1,44 @@
+Parameters:
+  WorkspaceNameFor$$1:
+    Type: String
+    Default: '$$1'
+    Description: 'Name of the Grafana Workspace for $$1'
+
+  AccountAccessTypeFor$$1:
+    Type: String
+    Default: CURRENT_ACCOUNT
+    AllowedValues:
+      - CURRENT_ACCOUNT
+      - ORGANIZATION
+    Description: 'Account access type for the Grafana Workspace for $$1'
+
+  AuthenticationProvidersFor$$1:
+    Type: CommaDelimitedList
+    Default: AWS_SSO
+    Description: 'Authentication providers for Grafana Workspace for $$1'
+
+Resources:
+  $$1:
+    Type: AWS::Grafana::Workspace
+    Properties:
+      AccountAccessType: !Ref AccountAccessTypeFor$$1
+      AuthenticationProviders: !Ref AuthenticationProvidersFor$$1
+      DataSources: 
+        - CLOUDWATCH
+      Description: $$1
+      Name: !Ref WorkspaceNameFor$$1
+      PermissionType: SERVICE_MANAGED
+      PluginAdminEnabled: false
+      NotificationDestinations:
+        - !Ref $$2
+
+Outputs:
+  WorkspaceId:
+    Description: 'ID of the Grafana Workspace for $$1'
+    Value: !Ref $$1
+
+  WorkspaceUrl:
+    Description: 'URL of the Grafana Workspace for $$1'
+    Value: !GetAtt $$1.Endpoint
+Dependencies:
+["AWS::SNS::Topic"]

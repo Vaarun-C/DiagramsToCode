@@ -1,0 +1,48 @@
+Parameters:
+  InstanceTypeFor$$1:
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t3.micro
+      - t3.small
+      - t3.medium
+    Description: EC2 instance type for $$1.
+    
+  AMIIdFor$$1:
+    Type: AWS::EC2::Image::Id
+    Default: ami-0c02fb55956c7d316
+    Description: AMI ID for the EC2 instance for $$1.
+    
+  KeyPairNameFor$$1:
+    Type: String
+    Description: Name of an existing EC2 KeyPair for SSH access for $$1.
+
+Resources:
+  $$1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceTypeFor$$1
+      ImageId: !Ref AMIIdFor$$1
+      KeyName: !Ref KeyPairNameFor$$1
+      SubnetId: !Ref $$2
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          echo "Hello, World!" > /var/www/html/index.html
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+Outputs:
+  InstancePublicIpFor$$1:
+    Description: Public IP address of the EC2 instance for $$1
+    Value: !GetAtt $$1.PublicIp
+
+  InstanceIdFor$$1:
+    Description: ID of the EC2 instance for $$1
+    Value: !Ref $$1
+Dependencies:
+["AWS::EC2::Subnet"]

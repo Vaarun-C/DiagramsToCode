@@ -1,0 +1,29 @@
+Resources:
+  $$1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: kendra.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "KendraDataSourceAccessPolicyFor$$1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                Resource:
+                  - !Sub "arn:aws:s3:::${$$2}"
+                  - !Sub "arn:aws:s3:::${$$2}/*"
+Outputs:
+  KendraExecutionRoleArnFor$$1:
+    Description: "The ARN of the IAM role used by Kendra."
+    Value: !GetAtt $$1.Arn
+Dependencies:
+["AWS::S3::Bucket"]

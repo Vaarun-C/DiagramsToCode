@@ -1,0 +1,25 @@
+Parameters:
+  TargetIp1For$$1:
+    Type: String
+    Default: 10.0.0.1
+    Description: First target IP address for the VPC Lattice Target Group for $$1
+
+  TargetIp2For$$1:
+    Type: String
+    Default: 10.0.0.2
+    Description: Second target IP address for the VPC Lattice Target Group for $$1
+Resources:
+  $$1:
+    Type: AWS::VpcLattice::TargetGroup
+    Properties:
+      Name: !Sub "${LatticeServiceNameFor$$2}-tg"
+      Type: IP
+      Targets:
+        - Id: !Ref TargetIp1For$$1
+        - Id: !Ref TargetIp2For$$1
+Dependencies:
+["AWS::VpcLattice::Service"]
+Outputs:
+  LatticeTargetGroupIdFor$$1:
+    Description: ID of the VPC Lattice Target Group for $$1
+    Value: !Ref $$1

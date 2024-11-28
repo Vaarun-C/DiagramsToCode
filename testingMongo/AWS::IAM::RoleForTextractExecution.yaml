@@ -1,0 +1,27 @@
+Resources:
+  $$1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - textract.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: TextractPermissionsFor$$1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - textract:AnalyzeDocument
+                  - textract:DetectDocumentText
+                Resource: "*"
+Outputs:
+  TextractRoleArnFor$$1:
+    Description: IAM Role ARN for Textract permissions for $$1.
+    Value: !GetAtt $$1.Arn
