@@ -11,6 +11,8 @@ class yolomodel:
             # Analytics
             "Arch_Amazon-EMR_64": "AWS::EMR::Cluster",
             "Arch_Amazon-Kinesis_64": "AWS::Kinesis::Stream",
+            "Arch_Amazon-Kinesis-Data-Streams_64": "AWS::Kinesis::Stream",
+            "Arch_Amazon-Kinesis-Video-Streams_64": "AWS::Kinesis::Stream",
             "Arch_Amazon-Managed-Streaming-for-Apache-Kafka_64": "AWS::MSK::Cluster",
             "Arch_Amazon-OpenSearch-Service_64": "AWS::OpenSearchService::Domain",
             "Arch_Amazon-Redshift_64": "AWS::Redshift::Cluster",
@@ -29,12 +31,18 @@ class yolomodel:
             "Arch_Amazon-Kendra_64": "AWS::Kendra::Index",
             "Arch_Amazon-Lex_64": "AWS::Lex::Bot",
             "Arch_Amazon-SageMaker_64": "AWS::SageMaker::NotebookInstance",
+            "Arch_Amazon-SageMaker-Studio-Lab_64": "AWS::SageMaker::NotebookInstance",
+            "Arch_Amazon-Bedrock_64": "AWS::IAM::RoleForBedrock",
+            "Arch_Amazon-Comprehend_64": "AWS::IAM::RoleForComprehend",
+            "Arch_Amazon-Transcribe_64": "AWS::IAM::RoleForTranscribeExecution",
+            "Arch_Amazon-Polly_64": "AWS::IAM::RoleForPollyExecution",
             
             # Compute
             "Arch_Amazon-EC2_64": "AWS::EC2::Instance",
             "Arch_AWS-Batch_64": "AWS::Batch::ComputeEnvironment",
             "Arch_AWS-Elastic-Beanstalk_64": "AWS::ElasticBeanstalk::Application",
             "Arch_AWS-Lambda_64": "AWS::Lambda::Function",
+            "Arch_Elastic-Load-Balancing_64": "AWS::ElasticLoadBalancingV2::TargetGroup",
 
             #Containers
             "Arch_Amazon-Elastic-Container-Service_64": "AWS::ECS::Cluster",
@@ -64,7 +72,10 @@ class yolomodel:
             "Arch_AWS-PrivateLink_64": "AWS::EC2::VPCEndpointService",
 
             # Storage
-            "Arch_Amazon-Simple-Storage-Service_64": "AWS::S3::Bucket"
+            "Arch_Amazon-Simple-Storage-Service_64": "AWS::S3::Bucket",
+
+            # Security
+            "Arch_AWS-Key-Management-Service_64": "AWS::KMS::Key"
         }
         self.model_names = self.model.names
 
