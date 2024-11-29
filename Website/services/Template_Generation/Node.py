@@ -14,7 +14,7 @@ class Node:
     def setData(self, data):
         node_name = self.replaceMap[self.type_name]
         for key in self.unit_template:
-            if key in ('Type', '_id', 'Dependencies'):
+            if key in ('Type', '_id', 'Dependencies', 'Disclaimers'):
                 continue
             value:str = self.unit_template[key]
             value = value.replace('$$1', node_name)

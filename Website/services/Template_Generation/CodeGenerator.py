@@ -13,10 +13,30 @@ class template_generator:
             'AWS::EC2::VPCGatewayAttachment',
             'AWS::EC2::RouteTable',
             'AWS::EC2::Route',
-            'AWS::IAM::RoleForLambda',
             'AWS::DynamoDB::Table',
             'AWS::ECS::Cluster',
-            'AWS::ApiGateway::RestApi'
+            'AWS::ApiGateway::RestApi',
+            'AWS::IAM::RoleForLambda',
+            'AWS::IAM::RoleForEMRService',
+            'AWS::IAM::RoleForEMRInstance',
+            'AWS::IAM::RoleForGlueService',
+            'AWS::IAM::RoleForMWAA',
+            'AWS::IAM::RoleForAppSyncService',
+            'AWS::IAM::RoleForStepFunctionExecution',
+            'AWS::IAM::RoleForBedrock',
+            'AWS::IAM::RoleForComprehend',
+            'AWS::IAM::RoleForKendraExecution',
+            'AWS::IAM::RoleForLexExecution',
+            'AWS::IAM::RoleForPollyExecution',
+            'AWS::IAM::RoleForSageMakerExecution',
+            'AWS::IAM::RoleForTextractExecution',
+            'AWS::IAM::RoleForTranscribeExecution',
+            'AWS::IAM::RoleForBatchService',
+            'AWS::IAM::RoleForBatchInstance',
+            'AWS::IAM::RoleForEKSCluster',
+            'AWS::IAM::RoleForEKSNodeGroup',
+            'AWS::IAM::RoleForPrometheusWrite',
+            'AWS::IAM::RoleForPrometheusQuery'
         }
         self.URI = "mongodb+srv://CapTheStone:VarunVikas@viewme.vzrbu.mongodb.net/?retryWrites=true&w=majority&appName=viewme&tlsAllowInvalidCertificates=true"
 
