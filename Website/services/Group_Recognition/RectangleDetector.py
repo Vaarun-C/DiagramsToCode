@@ -72,7 +72,7 @@ def detectRectangles(image):
         if w>50 and h>50:
             rectangle_outlines_solid.append((x, y, w, h))
 
-    drawRects(image, rectangle_outlines_solid)
+    # drawRects(image, rectangle_outlines_solid)
 
 
 
@@ -110,7 +110,7 @@ def detectRectangles(image):
         if w>50 and h>50:
             rectangle_outlines_dashed.append((x, y, w, h))
 
-    drawRects(image, rectangle_outlines_dashed)
+    # drawRects(image, rectangle_outlines_dashed)
 
     return rectangle_outlines_solid + rectangle_outlines_dashed
 

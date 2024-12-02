@@ -51,6 +51,71 @@ export default function Home() {
 
   const handleSelectedCard = (newSelectedUUID: string) => {
     setSelectedUUID(newSelectedUUID);
+
+    const formData = new FormData();
+    formData.append('uuid', newSelectedUUID);
+
+    fetch('/api/resultService', {
+      method: 'POST',
+      body: formData, // Attach FormData (multipart/form-data)
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch results for ${newSelectedUUID}: ${response.statusText}`
+          );
+        }
+
+        const data = await response.json();
+        console.log(data)
+        const parsedJSON = JSON.parse(data);
+        const template = parsedJSON?.template;
+        const uuid = parsedJSON?.uuid;
+      
+        // const template = data.template;
+
+        const formattedTemplate = Object.entries(template)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join('\n');
+
+        setYamlCodes((prevYamlCodes) => ({
+          ...prevYamlCodes,
+          [uuid]: formattedTemplate,
+        }));
+
+        const graphData = await sendToCfnDiagService(
+          formattedTemplate,
+          uuid
+        );
+        // console.log(graphData);
+
+        setOutputPath((prevOutputPath) => ({
+          ...prevOutputPath,
+          [uuid]: graphData.outputPath,
+        }));
+
+        // setHtmlCodes((prevHtmlCodes) => ({
+        //   ...prevHtmlCodes,
+        //   [uuid]: graphData.htmlContent,
+        // }));
+
+        // setDatajsCodes((prevDatajsCodes) => ({
+        //   ...prevDatajsCodes,
+        //   [uuid]: graphData.dataContent,
+        // }));
+
+        // setIconsjsCodes((prevIconsjsCodes) => ({
+        //   ...prevIconsjsCodes,
+        //   [uuid]: graphData.iconContent,
+        // }));
+
+        // return formattedTemplate;
+        // console.log(`Upload successful for ${file.name}:`, JSON.stringify(data.message));
+        // // Show or handle the result here, such as updating the UI
+      })
+      .catch((error) => {
+        console.log(`Error getting result ${newSelectedUUID}:`);
+      });
   };
 
   const onCodeChange = (newCode: string) => {
@@ -102,29 +167,31 @@ export default function Home() {
                 `Failed to upload ${file.name}: ${response.statusText}`
               );
             }
-            const data = await response.json();
-            const uuid = data.responses[0].uuid;
-            const template = data.responses[0].template;
 
-            const formattedTemplate = Object.entries(template)
-              .map(([key, value]) => `${key}: ${value}`)
-              .join('\n');
+            return await response.json()
+            // const data = await response.json();
+            // const uuid = data.uuid;
+            // const template = data.template;
 
-            setYamlCodes((prevYamlCodes) => ({
-              ...prevYamlCodes,
-              [uuid]: formattedTemplate,
-            }));
+            // const formattedTemplate = Object.entries(template)
+            //   .map(([key, value]) => `${key}: ${value}`)
+            //   .join('\n');
 
-            const graphData = await sendToCfnDiagService(
-              formattedTemplate,
-              uuid
-            );
-            console.log(graphData);
+            // setYamlCodes((prevYamlCodes) => ({
+            //   ...prevYamlCodes,
+            //   [uuid]: formattedTemplate,
+            // }));
 
-            setOutputPath((prevOutputPath) => ({
-              ...prevOutputPath,
-              [uuid]: graphData.outputPath,
-            }));
+            // const graphData = await sendToCfnDiagService(
+            //   formattedTemplate,
+            //   uuid
+            // );
+            // console.log(graphData);
+
+            // setOutputPath((prevOutputPath) => ({
+            //   ...prevOutputPath,
+            //   [uuid]: graphData.outputPath,
+            // }));
 
             // setHtmlCodes((prevHtmlCodes) => ({
             //   ...prevHtmlCodes,
@@ -169,7 +236,7 @@ export default function Home() {
           </div>
           {/* Cfn Graph Display */}
           <div className='h-1/2 bg-white rounded-md border border-gray-300 overflow-hidden'>
-            {selectedUUID ? (
+            {outputPath[selectedUUID] ? (
               <GraphFrame
                 // html={htmlCodes[selectedUUID]}
                 // js_data={datajsCodes[selectedUUID]}

@@ -18,10 +18,6 @@ class Graph:
         to_node.dependency_edges.append(from_node.id)
         self.in_degree[from_node.id] += 1
 
-    def edge_exists(self, from_node:Node, to_node:Node):
-        """Checks if an edge exists"""
-        return from_node.id in to_node.dependency_edges
-
     def topological_sort_out_degree(self):
         zero_in_degree_queue = deque([node for node in self.nodes.values() if self.in_degree[node.id] == 0])
         sorted_order = []

@@ -50,8 +50,8 @@ class template_generator:
             print("CONNECTION ERROR!!")
             quit()
 
-        self.db = self.client['Templates']
-        self.icons_collection = self.db['Templates[PROD]_cleaned']
+        db = self.client['Templates']
+        self.icons_collection = db['Templates[PROD]_cleaned']
 
     def fetch_document_from_mongo(self, type_name: str):
         document = self.icons_collection.find_one({"Type": type_name})

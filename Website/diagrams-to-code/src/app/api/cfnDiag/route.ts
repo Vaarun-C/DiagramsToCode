@@ -22,8 +22,9 @@ export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const yamlCode = formData.get('GeneratedTemplate') as string;
   const uuid = formData.get('UUID') as string;
-  const filePath = path.join(process.cwd(), 'cfndiag', 'output.yaml');
-  const outputPath = path.join(process.cwd(), 'cfndiag', 'graph', uuid);
+  const filePath = path.join(process.cwd(), 'public', 'output.yaml');
+  const outputPath = path.join(process.cwd(), 'public', 'graph', uuid);
+  const outputPathConcat = path.join('graph', uuid);
 
   // const indexPath = path.join(outputPath, 'index.html');
   // const dataJsPath = path.join(outputPath, 'data.js');
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
               // dataContent: dataContent,
               // iconContent: iconContent,
               uuid: uuid,
-              outputPath: outputPath,
+              outputPath: outputPathConcat,
             },
             result[1]
           );
