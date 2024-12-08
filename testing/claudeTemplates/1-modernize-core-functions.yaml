@@ -1,0 +1,245 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template based on recognized AWS resources
+
+Parameters:
+  RedshiftMasterPassword:
+    Type: String
+    NoEcho: true
+    MinLength: 8
+    Description: Master password for Redshift clusters
+    
+  RDSMasterPassword:
+    Type: String
+    NoEcho: true
+    MinLength: 8
+    Description: Master password for RDS instance
+    
+  QuickSightAwsAccountId:
+    Type: String
+    Description: AWS Account ID for QuickSight
+
+Resources:
+  MyIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - lambda.amazonaws.com
+                - glue.amazonaws.com
+                - sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      
+  LandingBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-landing-bucket"
+      
+  CurationBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-curation-bucket"
+      
+  AtomicBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-atomic-bucket"
+      
+  ConsumptionBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-consumption-bucket"
+      
+  DataSyncLocationSource:
+    Type: AWS::DataSync::LocationS3
+    Properties:
+      S3BucketArn: !GetAtt LandingBucket.Arn
+      S3Config:
+        BucketAccessRoleArn: !GetAtt MyIAMRole.Arn
+        
+  DataSyncLocationDestination:
+    Type: AWS::DataSync::LocationS3
+    Properties:
+      S3BucketArn: !GetAtt CurationBucket.Arn
+      S3Config:
+        BucketAccessRoleArn: !GetAtt MyIAMRole.Arn
+        
+  MyDataSyncTask:
+    Type: AWS::DataSync::Task
+    Properties:
+      SourceLocationArn: !Ref DataSyncLocationSource
+      DestinationLocationArn: !Ref DataSyncLocationDestination
+      
+  MyDMSReplicationInstance:
+    Type: AWS::DMS::ReplicationInstance
+    Properties:
+      ReplicationInstanceClass: dms.t3.micro
+      AllocatedStorage: 50
+      PubliclyAccessible: false
+      
+  MyLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs14.x
+      Role: !GetAtt MyIAMRole.Arn
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            return { statusCode: 200, body: "Hello from Lambda" };
+          }
+          
+  MyGlueDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: !Sub "${AWS::StackName}_database"
+        
+  MyGlueCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Role: !GetAtt MyIAMRole.Arn
+      DatabaseName: !Ref MyGlueDatabase
+      Targets:
+        S3Targets:
+          - Path: !Sub "s3://${LandingBucket}"
+          
+  MyLakeFormationDataLakeSettings:
+    Type: AWS::LakeFormation::DataLakeSettings
+    Properties:
+      Admins:
+        - DataLakePrincipalIdentifier: !GetAtt MyIAMRole.Arn
+        
+  RedshiftClusterCuration:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterType: single-node
+      DBName: curationdb
+      MasterUsername: admin
+      MasterUserPassword: !Ref RedshiftMasterPassword
+      NodeType: dc2.large
+      PubliclyAccessible: false
+      
+  RedshiftClusterAtomic:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterType: single-node
+      DBName: atomicdb
+      MasterUsername: admin
+      MasterUserPassword: !Ref RedshiftMasterPassword
+      NodeType: dc2.large
+      PubliclyAccessible: false
+      
+  MyRDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: myrdsdb
+      Engine: mysql
+      MasterUsername: admin
+      MasterUserPassword: !Ref RDSMasterPassword
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      PubliclyAccessible: false
+      
+  MyHealthLakeDatastore:
+    Type: AWS::HealthLake::FHIRDatastore
+    Properties:
+      DatastoreName: !Sub "${AWS::StackName}-fhir-datastore"
+      DatastoreTypeVersion: R4
+      
+  MyQuickSightDataSet:
+    Type: AWS::QuickSight::DataSet
+    Properties:
+      AwsAccountId: !Ref QuickSightAwsAccountId
+      Name: !Sub "${AWS::StackName}-dataset"
+      ImportMode: SPICE
+      PhysicalTableMap: {}
+      LogicalTableMap: {}
+      
+  MyAthenaNamedQuery:
+    Type: AWS::Athena::NamedQuery
+    Properties:
+      Database: !Ref MyGlueDatabase
+      QueryString: "SELECT * FROM my_table;"
+      Name: !Sub "${AWS::StackName}-query"
+      
+  MySageMakerNotebookInstance:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      InstanceType: ml.t2.medium
+      RoleArn: !GetAtt MyIAMRole.Arn
+      NotebookInstanceName: !Sub "${AWS::StackName}-notebook"
+      
+  CloudTrailLogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-cloudtrail-logs"
+      
+  MyCloudTrail:
+    Type: AWS::CloudTrail::Trail
+    DependsOn: CloudTrailLogsBucketPolicy
+    Properties:
+      TrailName: !Sub "${AWS::StackName}-trail"
+      S3BucketName: !Ref CloudTrailLogsBucket
+      IsLogging: true
+      
+  CloudTrailLogsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref CloudTrailLogsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AWSCloudTrailAclCheck
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: s3:GetBucketAcl
+            Resource: !GetAtt CloudTrailLogsBucket.Arn
+          - Sid: AWSCloudTrailWrite
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: s3:PutObject
+            Resource: !Sub "${CloudTrailLogsBucket.Arn}/*"
+            
+  MyCloudWatchAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-cpu-alarm"
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: 1
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Period: 300
+      Statistic: Average
+      Threshold: 80.0
+
+Outputs:
+  IAMRoleArn:
+    Value: !GetAtt MyIAMRole.Arn
+  LandingBucketName:
+    Value: !Ref LandingBucket
+  CurationBucketName:
+    Value: !Ref CurationBucket
+  AtomicBucketName:
+    Value: !Ref AtomicBucket
+  ConsumptionBucketName:
+    Value: !Ref ConsumptionBucket
+  RedshiftClusterCurationEndpoint:
+    Value: !GetAtt RedshiftClusterCuration.Endpoint.Address
+  RedshiftClusterAtomicEndpoint:
+    Value: !GetAtt RedshiftClusterAtomic.Endpoint.Address
+  RDSEndpoint:
+    Value: !GetAtt MyRDSInstance.Endpoint.Address
+  CloudTrailArn:
+    Value: !GetAtt MyCloudTrail.Arn
+  NotebookInstanceUrl:
+    Value: !GetAtt MySageMakerNotebookInstance.NotebookInstanceUrl

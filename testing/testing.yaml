@@ -1,0 +1,271 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Healthcare Data Platform Infrastructure'
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: 'dev'
+    Description: Environment name for resource naming
+  
+  S3BucketPrefix:
+    Type: String
+    Default: 'healthcare-data'
+    Description: Prefix for S3 bucket names
+
+Resources:
+  # S3 Buckets
+  LandingBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${S3BucketPrefix}-landing-${EnvironmentName}'
+      VersioningConfiguration:
+        Status: Enabled
+      
+  CurationBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${S3BucketPrefix}-curation-${EnvironmentName}'
+      VersioningConfiguration:
+        Status: Enabled
+
+  AtomicBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${S3BucketPrefix}-atomic-${EnvironmentName}'
+      VersioningConfiguration:
+        Status: Enabled
+
+  # IAM Roles
+  GlueServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: glue.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+        
+  LambdaServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  SageMakerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+
+  # Redshift Clusters (Adding second cluster as shown in diagram)
+  CurationRedshiftCluster:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterIdentifier: !Sub 'healthcare-curation-${EnvironmentName}'
+      NodeType: ra3.xlplus
+      NumberOfNodes: 2
+      MasterUsername: admin
+      MasterUserPassword: !Sub '{{resolve:secretsmanager:${CurationRedshiftSecret}:SecretString:password}}'
+      DBName: 'curation_db'
+      PubliclyAccessible: false
+
+  AtomicRedshiftCluster:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterIdentifier: !Sub 'healthcare-atomic-${EnvironmentName}'
+      NodeType: ra3.xlplus
+      NumberOfNodes: 2
+      MasterUsername: admin
+      MasterUserPassword: !Sub '{{resolve:secretsmanager:${AtomicRedshiftSecret}:SecretString:password}}'
+      DBName: 'atomic_db'
+      PubliclyAccessible: false
+
+  CurationRedshiftSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '/redshift/${EnvironmentName}/curation-credentials'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "admin"}'
+        GenerateStringKey: 'password'
+        PasswordLength: 16
+        ExcludeCharacters: '"@/\'
+
+  AtomicRedshiftSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '/redshift/${EnvironmentName}/atomic-credentials'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "admin"}'
+        GenerateStringKey: 'password'
+        PasswordLength: 16
+        ExcludeCharacters: '"@/\'
+
+  # SageMaker Notebook Instance
+  SageMakerNotebook:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: !Sub 'healthcare-notebook-${EnvironmentName}'
+      InstanceType: 'ml.t3.medium'
+      RoleArn: !GetAtt SageMakerRole.Arn
+      VolumeSizeInGB: 100
+
+  # CloudWatch Resources
+  CloudWatchDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub 'healthcare-dashboard-${EnvironmentName}'
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ "AWS/Redshift", "DatabaseConnections", "ClusterIdentifier", "${CurationRedshiftCluster}" ],
+                  [ "AWS/Redshift", "DatabaseConnections", "ClusterIdentifier", "${AtomicRedshiftCluster}" ]
+                ],
+                "period": 300,
+                "stat": "Average",
+                "region": "${AWS::Region}",
+                "title": "Redshift Connections"
+              }
+            },
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ "AWS/Lambda", "Invocations", "FunctionName", "${DataProcessingFunction}" ],
+                  [ "AWS/Lambda", "Errors", "FunctionName", "${DataProcessingFunction}" ]
+                ],
+                "period": 300,
+                "stat": "Sum",
+                "region": "${AWS::Region}",
+                "title": "Lambda Metrics"
+              }
+            }
+          ]
+        }
+
+  # CloudWatch Alarms
+  RedshiftCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${EnvironmentName}-redshift-cpu-utilization'
+      MetricName: CPUUtilization
+      Namespace: AWS/Redshift
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 80
+      AlarmActions: 
+        - !Ref SNSAlertTopic
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: ClusterIdentifier
+          Value: !Ref CurationRedshiftCluster
+
+  SNSAlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${EnvironmentName}-monitoring-alerts'
+
+  # Rest of the previous resources remain the same...
+  GlueDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: !Sub 'healthcare_${EnvironmentName}'
+        Description: 'Healthcare data catalog database'
+
+  GlueCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: !Sub 'healthcare-crawler-${EnvironmentName}'
+      Role: !GetAtt GlueServiceRole.Arn
+      DatabaseName: !Ref GlueDatabase
+      Targets:
+        S3Targets:
+          - Path: !Sub 's3://${LandingBucket}'
+
+  DataProcessingFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'healthcare-processor-${EnvironmentName}'
+      Runtime: python3.9
+      Handler: index.handler
+      Role: !GetAtt LambdaServiceRole.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+              # Add your data processing logic here
+              return {
+                  'statusCode': 200,
+                  'body': 'Data processing complete'
+              }
+
+  LakeFormationResource:
+    Type: AWS::LakeFormation::Resource
+    Properties:
+      ResourceArn: !GetAtt LandingBucket.Arn
+      UseServiceLinkedRole: true
+
+  CloudTrail:
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      IsLogging: true
+      TrailName: !Sub 'healthcare-audit-${EnvironmentName}'
+      S3BucketName: !Ref AuditLogBucket
+
+  AuditLogBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${S3BucketPrefix}-audit-${EnvironmentName}'
+
+  AthenaWorkGroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: !Sub 'healthcare-analysis-${EnvironmentName}'
+      State: ENABLED
+      WorkGroupConfiguration:
+        ResultConfiguration:
+          OutputLocation: !Sub 's3://${AtomicBucket}/athena-results/'
+
+Outputs:
+  LandingBucketName:
+    Description: 'Landing zone S3 bucket'
+    Value: !Ref LandingBucket
+
+  CurationRedshiftEndpoint:
+    Description: 'Curation Redshift cluster endpoint'
+    Value: !GetAtt CurationRedshiftCluster.Endpoint.Address
+
+  AtomicRedshiftEndpoint:
+    Description: 'Atomic Redshift cluster endpoint'
+    Value: !GetAtt AtomicRedshiftCluster.Endpoint.Address
+
+  SageMakerNotebookUrl:
+    Description: 'SageMaker Notebook URL'
+    Value: !Sub 'https://console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/${SageMakerNotebook}'
+
+  CloudWatchDashboardUrl:
+    Description: 'CloudWatch Dashboard URL'
+    Value: !Sub 'https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${CloudWatchDashboard}'

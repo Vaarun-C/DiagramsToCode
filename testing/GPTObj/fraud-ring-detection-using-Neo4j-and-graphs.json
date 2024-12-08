@@ -1,0 +1,133 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for the provided architecture.",
+    "Resources": {
+        "GlueJob": {
+            "Type": "AWS::Glue::Job",
+            "Properties": {
+                "Name": "GlueJob",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "GlueJobRole",
+                        "Arn"
+                    ]
+                },
+                "Command": {
+                    "Name": "glueetl",
+                    "ScriptLocation": "s3://path-to-your-script"
+                }
+            }
+        },
+        "EMRCluster": {
+            "Type": "AWS::EMR::Cluster",
+            "Properties": {
+                "Name": "EMRCluster",
+                "ReleaseLabel": "emr-6.4.0",
+                "Applications": [
+                    {
+                        "Name": "Spark"
+                    }
+                ],
+                "Instances": {
+                    "InstanceGroups": [
+                        {
+                            "InstanceRole": "MASTER",
+                            "InstanceType": "m5.xlarge",
+                            "InstanceCount": 1
+                        },
+                        {
+                            "InstanceRole": "CORE",
+                            "InstanceType": "m5.xlarge",
+                            "InstanceCount": 2
+                        }
+                    ]
+                },
+                "ServiceRole": {
+                    "Fn::GetAtt": [
+                        "EMRServiceRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "GraphDataBucket"
+            }
+        },
+        "KinesisStream": {
+            "Type": "AWS::Kinesis::Stream",
+            "Properties": {
+                "Name": "KinesisStream",
+                "ShardCount": 1
+            }
+        },
+        "MSKCluster": {
+            "Type": "AWS::MSK::Cluster",
+            "Properties": {
+                "ClusterName": "MSKCluster",
+                "KafkaVersion": "2.8.1",
+                "NumberOfBrokerNodes": 3,
+                "BrokerNodeGroupInfo": {
+                    "InstanceType": "kafka.m5.large",
+                    "ClientSubnets": [
+                        "subnet-1",
+                        "subnet-2"
+                    ],
+                    "SecurityGroups": [
+                        "sg-12345678"
+                    ]
+                }
+            }
+        },
+        "SageMakerStudio": {
+            "Type": "AWS::SageMaker::Domain",
+            "Properties": {
+                "DomainName": "SageMakerStudioDomain",
+                "AuthMode": "IAM",
+                "DefaultUserSettings": {
+                    "ExecutionRole": {
+                        "Fn::GetAtt": [
+                            "SageMakerExecutionRole",
+                            "Arn"
+                        ]
+                    }
+                }
+            }
+        },
+        "SageMakerModel": {
+            "Type": "AWS::SageMaker::Model",
+            "Properties": {
+                "ModelName": "FraudDetectionModel",
+                "ExecutionRoleArn": {
+                    "Fn::GetAtt": [
+                        "SageMakerExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "PrimaryContainer": {
+                    "Image": "123456789012.dkr.ecr.us-west-2.amazonaws.com/fraud-detection-image",
+                    "ModelDataUrl": "s3://path-to-model-data"
+                }
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "FraudDetectionFunction",
+                "Runtime": "python3.9",
+                "Handler": "lambda_function.lambda_handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "def lambda_handler(event, context):\n    return {'statusCode': 200, 'body': 'Hello World'}"
+                }
+            }
+        }
+    }
+}

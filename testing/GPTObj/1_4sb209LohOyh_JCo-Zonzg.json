@@ -1,0 +1,90 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Sample template with recognized resources from image1",
+    "Resources": {
+        "GenericClientCustomResource": {
+            "Type": "Custom::GenericClient",
+            "Properties": {
+                "ServiceName": "Generic Client",
+                "ServiceType": "ExternalClient"
+            }
+        },
+        "GitHubRepositoryCustomResource": {
+            "Type": "Custom::GitHubRepository",
+            "Properties": {
+                "RepositoryName": "example-repo",
+                "ServiceType": "ThirdParty"
+            }
+        },
+        "ReactFrameworkCustomResource": {
+            "Type": "Custom::ReactFramework",
+            "Properties": {
+                "FrameworkName": "React",
+                "Version": "latest"
+            }
+        },
+        "MyHostedZone": {
+            "Type": "AWS::Route53::HostedZone",
+            "Properties": {
+                "Name": "example.com."
+            }
+        },
+        "MyCertificate": {
+            "Type": "AWS::CertificateManager::Certificate",
+            "Properties": {
+                "DomainName": "example.com",
+                "ValidationMethod": "DNS",
+                "DomainValidationOptions": [
+                    {
+                        "DomainName": "example.com",
+                        "HostedZoneId": {
+                            "Ref": "MyHostedZone"
+                        }
+                    }
+                ]
+            }
+        },
+        "MyBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "my-example-bucket"
+            }
+        },
+        "MyCloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Enabled": true,
+                    "DefaultRootObject": "index.html",
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::GetAtt": [
+                                    "MyBucket",
+                                    "DomainName"
+                                ]
+                            },
+                            "Id": "MyS3Origin",
+                            "S3OriginConfig": {
+                                "OriginAccessIdentity": ""
+                            }
+                        }
+                    ],
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "MyS3Origin",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    },
+                    "ViewerCertificate": {
+                        "AcmCertificateArn": {
+                            "Ref": "MyCertificate"
+                        },
+                        "SslSupportMethod": "sni-only"
+                    },
+                    "Aliases": [
+                        "example.com"
+                    ]
+                }
+            }
+        }
+    }
+}

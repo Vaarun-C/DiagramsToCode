@@ -1,0 +1,101 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Resources": {
+        "MyApiGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "MyAPI"
+            }
+        },
+        "MyLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "ZipFile": "exports.handler = async (event) => {\n  return 'ok';\n};\n"
+                },
+                "Handler": "index.handler",
+                "Runtime": "nodejs14.x",
+                "Role": "arn:aws:iam::123456789012:role/lambda-exec"
+            }
+        },
+        "MyFHIRDatastore": {
+            "Type": "AWS::HealthLake::FHIRDatastore",
+            "Properties": {
+                "DatastoreTypeVersion": "R4",
+                "DatastoreName": "MyFHIRDatastore"
+            }
+        },
+        "MyNeptuneDBCluster": {
+            "Type": "AWS::Neptune::DBCluster",
+            "Properties": {
+                "Engine": "neptune",
+                "AssociatedRoles": [],
+                "BackupRetentionPeriod": 1
+            }
+        },
+        "MyDynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "Id",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "Id",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "MyS3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "my-data-bucket"
+            }
+        },
+        "MyRedshiftCluster": {
+            "Type": "AWS::Redshift::Cluster",
+            "Properties": {
+                "ClusterType": "single-node",
+                "DBName": "dev",
+                "MasterUsername": "masteruser",
+                "MasterUserPassword": "SecretPass123",
+                "NodeType": "dc2.large"
+            }
+        },
+        "MyAthenaWorkGroup": {
+            "Type": "AWS::Athena::WorkGroup",
+            "Properties": {
+                "Name": "MyWorkGroup"
+            }
+        },
+        "MySageMakerNotebook": {
+            "Type": "AWS::SageMaker::NotebookInstance",
+            "Properties": {
+                "InstanceType": "ml.t2.medium",
+                "RoleArn": "arn:aws:iam::123456789012:role/SageMakerRole",
+                "NotebookInstanceName": "MyNotebook"
+            }
+        },
+        "MyAmplifyApp": {
+            "Type": "AWS::Amplify::App",
+            "Properties": {
+                "Name": "MyAmplifyApp",
+                "Repository": "https://github.com/myrepo/myapp"
+            }
+        },
+        "MyQuickSightDataSet": {
+            "Type": "AWS::QuickSight::DataSet",
+            "Properties": {
+                "AwsAccountId": "123456789012",
+                "DataSetId": "MyDataSetId",
+                "Name": "MyDataSet",
+                "ImportMode": "SPICE"
+            }
+        }
+    }
+}

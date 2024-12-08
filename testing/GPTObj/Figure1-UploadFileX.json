@@ -1,0 +1,106 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "APIGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "PresignedURLAPI"
+            }
+        },
+        "APIGatewayResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+                "ParentId": {
+                    "Fn::GetAtt": [
+                        "APIGateway",
+                        "RootResourceId"
+                    ]
+                },
+                "PathPart": "generate-url",
+                "RestApiId": {
+                    "Ref": "APIGateway"
+                }
+            }
+        },
+        "APIGatewayMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+                "AuthorizationType": "NONE",
+                "HttpMethod": "POST",
+                "ResourceId": {
+                    "Ref": "APIGatewayResource"
+                },
+                "RestApiId": {
+                    "Ref": "APIGateway"
+                },
+                "Integration": {
+                    "Type": "AWS_PROXY",
+                    "IntegrationHttpMethod": "POST",
+                    "Uri": {
+                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
+                    }
+                }
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Runtime": "python3.9",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "import json\nimport boto3\n\ndef handler(event, context):\n    s3 = boto3.client('s3')\n    presigned_url = s3.generate_presigned_url('put_object', \n                    Params={'Bucket': 'example-bucket', 'Key': 'uploaded_file'}, \n                    ExpiresIn=3600)\n    return {\n        'statusCode': 200,\n        'body': json.dumps({'url': presigned_url})\n    }"
+                }
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "S3AccessPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:PutObject",
+                                        "s3:GetObject"
+                                    ],
+                                    "Resource": {
+                                        "Fn::Sub": "arn:aws:s3:::example-bucket/*"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "example-bucket"
+            }
+        }
+    }
+}

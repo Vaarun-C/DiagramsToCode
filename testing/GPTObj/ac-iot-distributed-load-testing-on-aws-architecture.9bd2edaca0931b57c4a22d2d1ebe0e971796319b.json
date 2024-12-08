@@ -1,0 +1,132 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for a distributed load testing architecture on AWS.",
+    "Resources": {
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "load-testing-console"
+            }
+        },
+        "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::GetAtt": [
+                                    "S3Bucket",
+                                    "DomainName"
+                                ]
+                            },
+                            "Id": "S3Origin",
+                            "S3OriginConfig": {}
+                        }
+                    ],
+                    "Enabled": true
+                }
+            }
+        },
+        "AmplifyApp": {
+            "Type": "AWS::Amplify::App",
+            "Properties": {
+                "Name": "LoadTestingApp",
+                "Repository": "https://github.com/user/load-testing-app",
+                "BranchName": "main"
+            }
+        },
+        "ApiGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "LoadTestingAPI"
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "LoadTestingFunction",
+                "Handler": "index.handler",
+                "Runtime": "nodejs14.x",
+                "Code": {
+                    "ZipFile": "exports.handler = async (event) => { return { statusCode: 200, body: JSON.stringify('Hello from Lambda!') }; };"
+                }
+            }
+        },
+        "CognitoUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "LoadTestingUserPool"
+            }
+        },
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "LoadTestingResults",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "TestId",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "TestId",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "IoTCoreTopicRule": {
+            "Type": "AWS::IoT::TopicRule",
+            "Properties": {
+                "RuleName": "LoadTestingRule",
+                "Sql": "SELECT * FROM 'load/testing'",
+                "Actions": [
+                    {
+                        "Lambda": {
+                            "FunctionArn": {
+                                "Fn::GetAtt": [
+                                    "LambdaFunction",
+                                    "Arn"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "ECSCluster": {
+            "Type": "AWS::ECS::Cluster",
+            "Properties": {
+                "ClusterName": "LoadTestingCluster"
+            }
+        },
+        "FargateTask": {
+            "Type": "AWS::ECS::TaskDefinition",
+            "Properties": {
+                "Cpu": "256",
+                "Memory": "512",
+                "NetworkMode": "awsvpc",
+                "RequiresCompatibilities": [
+                    "FARGATE"
+                ],
+                "ContainerDefinitions": [
+                    {
+                        "Name": "LoadTester",
+                        "Image": "public.ecr.aws/taurus/taurus:latest",
+                        "Essential": true
+                    }
+                ]
+            }
+        },
+        "CloudWatchLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+                "LogGroupName": "/aws/load-testing",
+                "RetentionInDays": 14
+            }
+        }
+    }
+}

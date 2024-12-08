@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "AWS Network Infrastructure with VPC, Transit Gateway, and Direct Connect"
+
+Resources:
+  # VPC Resource
+  NetworkVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: NetworkVPC
+
+  # Transit Gateway
+  NetworkTransitGateway:
+    Type: AWS::EC2::TransitGateway
+    Properties:
+      Description: "Network Transit Gateway"
+      DefaultRouteTableAssociation: enable
+      DefaultRouteTablePropagation: enable
+      Tags:
+        - Key: Name
+          Value: NetworkTransitGateway
+
+  # Direct Connect Gateway
+  NetworkDirectConnectGateway:
+    Type: AWS::DirectConnect::Gateway
+    Properties:
+      AmazonSideAsn: 64512
+      Name: NetworkDirectConnectGateway
+
+  # Direct Connect Connections
+  DirectConnectConnection1:
+    Type: AWS::DirectConnect::Connection
+    Properties:
+      Bandwidth: "1Gbps"
+      Location: "EqSe2"
+      Name: PrimaryDirectConnect
+
+  DirectConnectConnection2:
+    Type: AWS::DirectConnect::Connection
+    Properties:
+      Bandwidth: "1Gbps"
+      Location: "EqSe2"
+      Name: SecondaryDirectConnect
+
+  DirectConnectConnection3:
+    Type: AWS::DirectConnect::Connection
+    Properties:
+      Bandwidth: "1Gbps"
+      Location: "EqSe2"
+      Name: TertiaryDirectConnect
+
+  DirectConnectConnection4:
+    Type: AWS::DirectConnect::Connection
+    Properties:
+      Bandwidth: "1Gbps"
+      Location: "EqSe2"
+      Name: QuaternaryDirectConnect
+
+  # Transit Virtual Interfaces
+  TransitVirtualInterface1:
+    Type: AWS::DirectConnect::TransitVirtualInterface
+    Properties:
+      AddressFamily: "ipv4"
+      Asn: 65000
+      DirectConnectGatewayId: !Ref NetworkDirectConnectGateway
+      VirtualInterfaceName: "PrimaryTransitVIF"
+      Vlan: 100
+
+  TransitVirtualInterface2:
+    Type: AWS::DirectConnect::TransitVirtualInterface
+    Properties:
+      AddressFamily: "ipv4"
+      Asn: 65000
+      DirectConnectGatewayId: !Ref NetworkDirectConnectGateway
+      VirtualInterfaceName: "SecondaryTransitVIF"
+      Vlan: 101
+
+  TransitVirtualInterface3:
+    Type: AWS::DirectConnect::TransitVirtualInterface
+    Properties:
+      AddressFamily: "ipv4"
+      Asn: 65000
+      DirectConnectGatewayId: !Ref NetworkDirectConnectGateway
+      VirtualInterfaceName: "TertiaryTransitVIF"
+      Vlan: 102
+
+  TransitVirtualInterface4:
+    Type: AWS::DirectConnect::TransitVirtualInterface
+    Properties:
+      AddressFamily: "ipv4"
+      Asn: 65000
+      DirectConnectGatewayId: !Ref NetworkDirectConnectGateway
+      VirtualInterfaceName: "QuaternaryTransitVIF"
+      Vlan: 103

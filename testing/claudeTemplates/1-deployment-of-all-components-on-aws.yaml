@@ -1,0 +1,186 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Infrastructure Template with Multiple Services
+
+Parameters:
+  VpcCidr:
+    Type: String
+    Default: "10.0.0.0/16"
+  PublicSubnetCidr:
+    Type: String
+    Default: "10.0.1.0/24"
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Description: Database admin password
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MainVPC
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnetCidr
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PublicSubnet
+
+  NatEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatEIP.AllocationId
+      SubnetId: !Ref PublicSubnet
+
+  RestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: MainAPI
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  WebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: MainWebACL
+      Scope: REGIONAL
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: MainWebACLMetrics
+
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  CloudFrontDist:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt S3Bucket.DomainName
+            S3OriginConfig: {}
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+
+  EKSClusterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: eks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+
+  EKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: MainCluster
+      Version: "1.24"
+      RoleArn: !GetAtt EKSClusterRole.Arn
+      ResourcesVpcConfig:
+        SubnetIds:
+          - !Ref PublicSubnet
+
+  MSKCluster:
+    Type: AWS::MSK::Cluster
+    Properties:
+      ClusterName: MainMSKCluster
+      KafkaVersion: "2.8.1"
+      NumberOfBrokerNodes: 2
+      BrokerNodeGroupInfo:
+        InstanceType: kafka.m5.large
+        ClientSubnets: 
+          - !Ref PublicSubnet
+        StorageInfo:
+          EbsStorageInfo:
+            VolumeSize: 100
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: mysql
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: 20
+      MasterUsername: admin
+      MasterUserPassword: !Ref DBPassword
+      PubliclyAccessible: false
+      MultiAZ: true
+
+  DynamoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: MainTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  CustomerGateway:
+    Type: AWS::EC2::CustomerGateway
+    Properties:
+      Type: ipsec.1
+      BgpAsn: 65000
+      IpAddress: "1.2.3.4"
+
+  VPNGateway:
+    Type: AWS::EC2::VPNGateway
+    Properties:
+      Type: ipsec.1
+      Tags:
+        - Key: Name
+          Value: MainVPNGateway
+
+  VPNConnection:
+    Type: AWS::EC2::VPNConnection
+    Properties:
+      Type: ipsec.1
+      CustomerGatewayId: !Ref CustomerGateway
+      VpnGatewayId: !Ref VPNGateway
+      StaticRoutesOnly: true
+
+Outputs:
+  VPCID:
+    Description: VPC ID
+    Value: !Ref VPC
+  SubnetID:
+    Description: Public Subnet ID
+    Value: !Ref PublicSubnet
+  EKSClusterName:
+    Description: EKS Cluster Name
+    Value: !Ref EKSCluster
+  CloudFrontURL:
+    Description: CloudFront Distribution Domain Name
+    Value: !GetAtt CloudFrontDist.DomainName

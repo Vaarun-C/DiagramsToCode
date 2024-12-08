@@ -1,0 +1,131 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "AWS Infrastructure for Data Analytics Pipeline"
+
+Resources:
+
+  # AWS Glue ETL Job
+  DataETLJob:
+    Type: AWS::Glue::ETLJob
+    Properties:
+      Command:
+        Name: "glueetl"
+        PythonVersion: "3"
+      Role: !GetAtt GlueRole.Arn
+
+  # AWS Glue Data Catalog
+  DataCatalog:
+    Type: AWS::Glue::DataCatalog
+    Properties:
+      DatabaseName: "DataCatalog"
+
+  # Amazon Athena Workgroup
+  DataAnalyticsWorkgroup:
+    Type: AWS::Athena::Workgroup
+    Properties:
+      Name: "DataAnalyticsWorkgroup"
+      Description: "Workgroup for data analytics"
+
+  # Amazon QuickSight Analysis
+  DataAnalysis:
+    Type: AWS::QuickSight::Analysis
+    Properties:
+      AwsAccountId: !Ref AWS::AccountId
+      Analysis:
+        Name: "DataAnalysis"
+        QuickSightUserRef: "AUTHOR"
+
+  # AWS Lambda API layer
+  DataAPILayer:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "DataAPIFunction"
+      Role: !GetAtt LambdaRole.Arn
+      Runtime: "python3.9"
+      Handler: "index.handler"
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            # Implement API logic
+            return {
+                'statusCode': 200,
+                'body': 'API response'
+            }
+
+  # AWS WAF Web ACL
+  DataWebACL:
+    Type: AWS::WAF::WebACL
+    Properties:
+      DefaultAction:
+        Type: ALLOW
+      MetricName: "DataWebACL"
+      Name: "DataWebACL"
+      Rules:
+        - Action:
+            Type: BLOCK
+          Name: "BadBotRule"
+          Priority: 1
+
+  # Amazon Cognito User Pool
+  DataUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: "DataUserPool"
+      AutoVerifiedAttributes:
+        - email
+
+  # Amazon API Gateway
+  DataAPI:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: "DataAPI"
+      Description: "API for data analytics"
+
+  # Amazon Timestream Database
+  DataTimestreamDB:
+    Type: AWS::Timestream::Database
+    Properties:
+      DatabaseName: "DataTimestreamDB"
+
+  # Amazon SageMaker Model
+  DataModel:
+    Type: AWS::SageMaker::Model
+    Properties:
+      ModelName: "DataModel"
+      PrimaryContainer:
+        Image: "512412790651.dkr.ecr.us-east-1.amazonaws.com/data-model:latest"
+
+  # Amazon SageMaker Training Job
+  DataTraining:
+    Type: AWS::SageMaker::Training
+    Properties:
+      AlgorithmSpecification:
+        TrainingImage: "512412790651.dkr.ecr.us-east-1.amazonaws.com/data-training:latest"
+      TrainingJobName: "DataTraining"
+      ResourceConfig:
+        InstanceCount: 1
+        InstanceType: ml.c5.xlarge
+        VolumeSizeInGB: 50
+
+  # IAM Role for Glue
+  GlueRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "glue.amazonaws.com"
+            Action: "sts:AssumeRole"
+
+  # IAM Role for Lambda
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"

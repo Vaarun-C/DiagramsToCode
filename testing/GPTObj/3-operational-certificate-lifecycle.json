@@ -1,0 +1,138 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Resources": {
+        "MyCertificateAuthority": {
+            "Type": "AWS::ACMPCA::CertificateAuthority",
+            "Properties": {
+                "KeyAlgorithm": "RSA_2048",
+                "SigningAlgorithm": "SHA256WITHRSA",
+                "Type": "SUBORDINATE",
+                "CertificateAuthorityConfiguration": {
+                    "KeyAlgorithm": "RSA_2048",
+                    "SigningAlgorithm": "SHA256WITHRSA",
+                    "Subject": {
+                        "Country": "US",
+                        "Organization": "MyOrg",
+                        "OrganizationalUnit": "MyUnit",
+                        "State": "WA",
+                        "CommonName": "ca.example.com"
+                    }
+                }
+            }
+        },
+        "MyIoTThing": {
+            "Type": "AWS::IoT::Thing",
+            "Properties": {
+                "ThingName": "MyIoTThing"
+            }
+        },
+        "MyIoTPolicy": {
+            "Type": "AWS::IoT::Policy",
+            "Properties": {
+                "PolicyName": "MyIoTPolicy",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "iot:*",
+                            "Resource": "*"
+                        }
+                    ]
+                }
+            }
+        },
+        "MyIoTCertificate": {
+            "Type": "AWS::IoT::Certificate",
+            "Properties": {
+                "Status": "ACTIVE",
+                "CertificateSigningRequest": "-----BEGIN CERTIFICATE REQUEST-----\n...CSR...\n-----END CERTIFICATE REQUEST-----"
+            }
+        },
+        "MyIoTJob": {
+            "Type": "AWS::IoT::Job",
+            "Properties": {
+                "JobId": "MyJob",
+                "Targets": [
+                    "arn:aws:iot:us-east-1:123456789012:thing/MyIoTThing"
+                ],
+                "Description": "My IoT Job",
+                "TargetSelection": "SNAPSHOT"
+            }
+        },
+        "MyLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "ZipFile": "exports.handler = async () => 'OK';\n"
+                },
+                "Handler": "index.handler",
+                "Runtime": "nodejs14.x",
+                "Role": "arn:aws:iam::123456789012:role/MyLambdaRole"
+            }
+        },
+        "MyDynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "Id",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "Id",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "MyIoTSecurityProfile": {
+            "Type": "AWS::IoT::SecurityProfile",
+            "Properties": {
+                "SecurityProfileName": "MySecurityProfile",
+                "Behaviors": [
+                    {
+                        "Name": "MyBehavior",
+                        "Criteria": {
+                            "ComparisonOperator": "greater-than",
+                            "Value": {
+                                "Count": 10
+                            }
+                        },
+                        "Metric": "aws:message-byte-size"
+                    }
+                ],
+                "TargetArns": []
+            }
+        },
+        "MySecurityHub": {
+            "Type": "AWS::SecurityHub::Hub",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "MySecurityHub"
+                    }
+                ]
+            }
+        },
+        "MyStateMachine": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+                "RoleArn": "arn:aws:iam::123456789012:role/MyStateMachineRole",
+                "DefinitionString": "{\n  \"Comment\": \"A simple state machine\",\n  \"StartAt\": \"HelloWorld\",\n  \"States\": {\n    \"HelloWorld\": {\n      \"Type\": \"Pass\",\n      \"End\": true\n    }\n  }\n}\n"
+            }
+        },
+        "MyEventRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "ScheduleExpression": "rate(5 minutes)",
+                "State": "ENABLED",
+                "Targets": []
+            }
+        }
+    }
+}

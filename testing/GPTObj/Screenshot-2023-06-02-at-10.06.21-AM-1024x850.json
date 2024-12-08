@@ -1,0 +1,211 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true
+            }
+        },
+        "PublicSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.128.0/20",
+                "AvailabilityZone": "us-east-1a",
+                "MapPublicIpOnLaunch": true
+            }
+        },
+        "PublicSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.144.0/20",
+                "AvailabilityZone": "us-east-1b",
+                "MapPublicIpOnLaunch": true
+            }
+        },
+        "PrivateSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.0.0/19",
+                "AvailabilityZone": "us-east-1a"
+            }
+        },
+        "PrivateSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.32.0/19",
+                "AvailabilityZone": "us-east-1b"
+            }
+        },
+        "NATGateway1": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnet1"
+                },
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "EIP1",
+                        "AllocationId"
+                    ]
+                }
+            }
+        },
+        "NATGateway2": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnet2"
+                },
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "EIP2",
+                        "AllocationId"
+                    ]
+                }
+            }
+        },
+        "EIP1": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": "vpc"
+            }
+        },
+        "EIP2": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": "vpc"
+            }
+        },
+        "InternetGateway": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {}
+        },
+        "AttachGateway": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "InternetGatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "ALB": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "AppLoadBalancer",
+                "Scheme": "internet-facing",
+                "Subnets": [
+                    {
+                        "Ref": "PublicSubnet1"
+                    },
+                    {
+                        "Ref": "PublicSubnet2"
+                    }
+                ]
+            }
+        },
+        "ELB": {
+            "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+            "Properties": {
+                "Subnets": [
+                    {
+                        "Ref": "PrivateSubnet1"
+                    },
+                    {
+                        "Ref": "PrivateSubnet2"
+                    }
+                ]
+            }
+        },
+        "AutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "MinSize": "2",
+                "MaxSize": "6",
+                "DesiredCapacity": "4",
+                "LaunchConfigurationName": {
+                    "Ref": "LaunchConfiguration"
+                },
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "PrivateSubnet1"
+                    },
+                    {
+                        "Ref": "PrivateSubnet2"
+                    }
+                ]
+            }
+        },
+        "LaunchConfiguration": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "ImageId": "ami-12345678",
+                "InstanceType": "t3.medium",
+                "SecurityGroups": [
+                    "sg-12345"
+                ]
+            }
+        },
+        "EKSCluster": {
+            "Type": "AWS::EKS::Cluster",
+            "Properties": {
+                "Name": "MyEKSCluster",
+                "Version": "1.27",
+                "ResourcesVpcConfig": {
+                    "SubnetIds": [
+                        {
+                            "Ref": "PrivateSubnet1"
+                        },
+                        {
+                            "Ref": "PrivateSubnet2"
+                        }
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-12345"
+                    ]
+                }
+            }
+        },
+        "FaultInjectionSimulator": {
+            "Type": "AWS::FIS::ExperimentTemplate",
+            "Properties": {
+                "Description": "Fault injection simulation for testing",
+                "Targets": {
+                    "EC2Instances": {
+                        "ResourceType": "aws:ec2:instance",
+                        "ResourceArns": [
+                            "arn:aws:ec2:instance/*"
+                        ]
+                    }
+                },
+                "Actions": {
+                    "StopInstances": {
+                        "ActionId": "aws:ec2:stop-instances",
+                        "Parameters": {
+                            "startInstancesCount": "50%"
+                        }
+                    }
+                },
+                "RoleArn": "arn:aws:iam::123456789012:role/FISRole"
+            }
+        }
+    }
+}

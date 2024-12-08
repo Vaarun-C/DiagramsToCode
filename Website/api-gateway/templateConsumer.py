@@ -5,6 +5,7 @@ import json
 # Kafka configuration
 TEMPLATE_TOPIC = "template-topic"
 KAFKA_BROKER = "localhost:9092"
+REDIS_PORT = 6380 # Second instance of redis
 
 consumer = KafkaConsumer(
     TEMPLATE_TOPIC,
@@ -13,7 +14,7 @@ consumer = KafkaConsumer(
 )
 
 # Redis setup
-redis_client = redis.StrictRedis(host="localhost", port=6379, decode_responses=True)
+redis_client = redis.StrictRedis(host="localhost", port=REDIS_PORT, decode_responses=True)
 
 for message in consumer:
     result = message.value

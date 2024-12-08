@@ -1,0 +1,123 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for game server hosting using Amazon EKS.",
+    "Resources": {
+        "GlobalAccelerator": {
+            "Type": "AWS::GlobalAccelerator::Accelerator",
+            "Properties": {
+                "Name": "GameServerAccelerator",
+                "Enabled": true,
+                "IpAddressType": "IPV4"
+            }
+        },
+        "ElasticLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Type": "application",
+                "Subnets": [
+                    {
+                        "Ref": "PublicSubnet1"
+                    },
+                    {
+                        "Ref": "PublicSubnet2"
+                    }
+                ],
+                "SecurityGroups": [
+                    {
+                        "Ref": "LoadBalancerSecurityGroup"
+                    }
+                ]
+            }
+        },
+        "EKSCluster": {
+            "Type": "AWS::EKS::Cluster",
+            "Properties": {
+                "Name": "GameServerCluster",
+                "ResourcesVpcConfig": {
+                    "SubnetIds": [
+                        {
+                            "Ref": "PublicSubnet1"
+                        },
+                        {
+                            "Ref": "PublicSubnet2"
+                        }
+                    ]
+                }
+            }
+        },
+        "CloudWatchLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+                "LogGroupName": "/aws/eks/game-server",
+                "RetentionInDays": 14
+            }
+        },
+        "KMSKey": {
+            "Type": "AWS::KMS::Key",
+            "Properties": {
+                "Description": "KMS key for encrypting EKS resources",
+                "KeyUsage": "ENCRYPT_DECRYPT",
+                "KeyPolicy": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:root"
+                                }
+                            },
+                            "Action": "kms:*",
+                            "Resource": "*"
+                        }
+                    ]
+                }
+            }
+        },
+        "GuardDutyDetector": {
+            "Type": "AWS::GuardDuty::Detector",
+            "Properties": {
+                "Enable": true
+            }
+        },
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true
+            }
+        },
+        "PublicSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.1.0/24",
+                "AvailabilityZone": "us-east-1a"
+            }
+        },
+        "PublicSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.2.0/24",
+                "AvailabilityZone": "us-east-1b"
+            }
+        },
+        "VPCPeeringConnection": {
+            "Type": "AWS::EC2::VPCPeeringConnection",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "PeerVpcId": {
+                    "Ref": "PeerVPC"
+                }
+            }
+        }
+    }
+}

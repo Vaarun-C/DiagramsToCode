@@ -1,0 +1,232 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "feedback-data-bucket"
+            }
+        },
+        "EventBridgeRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "Name": "FeedbackEventRule",
+                "EventPattern": {
+                    "source": [
+                        "aws.s3"
+                    ],
+                    "detail-type": [
+                        "AWS API Call via CloudTrail"
+                    ],
+                    "detail": {
+                        "eventSource": [
+                            "s3.amazonaws.com"
+                        ],
+                        "eventName": [
+                            "PutObject"
+                        ]
+                    }
+                },
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "StepFunctionWorkflow",
+                                "Arn"
+                            ]
+                        },
+                        "Id": "StepFunctionTarget"
+                    }
+                ]
+            }
+        },
+        "StepFunctionWorkflow": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+                "DefinitionString": {
+                    "Fn::Sub": "{\"StartAt\": \"ValidateFile\",\"States\": {\"ValidateFile\": {\"Type\": \"Task\",\"Resource\": \"${ValidateLambda.Arn}\",\"Next\": \"CategorizeFeedback\"},\"CategorizeFeedback\": {\"Type\": \"Task\",\"Resource\": \"${CategorizeLambda.Arn}\",\"End\": true}}}"
+                },
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "StepFunctionExecutionRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "ValidateLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Runtime": "python3.9",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "def handler(event, context):\n    print('Validating file')"
+                }
+            }
+        },
+        "CategorizeLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Runtime": "python3.9",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "def handler(event, context):\n    print('Categorizing feedback')"
+                }
+            }
+        },
+        "PostProcessingLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Runtime": "python3.9",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "def handler(event, context):\n    print('Post-processing feedback')"
+                }
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "LambdaBasicExecution",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:*",
+                                        "s3:*",
+                                        "sns:Publish",
+                                        "events:PutEvents"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "StepFunctionExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "states.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "StepFunctionPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "lambda:InvokeFunction"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "RDSInstance": {
+            "Type": "AWS::RDS::DBInstance",
+            "Properties": {
+                "DBInstanceClass": "db.t3.micro",
+                "AllocatedStorage": "20",
+                "Engine": "mysql",
+                "MasterUsername": "admin",
+                "MasterUserPassword": "AdminPassword123"
+            }
+        },
+        "SNSFeedbackTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "TopicName": "FeedbackTopic"
+            }
+        },
+        "QuickSightDataset": {
+            "Type": "AWS::QuickSight::DataSet",
+            "Properties": {
+                "Name": "FeedbackDataset",
+                "DataSetId": "feedback-dataset",
+                "Source": {
+                    "DataSourceArn": {
+                        "Fn::GetAtt": [
+                            "RDSInstance",
+                            "Arn"
+                        ]
+                    },
+                    "Type": "RDS"
+                }
+            }
+        },
+        "KMSKey": {
+            "Type": "AWS::KMS::Key",
+            "Properties": {
+                "Description": "KMS Key for data encryption",
+                "KeyUsage": "ENCRYPT_DECRYPT",
+                "KeyPolicy": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:root"
+                                }
+                            },
+                            "Action": "kms:*",
+                            "Resource": "*"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

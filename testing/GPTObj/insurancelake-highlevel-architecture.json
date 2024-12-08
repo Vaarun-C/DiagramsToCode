@@ -1,0 +1,126 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for InsuranceLake Architecture using AWS services.",
+    "Resources": {
+        "StepFunctionsStateMachine": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+                "DefinitionString": "{\"StartAt\": \"ProcessData\", \"States\": {\"ProcessData\": {\"Type\": \"Task\", \"Resource\": \"arn:aws:states:::glue:startJobRun.sync\", \"End\": true}}}",
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "StepFunctionsExecutionRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "S3BucketRaw": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "insurance-raw-data"
+            }
+        },
+        "S3BucketParquet": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "insurance-parquet-data"
+            }
+        },
+        "GlueJob": {
+            "Type": "AWS::Glue::Job",
+            "Properties": {
+                "Name": "DataProcessingJob",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "GlueExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Command": {
+                    "Name": "glueetl",
+                    "ScriptLocation": "s3://path-to-your-script"
+                }
+            }
+        },
+        "GlueDataCatalog": {
+            "Type": "AWS::Glue::Database",
+            "Properties": {
+                "CatalogId": {
+                    "Ref": "AWS::AccountId"
+                },
+                "DatabaseInput": {
+                    "Name": "insurance_data_catalog"
+                }
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "ProcessInsuranceData",
+                "Runtime": "python3.9",
+                "Handler": "lambda_function.lambda_handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "def lambda_handler(event, context):\n    return {'statusCode': 200, 'body': 'Data processed successfully'}"
+                }
+            }
+        },
+        "AthenaWorkGroup": {
+            "Type": "AWS::Athena::WorkGroup",
+            "Properties": {
+                "Name": "InsuranceWorkGroup",
+                "State": "ENABLED",
+                "WorkGroupConfiguration": {
+                    "ResultConfiguration": {
+                        "OutputLocation": "s3://athena-query-results/"
+                    }
+                }
+            }
+        },
+        "QuickSightDashboard": {
+            "Type": "AWS::QuickSight::Dashboard",
+            "Properties": {
+                "AwsAccountId": {
+                    "Ref": "AWS::AccountId"
+                },
+                "DashboardId": "insurance-dashboard",
+                "Name": "Insurance Data Dashboard",
+                "SourceEntity": {
+                    "SourceTemplate": {
+                        "Arn": "arn:aws:quicksight:region:account-id:template/template-id",
+                        "DataSetReferences": [
+                            {
+                                "DataSetPlaceholder": "insurance_data",
+                                "DataSetArn": "arn:aws:quicksight:region:account-id:dataset/dataset-id"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "InsuranceDataLineage",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "RecordID",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "RecordID",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        }
+    }
+}

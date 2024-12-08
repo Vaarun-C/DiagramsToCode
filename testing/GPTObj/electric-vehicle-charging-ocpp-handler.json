@@ -1,0 +1,188 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for EV charging station architecture.",
+    "Resources": {
+        "Route53HostedZone": {
+            "Type": "AWS::Route53::HostedZone",
+            "Properties": {
+                "Name": "example.com."
+            }
+        },
+        "NetworkLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Type": "network",
+                "Subnets": [
+                    {
+                        "Ref": "PublicSubnet1"
+                    },
+                    {
+                        "Ref": "PublicSubnet2"
+                    }
+                ]
+            }
+        },
+        "FargateCluster": {
+            "Type": "AWS::ECS::Cluster",
+            "Properties": {}
+        },
+        "FargateTaskDefinition": {
+            "Type": "AWS::ECS::TaskDefinition",
+            "Properties": {
+                "RequiresCompatibilities": [
+                    "FARGATE"
+                ],
+                "Cpu": "256",
+                "Memory": "512",
+                "NetworkMode": "awsvpc",
+                "ContainerDefinitions": [
+                    {
+                        "Name": "FargateContainer",
+                        "Image": "amazon/amazon-ecs-sample",
+                        "Essential": true
+                    }
+                ]
+            }
+        },
+        "FargateService": {
+            "Type": "AWS::ECS::Service",
+            "Properties": {
+                "Cluster": {
+                    "Ref": "FargateCluster"
+                },
+                "TaskDefinition": {
+                    "Ref": "FargateTaskDefinition"
+                },
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                    "AwsvpcConfiguration": {
+                        "AssignPublicIp": "ENABLED",
+                        "Subnets": [
+                            {
+                                "Ref": "PublicSubnet1"
+                            },
+                            {
+                                "Ref": "PublicSubnet2"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "IoTCoreTopicRule": {
+            "Type": "AWS::IoT::TopicRule",
+            "Properties": {
+                "RuleName": "IoTCoreTopicRule",
+                "TopicRulePayload": {
+                    "Sql": "SELECT * FROM 'iot/topic'",
+                    "Actions": [
+                        {
+                            "Lambda": {
+                                "FunctionArn": {
+                                    "Ref": "IoTProcessingLambda"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "IoTProcessingLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "ZipFile": "exports.handler = async (event) => { console.log(event); };"
+                },
+                "Handler": "index.handler",
+                "Runtime": "nodejs14.x",
+                "Role": {
+                    "Ref": "LambdaExecutionRole"
+                }
+            }
+        },
+        "SQSQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "ChargingStationQueue"
+            }
+        },
+        "StepFunctionsStateMachine": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+                "DefinitionString": {
+                    "Fn::Sub": "{ \"Comment\": \"Sample State Machine\", \"StartAt\": \"InitialState\", \"States\": { \"InitialState\": { \"Type\": \"Pass\", \"End\": true } } }"
+                },
+                "RoleArn": {
+                    "Ref": "StepFunctionsExecutionRole"
+                }
+            }
+        },
+        "AthenaWorkGroup": {
+            "Type": "AWS::Athena::WorkGroup",
+            "Properties": {
+                "Name": "AthenaWorkGroup",
+                "State": "ENABLED",
+                "WorkGroupConfiguration": {
+                    "ResultConfiguration": {
+                        "OutputLocation": "s3://athena-query-results/"
+                    }
+                }
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "charging-station-data"
+            }
+        },
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "ChargingStationTable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "Id",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "Id",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "APIGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "ChargingStationAPI"
+            }
+        },
+        "QuickSightDashboard": {
+            "Type": "AWS::QuickSight::Dashboard",
+            "Properties": {
+                "AwsAccountId": {
+                    "Ref": "AWS::AccountId"
+                },
+                "DashboardId": "ChargingStationDashboard",
+                "Name": "ChargingStationDashboard",
+                "SourceEntity": {
+                    "SourceTemplate": {
+                        "Arn": "arn:aws:quicksight:us-east-1:aws:template/ChargingStationTemplate"
+                    }
+                }
+            }
+        },
+        "GrafanaWorkspace": {
+            "Type": "AWS::Grafana::Workspace",
+            "Properties": {
+                "Name": "ChargingStationWorkspace",
+                "AuthenticationProviders": [
+                    "AWS_SSO"
+                ]
+            }
+        }
+    }
+}

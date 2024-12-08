@@ -1,0 +1,112 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for Tenant Portability architecture.",
+    "Resources": {
+        "TenantPooledLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Ref": "LambdaExecutionRole"
+                },
+                "Code": {
+                    "ZipFile": "exports.handler = async (event) => { console.log(event); };"
+                },
+                "Runtime": "nodejs14.x",
+                "FunctionName": "TenantPooledLambda"
+            }
+        },
+        "TenantPooledDynamoDB": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "TenantPooledTable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "TenantId",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "TenantId",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "TenantSiloedLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Ref": "LambdaExecutionRole"
+                },
+                "Code": {
+                    "ZipFile": "exports.handler = async (event) => { console.log(event); };"
+                },
+                "Runtime": "nodejs14.x",
+                "FunctionName": "TenantSiloedLambda"
+            }
+        },
+        "TenantSiloedDynamoDB": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "TenantSiloedTable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "TenantId",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "TenantId",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "TenantAPI": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "TenantAPI",
+                "Description": "API Gateway for tenant management."
+            }
+        },
+        "UserManagementLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Ref": "LambdaExecutionRole"
+                },
+                "Code": {
+                    "ZipFile": "exports.handler = async (event) => { console.log(event); };"
+                },
+                "Runtime": "nodejs14.x",
+                "FunctionName": "UserManagementLambda"
+            }
+        },
+        "UserManagementDynamoDB": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "UserManagementTable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "UserId",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "UserId",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        }
+    }
+}

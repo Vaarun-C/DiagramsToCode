@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Sample template with recognized resources from image2 without Custom Resources
+
+Parameters:
+  # No parameters needed in this example, but we keep this section if we need to extend.
+
+Resources:
+  PrimaryBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "primary-origin-bucket-example"
+  
+  FailoverBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "failover-origin-bucket-example"
+
+  MyLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  MyLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt MyLambdaExecutionRole.Arn
+      Runtime: nodejs14.x
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            // Basic Lambda handler that does nothing special
+            return {
+              statusCode: 200,
+              body: "OK"
+            };
+          }
+
+  MyCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: "index.html"
+        Origins:
+          - Id: "PrimaryOrigin"
+            DomainName: !GetAtt PrimaryBucket.DomainName
+            S3OriginConfig: {}
+          - Id: "FailoverOrigin"
+            DomainName: !GetAtt FailoverBucket.DomainName
+            S3OriginConfig: {}
+        OriginGroups:
+          Quantity: 1
+          Items:
+            - Id: "OriginGroup1"
+              FailoverCriteria:
+                StatusCodes:
+                  Quantity: 1
+                  Items:
+                    - 404
+              Members:
+                Quantity: 2
+                Items:
+                  - OriginId: "PrimaryOrigin"
+                  - OriginId: "FailoverOrigin"
+        DefaultCacheBehavior:
+          TargetOriginId: "OriginGroup1"
+          ViewerProtocolPolicy: "redirect-to-https"
+          LambdaFunctionAssociations:
+            Quantity: 1
+            Items:
+              - EventType: viewer-request
+                LambdaFunctionARN: !GetAtt MyLambdaFunction.Arn
+        Comment: "CloudFront distribution with failover origin group"
+        HttpVersion: http2
+        PriceClass: PriceClass_100
+
+Outputs:
+  GenericUsers:
+    Description: "Represents external users (non-AWS entity)."
+    Value: "External users accessing the application"

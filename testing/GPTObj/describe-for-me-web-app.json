@@ -1,0 +1,84 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for Describe-for-Me web application architecture.",
+    "Resources": {
+        "AmplifyApp": {
+            "Type": "AWS::Amplify::App",
+            "Properties": {
+                "Name": "DescribeForMeApp"
+            }
+        },
+        "CognitoUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "DescribeForMeUserPool"
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "describe-for-me-storage"
+            }
+        },
+        "ApiGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "DescribeForMeAPI"
+            }
+        },
+        "StepFunctionsWorkflow": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+                "StateMachineName": "DescribeForMeWorkflow",
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "StepFunctionsExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "DefinitionString": {
+                    "Fn::Sub": "{\"Comment\": \"Describe-for-Me Step Functions Workflow\", \"StartAt\": \"ExtractText\", \"States\": {\"ExtractText\": {\"Type\": \"Task\", \"Resource\": \"arn:aws:states:::textract:analyzeDocument\", \"Next\": \"DescribeFace\"}, \"DescribeFace\": {\"Type\": \"Task\", \"Resource\": \"arn:aws:states:::rekognition:detectFaces\", \"Next\": \"DescribeImage\"}, \"DescribeImage\": {\"Type\": \"Task\", \"Resource\": \"arn:aws:states:::sagemaker:invokeEndpoint\", \"Next\": \"Translate\"}, \"Translate\": {\"Type\": \"Task\", \"Resource\": \"arn:aws:states:::translate:translateText\", \"Next\": \"CreateAudio\"}, \"CreateAudio\": {\"Type\": \"Task\", \"Resource\": \"arn:aws:states:::polly:synthesizeSpeech\", \"End\": true}}}"
+                }
+            }
+        },
+        "StepFunctionsExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "states.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "StepFunctionsAccessPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "textract:*",
+                                        "rekognition:*",
+                                        "sagemaker:*",
+                                        "translate:*",
+                                        "polly:*",
+                                        "s3:*"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

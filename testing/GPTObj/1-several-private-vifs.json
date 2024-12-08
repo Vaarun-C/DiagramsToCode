@@ -1,0 +1,296 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Sample template for image11 with recognized AWS resources",
+    "Parameters": {
+        "CustomerGatewayIp": {
+            "Type": "String",
+            "Default": "1.2.3.4"
+        }
+    },
+    "Resources": {
+        "VpcA1": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "VpcA1"
+                    }
+                ]
+            }
+        },
+        "VpcA2": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.1.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "VpcA2"
+                    }
+                ]
+            }
+        },
+        "VpcB": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.2.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "VpcB"
+                    }
+                ]
+            }
+        },
+        "SubnetA1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VpcA1"
+                },
+                "CidrBlock": "10.0.0.0/24",
+                "MapPublicIpOnLaunch": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "SubnetA1"
+                    }
+                ]
+            }
+        },
+        "SubnetA2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VpcA2"
+                },
+                "CidrBlock": "10.1.0.0/24",
+                "MapPublicIpOnLaunch": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "SubnetA2"
+                    }
+                ]
+            }
+        },
+        "SubnetB": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VpcB"
+                },
+                "CidrBlock": "10.2.0.0/24",
+                "MapPublicIpOnLaunch": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "SubnetB"
+                    }
+                ]
+            }
+        },
+        "Ec2InstanceA1": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": "t3.micro",
+                "ImageId": "ami-0c55b159cbfafe1f0",
+                "SubnetId": {
+                    "Ref": "SubnetA1"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Ec2InstanceA1"
+                    }
+                ]
+            }
+        },
+        "Ec2InstanceA2": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": "t3.micro",
+                "ImageId": "ami-0c55b159cbfafe1f0",
+                "SubnetId": {
+                    "Ref": "SubnetA2"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Ec2InstanceA2"
+                    }
+                ]
+            }
+        },
+        "Ec2InstanceB": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": "t3.micro",
+                "ImageId": "ami-0c55b159cbfafe1f0",
+                "SubnetId": {
+                    "Ref": "SubnetB"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Ec2InstanceB"
+                    }
+                ]
+            }
+        },
+        "VpnGatewayA1": {
+            "Type": "AWS::EC2::VPNGateway",
+            "Properties": {
+                "Type": "ipsec.1",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "VpnGatewayA1"
+                    }
+                ]
+            }
+        },
+        "VpnGatewayA2": {
+            "Type": "AWS::EC2::VPNGateway",
+            "Properties": {
+                "Type": "ipsec.1",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "VpnGatewayA2"
+                    }
+                ]
+            }
+        },
+        "VpnGatewayB": {
+            "Type": "AWS::EC2::VPNGateway",
+            "Properties": {
+                "Type": "ipsec.1",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "VpnGatewayB"
+                    }
+                ]
+            }
+        },
+        "RouteTableA1": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VpcA1"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "RouteTableA1"
+                    }
+                ]
+            }
+        },
+        "RouteTableA2": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VpcA2"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "RouteTableA2"
+                    }
+                ]
+            }
+        },
+        "RouteTableB": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VpcB"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "RouteTableB"
+                    }
+                ]
+            }
+        },
+        "DirectConnectGateway": {
+            "Type": "AWS::DirectConnect::Gateway",
+            "Properties": {
+                "AmazonSideAsn": 64512,
+                "Name": "MyDirectConnectGateway"
+            }
+        },
+        "PrivateVIFA": {
+            "Type": "AWS::DirectConnect::PrivateVirtualInterface",
+            "Properties": {
+                "VirtualInterfaceName": "PrivateVIFA",
+                "Vlan": 101,
+                "Asn": 65000,
+                "AmazonAddress": "175.45.176.1",
+                "CustomerAddress": "175.45.176.2",
+                "DirectConnectGatewayId": {
+                    "Ref": "DirectConnectGateway"
+                },
+                "AddressFamily": "ipv4"
+            }
+        },
+        "PrivateVIFB": {
+            "Type": "AWS::DirectConnect::PrivateVirtualInterface",
+            "Properties": {
+                "VirtualInterfaceName": "PrivateVIFB",
+                "Vlan": 102,
+                "Asn": 65000,
+                "AmazonAddress": "175.45.177.1",
+                "CustomerAddress": "175.45.177.2",
+                "DirectConnectGatewayId": {
+                    "Ref": "DirectConnectGateway"
+                },
+                "AddressFamily": "ipv4"
+            }
+        },
+        "CustomerGateway": {
+            "Type": "AWS::EC2::CustomerGateway",
+            "Properties": {
+                "BgpAsn": 65000,
+                "IpAddress": {
+                    "Ref": "CustomerGatewayIp"
+                },
+                "Type": "ipsec.1",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "MyCustomerGateway"
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "VpcA1Id": {
+            "Value": {
+                "Ref": "VpcA1"
+            }
+        },
+        "VpcA2Id": {
+            "Value": {
+                "Ref": "VpcA2"
+            }
+        },
+        "VpcBId": {
+            "Value": {
+                "Ref": "VpcB"
+            }
+        }
+    }
+}

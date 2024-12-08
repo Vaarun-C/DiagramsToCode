@@ -1,0 +1,109 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for architecture with static website, backend, ops, and analytics modules.",
+    "Resources": {
+        "S3WebsiteBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "static-website-bucket",
+                "WebsiteConfiguration": {
+                    "IndexDocument": "index.html"
+                }
+            }
+        },
+        "CognitoUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "CognitoUserPool"
+            }
+        },
+        "APIGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "APIGateway"
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "APILambdaFunction",
+                "Runtime": "nodejs14.x",
+                "Handler": "index.handler",
+                "Code": {
+                    "ZipFile": "exports.handler = async (event) => { return 'Hello from Lambda'; };"
+                }
+            }
+        },
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "DynamoDBTable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "ID",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "ID",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "CloudWatchDashboard": {
+            "Type": "AWS::CloudWatch::Dashboard",
+            "Properties": {
+                "DashboardName": "OpsDashboard",
+                "DashboardBody": "{}"
+            }
+        },
+        "AthenaWorkGroup": {
+            "Type": "AWS::Athena::WorkGroup",
+            "Properties": {
+                "Name": "AnalyticsWorkGroup",
+                "State": "ENABLED"
+            }
+        },
+        "KinesisFirehose": {
+            "Type": "AWS::KinesisFirehose::DeliveryStream",
+            "Properties": {
+                "DeliveryStreamName": "FirehoseStream",
+                "S3DestinationConfiguration": {
+                    "BucketARN": {
+                        "Fn::GetAtt": [
+                            "S3AnalyticsBucket",
+                            "Arn"
+                        ]
+                    },
+                    "RoleARN": "arn:aws:iam::123456789012:role/firehose-role"
+                }
+            }
+        },
+        "EventBridgeBus": {
+            "Type": "AWS::Events::EventBus",
+            "Properties": {
+                "Name": "EventBridgeBus"
+            }
+        },
+        "FanoutLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "FanoutLambda",
+                "Runtime": "nodejs14.x",
+                "Handler": "index.handler",
+                "Code": {
+                    "ZipFile": "exports.handler = async (event) => { console.log('Fanout event', event); };"
+                }
+            }
+        },
+        "S3AnalyticsBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "analytics-bucket"
+            }
+        }
+    }
+}

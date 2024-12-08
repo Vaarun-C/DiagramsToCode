@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Advanced Analytics Infrastructure with Multiple AWS Services"
+
+Resources:
+  # API Gateway
+  AnalyticsApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: "AnalyticsAPI"
+      Description: "API Gateway for Analytics Platform"
+
+  # Lambda Function
+  AnalyticsLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "AnalyticsProcessor"
+      Handler: "index.handler"
+      Runtime: "nodejs14.x"
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/lambda-exec"
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            return 'Analytics processing complete';
+          };
+
+  # FHIR Datastore
+  HealthDatastore:
+    Type: AWS::HealthLake::FHIRDatastore
+    Properties:
+      DatastoreTypeVersion: "R4"
+      DatastoreName: "HealthcareDatastore"
+
+  # Neptune Graph Database Cluster
+  GraphDatabaseCluster:
+    Type: AWS::Neptune::DBCluster
+    Properties:
+      Engine: "neptune"
+      BackupRetentionPeriod: 1
+      EngineVersion: "1.2.0.0"
+
+  # DynamoDB Table
+  AnalyticsDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "AnalyticsData"
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "Id"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+
+  # S3 Bucket
+  AnalyticsDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-analytics-data-bucket"
+      VersioningConfiguration:
+        Status: Enabled
+
+  # Redshift Cluster
+  AnalyticsWarehouse:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterType: "single-node"
+      DBName: "analyticsdb"
+      MasterUsername: "adminuser"
+      MasterUserPassword: "{{resolve:ssm-secure:RedshiftPassword:1}}"
+      NodeType: "dc2.large"
+
+  # Athena Workgroup
+  AnalyticsAthenaWorkGroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: "AnalyticsWorkGroup"
+      State: ENABLED
+
+  # SageMaker Notebook Instance
+  AnalyticsNotebook:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: "AnalyticsNotebook"
+      InstanceType: "ml.t2.medium"
+      RoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/SageMakerRole"
+
+  # Amplify App
+  AnalyticsWebApp:
+    Type: AWS::Amplify::App
+    Properties:
+      Name: "AnalyticsWebApp"
+      Repository: "https://github.com/example/analytics-app"
+
+  # QuickSight Dataset
+  AnalyticsQuickSightDataset:
+    Type: AWS::QuickSight::DataSet
+    Properties:
+      AwsAccountId: !Sub "${AWS::AccountId}"
+      DataSetId: "AnalyticsDataset"
+      Name: "AnalyticsDataset"
+      ImportMode: "SPICE"

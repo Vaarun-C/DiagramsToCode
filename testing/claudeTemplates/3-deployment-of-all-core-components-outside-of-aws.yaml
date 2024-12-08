@@ -1,0 +1,124 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Architecture Resources
+
+Resources:
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: MyVPC
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1a
+      CidrBlock: 10.0.0.0/24
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: MyPublicSubnet
+        
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1b
+      CidrBlock: 10.0.1.0/24
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: MyPrivateSubnet
+
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs12.x
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            return {
+              statusCode: 200,
+              body: JSON.stringify('Hello from Lambda!'),
+            };
+          };
+      MemorySize: 128
+      Timeout: 3
+
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: MyCluster
+
+  ECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: my-task
+      TaskRoleArn: !Ref ECSTaskRole
+      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      ContainerDefinitions:
+        - Name: my-container
+          Image: amazon/amazon-ecs-sample
+          PortMappings:
+            - ContainerPort: 80
+
+  ECSService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: my-service
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref ECSTaskDefinition
+      DesiredCount: 2
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: mydb
+      Engine: postgres
+      MasterUsername: admin
+      MasterUserPassword: changeme
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: 20
+
+  MSKCluster:
+    Type: AWS::MSK::Cluster
+    Properties:
+      BrokerNodeGroupInfo:
+        InstanceType: kafka.t3.small
+        ClientSubnets:
+          - !Ref PublicSubnet
+          - !Ref PrivateSubnet
+        SecurityGroups:
+          - !Ref MSKSecurityGroup
+      NumberOfBrokerNodes: 3
+
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: my-topic
+
+Outputs:
+
+  VPC:
+    Description: A reference to the created VPC
+    Value: !Ref VPC
+    Export:
+      Name: MyVPC
+
+  PublicSubnet:
+    Description: A reference to the public subnet
+    Value: !Ref PublicSubnet
+    Export:
+      Name: MyPublicSubnet
+
+  PrivateSubnet:
+    Description: A reference to the private subnet
+    Value: !Ref PrivateSubnet
+    Export:
+      Name: MyPrivateSubnet

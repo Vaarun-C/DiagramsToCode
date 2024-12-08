@@ -1,0 +1,146 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for EVSE management system.",
+    "Resources": {
+        "LoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "EVSELoadBalancer",
+                "Scheme": "internet-facing",
+                "Type": "application",
+                "Subnets": [
+                    "subnet-12345",
+                    "subnet-67890"
+                ]
+            }
+        },
+        "FargateService": {
+            "Type": "AWS::ECS::Service",
+            "Properties": {
+                "Cluster": {
+                    "Ref": "ECSCluster"
+                },
+                "LaunchType": "FARGATE",
+                "ServiceName": "EVSEFargateService",
+                "TaskDefinition": {
+                    "Ref": "TaskDefinition"
+                },
+                "DesiredCount": 2
+            }
+        },
+        "SQSQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "EVSESQSQueue",
+                "FifoQueue": true
+            }
+        },
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "EVSETable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "Id",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "Id",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Ref": "LambdaExecutionRole"
+                },
+                "Code": {
+                    "ZipFile": "exports.handler = async (event) => { console.log(event); };"
+                },
+                "Runtime": "nodejs14.x"
+            }
+        },
+        "CertificateManager": {
+            "Type": "AWS::CertificateManager::Certificate",
+            "Properties": {
+                "DomainName": "example.com",
+                "ValidationMethod": "DNS"
+            }
+        },
+        "CloudWatchAlarm": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmName": "HighLatencyAlarm",
+                "ComparisonOperator": "GreaterThanThreshold",
+                "EvaluationPeriods": 1,
+                "MetricName": "Latency",
+                "Namespace": "AWS/ApplicationELB",
+                "Period": 60,
+                "Statistic": "Average",
+                "Threshold": 100
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "evse-data"
+            }
+        },
+        "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::Sub": "s3-${AWS::Region}.amazonaws.com"
+                            },
+                            "Id": "S3Origin"
+                        }
+                    ],
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "S3Origin",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    },
+                    "Enabled": true
+                }
+            }
+        },
+        "ApiGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "EVSEApiGateway"
+            }
+        },
+        "CognitoUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "EVSEUserPool"
+            }
+        },
+        "StepFunctionsStateMachine": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+                "StateMachineName": "EVSEWorkflow",
+                "RoleArn": {
+                    "Ref": "StepFunctionsExecutionRole"
+                },
+                "DefinitionString": "{\"Comment\": \"State machine for EVSE workflows\"}"
+            }
+        },
+        "QLDBLedger": {
+            "Type": "AWS::QLDB::Ledger",
+            "Properties": {
+                "Name": "EVSETransactionLedger",
+                "DeletionProtection": true
+            }
+        }
+    }
+}

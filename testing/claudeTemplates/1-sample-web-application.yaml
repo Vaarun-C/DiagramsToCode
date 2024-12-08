@@ -1,0 +1,244 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template for web application with location services
+
+Parameters:
+  HostedZoneName:
+    Type: String
+    Description: Domain name for Route53 hosted zone
+    Default: "example.com."
+  DynamoDBTableName:
+    Type: String
+    Description: Name for the DynamoDB table
+    Default: "JobStatusTable"
+  Environment:
+    Type: String
+    Default: "dev"
+    AllowedValues: ["dev", "prod"]
+
+Resources:
+  MyHostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Ref HostedZoneName
+
+  MyWAFWebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: !Sub "${AWS::StackName}-web-acl"
+      Scope: CLOUDFRONT
+      DefaultAction:
+        Allow: {}
+      Rules:
+        - Name: AWSManagedRulesCommonRuleSet
+          Priority: 1
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: !Sub "${AWS::StackName}-common-rule-metric"
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub "${AWS::StackName}-web-acl-metric"
+
+  StaticWebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-static-website-${AWS::Region}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  MyCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: "index.html"
+        WebACLId: !GetAtt MyWAFWebACL.Arn
+        Origins:
+          - Id: "StaticWebsiteOrigin"
+            DomainName: !GetAtt StaticWebsiteBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
+        DefaultCacheBehavior:
+          TargetOriginId: "StaticWebsiteOrigin"
+          ViewerProtocolPolicy: "redirect-to-https"
+          CachePolicyId: "658327ea-f89d-4fab-a63d-7e88639e58f6" # CachingOptimized
+        HttpVersion: http2
+        PriceClass: PriceClass_100
+
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub "OAI for ${AWS::StackName}"
+
+  MyUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "${AWS::StackName}-user-pool"
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      AutoVerifiedAttributes:
+        - email
+      PasswordPolicy:
+        MinimumLength: 8
+        RequireLowercase: true
+        RequireNumbers: true
+        RequireSymbols: true
+        RequireUppercase: true
+
+  MyApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub "${AWS::StackName}-api"
+      EndpointConfiguration:
+        Types: ["REGIONAL"]
+
+  MyLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  MyLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-api-handler"
+      Handler: index.handler
+      Runtime: nodejs14.x
+      Role: !GetAtt MyLambdaRole.Arn
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            return {
+              statusCode: 200,
+              body: JSON.stringify({ message: "Hello from Lambda" })
+            };
+          };
+
+  MyLocationTracker:
+    Type: AWS::Location::Tracker
+    Properties:
+      TrackerName: !Sub "${AWS::StackName}-tracker"
+      PositionFiltering: AccuracyBased
+
+  MyGeofenceCollection:
+    Type: AWS::Location::GeofenceCollection
+    Properties:
+      CollectionName: !Sub "${AWS::StackName}-geofences"
+
+  MyLocationMap:
+    Type: AWS::Location::Map
+    Properties:
+      MapName: !Sub "${AWS::StackName}-map"
+      Configuration:
+        Style: VectorEsriStreets
+
+  MyRouteCalculator:
+    Type: AWS::Location::RouteCalculator
+    Properties:
+      CalculatorName: !Sub "${AWS::StackName}-route-calculator"
+      DataSource: Here
+
+  MyEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Sub "${AWS::StackName}-event-bus"
+
+  MyKinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: !Sub "${AWS::StackName}-stream"
+      ShardCount: 1
+      StreamModeDetails:
+        StreamMode: PROVISIONED
+
+  MyKinesisFirehose:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      DeliveryStreamName: !Sub "${AWS::StackName}-delivery-stream"
+      DeliveryStreamType: DirectPut
+      ExtendedS3DestinationConfiguration:
+        BucketARN: !GetAtt GeofenceDataBucket.Arn
+        RoleARN: !GetAtt FirehoseDeliveryRole.Arn
+        BufferingHints:
+          IntervalInSeconds: 60
+          SizeInMBs: 1
+
+  FirehoseDeliveryRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: firehose.amazonaws.com
+            Action: sts:AssumeRole
+
+  MyDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DynamoDBTableName
+      AttributeDefinitions:
+        - AttributeName: "ID"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "ID"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  GeofenceDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-geofence-data-${AWS::Region}"
+      VersioningConfiguration:
+        Status: Enabled
+
+  JobManagementDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-job-data-${AWS::Region}"
+      VersioningConfiguration:
+        Status: Enabled
+
+Outputs:
+  HostedZoneId:
+    Description: "ID of the created hosted zone"
+    Value: !Ref MyHostedZone
+  CloudFrontDistributionId:
+    Description: "ID of the CloudFront distribution"
+    Value: !Ref MyCloudFrontDistribution
+  CloudFrontDomainName:
+    Description: "Domain name of the CloudFront distribution"
+    Value: !GetAtt MyCloudFrontDistribution.DomainName
+  UserPoolId:
+    Description: "ID of the Cognito User Pool"
+    Value: !Ref MyUserPool
+  ApiGatewayUrl:
+    Description: "URL of the API Gateway"
+    Value: !Sub "https://${MyApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod"
+  LocationTrackerName:
+    Description: "Name of the Location Tracker"
+    Value: !Ref MyLocationTracker
+  DynamoDBTableName:
+    Description: "Name of the DynamoDB table"
+    Value: !Ref MyDynamoDBTable

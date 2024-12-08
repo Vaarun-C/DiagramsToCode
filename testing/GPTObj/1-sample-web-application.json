@@ -1,0 +1,235 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Sample template for image10 with recognized AWS resources",
+    "Parameters": {
+        "HostedZoneName": {
+            "Type": "String",
+            "Default": "example.com."
+        },
+        "RedshiftMasterPassword": {
+            "Type": "String",
+            "NoEcho": true,
+            "Default": "ChangeMe123!"
+        },
+        "DynamoDBTableName": {
+            "Type": "String",
+            "Default": "JobStatusTable"
+        }
+    },
+    "Resources": {
+        "MyHostedZone": {
+            "Type": "AWS::Route53::HostedZone",
+            "Properties": {
+                "Name": {
+                    "Ref": "HostedZoneName"
+                }
+            }
+        },
+        "MyWAFWebACL": {
+            "Type": "AWS::WAFv2::WebACL",
+            "Properties": {
+                "Name": "MyWAFWebACL",
+                "Scope": "CLOUDFRONT",
+                "DefaultAction": {
+                    "Allow": {}
+                },
+                "VisibilityConfig": {
+                    "SampledRequestsEnabled": true,
+                    "CloudWatchMetricsEnabled": true,
+                    "MetricName": "MyWAFMetric"
+                }
+            }
+        },
+        "MyCloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Enabled": true,
+                    "DefaultRootObject": "index.html",
+                    "Origins": [
+                        {
+                            "Id": "StaticWebsiteOrigin",
+                            "DomainName": {
+                                "Fn::GetAtt": [
+                                    "StaticWebsiteBucket",
+                                    "DomainName"
+                                ]
+                            },
+                            "S3OriginConfig": {}
+                        }
+                    ],
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "StaticWebsiteOrigin",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    },
+                    "HttpVersion": "http2",
+                    "PriceClass": "PriceClass_100"
+                }
+            }
+        },
+        "MyUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "MyUserPool"
+            }
+        },
+        "MyApiGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "MyAPI",
+                "EndpointConfiguration": {
+                    "Types": [
+                        "REGIONAL"
+                    ]
+                }
+            }
+        },
+        "StaticWebsiteBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "my-static-website-bucket-example"
+            }
+        },
+        "MyLambdaRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ]
+            }
+        },
+        "MyLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "MyAPILambda",
+                "Handler": "index.handler",
+                "Runtime": "nodejs14.x",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "MyLambdaRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "exports.handler = async (event) => {\n  return {\n    statusCode: 200,\n    body: \"Hello from Lambda\"\n  };\n};\n"
+                }
+            }
+        },
+        "MyLocationTracker": {
+            "Type": "AWS::Location::Tracker",
+            "Properties": {
+                "TrackerName": "MyTracker"
+            }
+        },
+        "MyGeofenceCollection": {
+            "Type": "AWS::Location::GeofenceCollection",
+            "Properties": {
+                "CollectionName": "MyGeofenceCollection"
+            }
+        },
+        "MyLocationMap": {
+            "Type": "AWS::Location::Map",
+            "Properties": {
+                "MapName": "MyMap",
+                "Configuration": {
+                    "Style": "VectorEsriStreets"
+                }
+            }
+        },
+        "MyRouteCalculator": {
+            "Type": "AWS::Location::RouteCalculator",
+            "Properties": {
+                "CalculatorName": "MyRouteCalculator",
+                "DataSource": "Here"
+            }
+        },
+        "MyEventBus": {
+            "Type": "AWS::Events::EventBus",
+            "Properties": {
+                "Name": "MyEventBus"
+            }
+        },
+        "MyKinesisStream": {
+            "Type": "AWS::Kinesis::Stream",
+            "Properties": {
+                "ShardCount": 1
+            }
+        },
+        "MyKinesisFirehose": {
+            "Type": "AWS::KinesisFirehose::DeliveryStream",
+            "Properties": {
+                "DeliveryStreamName": "MyDeliveryStream",
+                "DeliveryStreamType": "DirectPut",
+                "ExtendedS3DestinationConfiguration": {
+                    "BucketARN": {
+                        "Fn::GetAtt": [
+                            "GeofenceDataBucket",
+                            "Arn"
+                        ]
+                    },
+                    "RoleARN": "arn:aws:iam::123456789012:role/FirehoseDeliveryRole"
+                }
+            }
+        },
+        "MyDynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": {
+                    "Ref": "DynamoDBTableName"
+                },
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "ID",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "ID",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "GeofenceDataBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "my-geofence-data-bucket-example"
+            }
+        },
+        "JobManagementDataBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "my-job-management-data-bucket-example"
+            }
+        }
+    },
+    "Outputs": {
+        "HostedZoneId": {
+            "Value": {
+                "Ref": "MyHostedZone"
+            }
+        },
+        "CloudFrontDistributionId": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "MyCloudFrontDistribution",
+                    "DistributionId"
+                ]
+            }
+        }
+    }
+}

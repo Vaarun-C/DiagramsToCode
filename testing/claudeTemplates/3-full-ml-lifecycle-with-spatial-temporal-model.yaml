@@ -1,0 +1,170 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS SageMaker and CodePipeline Architecture
+
+Resources:
+
+  SageMakerCodeCommit:
+    Type: AWS::SageMaker::CodeCommit
+    Properties:
+      CodeCommitImageSource:
+        CodeCommitRepository: !Ref SageMakerCodeCommitRepository
+        Branch: main
+
+  SageMakerProcessingJob:
+    Type: AWS::SageMaker::ProcessingJob
+    Properties:
+      ProcessingResources:
+        ClusterConfig:
+          InstanceCount: 1
+          InstanceType: ml.m5.large
+          VolumeKmsKeyId: !Ref KMSKey
+      ProcessingInputs:
+        - InputName: dataset
+          S3Input:
+            S3Uri: s3://my-bucket/data/
+      ProcessingOutputConfig:
+        Outputs:
+          - OutputName: processed_data
+            S3Output:
+              S3Uri: s3://my-bucket/processed/
+      ProcessingJobName: my-processing-job
+
+  SageMakerTrainingJob:
+    Type: AWS::SageMaker::TrainingJob
+    Properties:
+      AlgorithmSpecification:
+        TrainingImage: 123456789.dkr.ecr.us-east-1.amazonaws.com/my-custom-algo:latest
+        TrainingInputMode: File
+      InputDataConfig:
+        - ChannelName: train
+          DataSource:
+            S3DataSource:
+              S3Uri: s3://my-bucket/train/
+      OutputDataConfig:
+        S3OutputPath: s3://my-bucket/output/
+      ResourceConfig:
+        InstanceCount: 2
+        InstanceType: ml.m5.large
+        VolumeSizeInGB: 20
+      RoleArn: !GetAtt SageMakerRole.Arn
+      TrainingJobName: my-training-job
+
+  SageMakerModelRegistry:
+    Type: AWS::SageMaker::ModelRegistry
+    Properties:
+      ModelPackageGroup:
+        ModelPackageGroupName: my-model-group
+      ModelPackage:
+        ModelPackageName: my-model-package
+        ModelApprovalStatus: Approved
+        InferenceSpecification:
+          Containers:
+            - Image: 123456789.dkr.ecr.us-east-1.amazonaws.com/my-model:latest
+              ModelDataUrl: s3://my-bucket/model.tar.gz
+
+  SageMakerModel:
+    Type: AWS::SageMaker::Model
+    Properties:
+      ExecutionRoleArn: !GetAtt SageMakerRole.Arn
+      PrimaryContainer:
+        Image: 123456789.dkr.ecr.us-east-1.amazonaws.com/my-model:latest
+        ModelDataUrl: s3://my-bucket/model.tar.gz
+
+  SageMakerEndpoint:
+    Type: AWS::SageMaker::Endpoint
+    Properties:
+      EndpointConfigName: my-endpoint-config
+      EndpointName: my-endpoint
+
+  SageMakerModelMonitoringSchedule:
+    Type: AWS::SageMaker::ModelMonitoringSchedule
+    Properties:
+      MonitoringScheduleName: my-monitoring-schedule
+      MonitoringJobDefinition:
+        BaselineConfig:
+          # Baseline configuration
+        MonitoringAppSpecification:
+          MonitoringImage: 123456789.dkr.ecr.us-east-1.amazonaws.com/my-monitoring-app:latest
+        MonitoringInputs:
+          - # Monitoring input configuration
+        MonitoringOutputConfig:
+          # Monitoring output configuration
+        MonitoringResources:
+          # Monitoring resources configuration
+        RoleArn: !GetAtt SageMakerRole.Arn
+
+  CodePipelineModelDeployment:
+    Type: AWS::CodePipeline::ModelDeployment
+    Properties:
+      Stages:
+        - Name: CodeCommitDeploy
+          Actions:
+            - Name: CodeCommitSource
+              InputArtifacts: []
+              OutputArtifacts:
+                - Name: SourceArtifact
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeCommitSource
+                Version: '1'
+              Configuration:
+                BranchName: main
+                RepositoryName: !Ref SageMakerCodeCommitRepository
+        - Name: CodeBuild
+          Actions:
+            - Name: CodeBuildBuild
+              InputArtifacts:
+                - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: BuildArtifact
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+        - Name: CloudFormation
+          Actions:
+            - Name: CloudFormationDeploy
+              InputArtifacts:
+                - Name: BuildArtifact
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: '1'
+              Configuration:
+                StackName: my-model-stack
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !GetAtt CloudFormationRole.Arn
+
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:5.0
+        Type: LINUX_CONTAINER
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Source:
+        BuildSpec: build-spec.yml
+        Type: CODEPIPELINE
+
+  CloudFormationStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/my-bucket/model-deployment.yaml
+      Parameters:
+        ModelPackageArn: !GetAtt SageMakerModelRegistry.ModelPackageArn
+
+Outputs:
+  SageMakerModelEndpoint:
+    Description: The SageMaker model endpoint
+    Value: !Ref SageMakerEndpoint
+    Export:
+      Name: SageMakerModelEndpoint

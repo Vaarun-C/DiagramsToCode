@@ -1,0 +1,115 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for stable diffusion architecture using AWS services.",
+    "Resources": {
+        "ApiGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "StableDiffusionAPI"
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "StableDiffusionLambda",
+                "Handler": "index.handler",
+                "Runtime": "python3.9",
+                "Code": {
+                    "S3Bucket": "lambda-functions",
+                    "S3Key": "stable-diffusion-lambda.zip"
+                },
+                "Role": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/LambdaExecutionRole"
+                }
+            }
+        },
+        "SNS1": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "TopicName": "StableDiffusionTopic1"
+            }
+        },
+        "SNS2": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "TopicName": "StableDiffusionTopic2"
+            }
+        },
+        "SQSQueue1": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "StableDiffusionQueue1"
+            }
+        },
+        "SQSQueue2": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "StableDiffusionQueue2"
+            }
+        },
+        "EKSCluster": {
+            "Type": "AWS::EKS::Cluster",
+            "Properties": {
+                "Name": "StableDiffusionEKSCluster",
+                "ResourcesVpcConfig": {
+                    "SubnetIds": [
+                        "subnet-abc123",
+                        "subnet-def456"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-xyz789"
+                    ]
+                },
+                "RoleArn": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/EKSClusterRole"
+                }
+            }
+        },
+        "Karpenter": {
+            "Type": "Custom::Karpenter",
+            "Properties": {
+                "ClusterName": {
+                    "Ref": "EKSCluster"
+                },
+                "Version": "v0.5.0"
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "stable-diffusion-data"
+            }
+        },
+        "SpotFleet": {
+            "Type": "AWS::EC2::SpotFleet",
+            "Properties": {
+                "SpotFleetRequestConfigData": {
+                    "IamFleetRole": {
+                        "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/SpotFleetRole"
+                    },
+                    "TargetCapacity": 5,
+                    "LaunchSpecifications": [
+                        {
+                            "InstanceType": "g4dn.xlarge",
+                            "ImageId": "ami-xyz123",
+                            "SubnetId": "subnet-abc123",
+                            "WeightedCapacity": 1
+                        },
+                        {
+                            "InstanceType": "g5.xlarge",
+                            "ImageId": "ami-xyz456",
+                            "SubnetId": "subnet-def456",
+                            "WeightedCapacity": 1
+                        },
+                        {
+                            "InstanceType": "p4d.24xlarge",
+                            "ImageId": "ami-xyz789",
+                            "SubnetId": "subnet-ghi789",
+                            "WeightedCapacity": 2
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

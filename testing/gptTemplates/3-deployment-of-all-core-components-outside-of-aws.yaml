@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  MyCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Origins:
+          - DomainName: "example.com"
+            Id: "Origin1"
+
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+
+  MySubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.1.0/24"
+
+  MyEIP:
+    Type: AWS::EC2::EIP
+
+  MyNatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt MyEIP.AllocationId
+      SubnetId: !Ref MySubnet
+
+  MyLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: "MyALB"
+      Subnets:
+        - !Ref MySubnet
+      Type: "application"
+
+  MyEKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: "MyEKSCluster"
+      RoleArn: "arn:aws:iam::123456789012:role/EKSRole"
+      ResourcesVpcConfig:
+        SubnetIds:
+          - !Ref MySubnet
+
+  MyMSKCluster:
+    Type: AWS::MSK::Cluster
+    Properties:
+      ClusterName: "MyMSKCluster"
+      KafkaVersion: "2.8.1"
+      NumberOfBrokerNodes: 2
+      BrokerNodeGroupInfo:
+        InstanceType: "kafka.m5.large"
+        ClientSubnets:
+          - !Ref MySubnet
+        SecurityGroups: []
+
+  MyRDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: "postgres"
+      MasterUsername: "admin"
+      MasterUserPassword: "SecretPass123"
+      DBInstanceClass: "db.t3.micro"
+      AllocatedStorage: 20
+
+  MySecondVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.1.0.0/16"
+
+  MyOutpost:
+    Type: AWS::Outposts::Outpost
+    Properties:
+      Name: "MyOutpost"
+      SiteId: "op-abcdefghijkl"
+      AvailabilityZone: "us-east-1a"

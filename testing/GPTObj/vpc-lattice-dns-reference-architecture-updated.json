@@ -1,0 +1,161 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for VPC Lattice DNS automation architecture using AWS services.",
+    "Resources": {
+        "EventBridgeRuleTagChange": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "Name": "VPCLatticeTagChangeRule",
+                "EventPattern": {
+                    "source": [
+                        "aws.vpclattice"
+                    ],
+                    "detail-type": [
+                        "Tag Change"
+                    ]
+                },
+                "State": "ENABLED",
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Fn::Sub": "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:GetVPCLatticeServiceInfo"
+                        },
+                        "Id": "StepFunctionsTarget"
+                    }
+                ]
+            }
+        },
+        "StepFunctionGetVPCLatticeInfo": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+                "StateMachineName": "GetVPCLatticeServiceInfo",
+                "RoleArn": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/StepFunctionsExecutionRole"
+                },
+                "DefinitionString": "{...}"
+            }
+        },
+        "CustomEventBus": {
+            "Type": "AWS::Events::EventBus",
+            "Properties": {
+                "Name": "CustomEventBusVPCLattice"
+            }
+        },
+        "EventBridgeRuleCrossAccount": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "Name": "CrossAccountEventRule",
+                "EventBusName": {
+                    "Ref": "CustomEventBus"
+                },
+                "EventPattern": {
+                    "source": [
+                        "aws.vpclattice"
+                    ]
+                },
+                "State": "ENABLED"
+            }
+        },
+        "SQSDeadLetterQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "VPCLatticeDLQ"
+            }
+        },
+        "Route53PrivateHostedZone": {
+            "Type": "AWS::Route53::HostedZone",
+            "Properties": {
+                "Name": "private.vpclattice.local",
+                "HostedZoneConfig": {
+                    "Comment": "Private hosted zone for VPC Lattice DNS"
+                },
+                "VPCs": [
+                    {
+                        "VPCId": {
+                            "Ref": "VPCId"
+                        },
+                        "VPCRegion": {
+                            "Ref": "AWS::Region"
+                        }
+                    }
+                ]
+            }
+        },
+        "StepFunctionDNSConfiguration": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+                "StateMachineName": "DNSConfiguration",
+                "RoleArn": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/StepFunctionsExecutionRole"
+                },
+                "DefinitionString": "{...}"
+            }
+        },
+        "SystemsManagerRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": "SystemsManagerRole",
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "ssm.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "SystemsManagerPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "ssm:*",
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "ResourceAccessManagerRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": "ResourceAccessManagerRole",
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "ram.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "ResourceAccessManagerPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "ram:*",
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

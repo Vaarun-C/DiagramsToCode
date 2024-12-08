@@ -1,0 +1,105 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for virtual care architecture with Salesforce Health Cloud integration.",
+    "Resources": {
+        "ChimeSDKControlPlane": {
+            "Type": "AWS::Chime::AppInstance",
+            "Properties": {
+                "Name": "ChimeSDKControlPlane"
+            }
+        },
+        "ChimeMediaServices": {
+            "Type": "AWS::Chime::MediaCapturePipeline",
+            "Properties": {
+                "SinkArn": {
+                    "Fn::Sub": "arn:aws:s3:::chime-media-capture"
+                },
+                "SourceArn": {
+                    "Fn::Sub": "arn:aws:chime::${AWS::AccountId}:meeting/*"
+                }
+            }
+        },
+        "EventBridge": {
+            "Type": "AWS::Events::EventBus",
+            "Properties": {
+                "Name": "VirtualCareEventBus"
+            }
+        },
+        "KMSKey": {
+            "Type": "AWS::KMS::Key",
+            "Properties": {
+                "Description": "KMS key for encrypting EventBridge events and SQS messages",
+                "KeyPolicy": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:root"
+                                }
+                            },
+                            "Action": "kms:*",
+                            "Resource": "*"
+                        }
+                    ]
+                }
+            }
+        },
+        "SQSDeadLetterQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "EventBridgeDLQ",
+                "KmsMasterKeyId": {
+                    "Ref": "KMSKey"
+                }
+            }
+        },
+        "CloudWatchAlarm": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmName": "DeadLetterQueueThresholdAlarm",
+                "MetricName": "ApproximateNumberOfMessagesVisible",
+                "Namespace": "AWS/SQS",
+                "Statistic": "Sum",
+                "Period": 300,
+                "Threshold": 10,
+                "ComparisonOperator": "GreaterThanThreshold",
+                "EvaluationPeriods": 1,
+                "AlarmActions": [
+                    {
+                        "Ref": "SNSNotificationTopic"
+                    }
+                ],
+                "Dimensions": [
+                    {
+                        "Name": "QueueName",
+                        "Value": {
+                            "Ref": "SQSDeadLetterQueue"
+                        }
+                    }
+                ]
+            }
+        },
+        "SNSNotificationTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "TopicName": "EventFailureNotification"
+            }
+        },
+        "TranscribeService": {
+            "Type": "AWS::Transcribe::Vocabulary",
+            "Properties": {
+                "LanguageCode": "en-US",
+                "VocabularyFileUri": "s3://transcribe-vocab-file-uri"
+            }
+        },
+        "SecretsManagerSecret": {
+            "Type": "AWS::SecretsManager::Secret",
+            "Properties": {
+                "Name": "VirtualCareSecret",
+                "Description": "Secret for storing sensitive configuration"
+            }
+        }
+    }
+}

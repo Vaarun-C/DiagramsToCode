@@ -1,0 +1,168 @@
+
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for the provided architecture.",
+    "Resources": {
+        "ECSClusterUI": {
+            "Type": "AWS::ECS::Cluster",
+            "Properties": {
+                "ClusterName": "ECS-UI"
+            }
+        },
+        "ECSClusterAPIMiddleware": {
+            "Type": "AWS::ECS::Cluster",
+            "Properties": {
+                "ClusterName": "ECS-API-Middleware"
+            }
+        },
+        "ECSClusterDataIngress": {
+            "Type": "AWS::ECS::Cluster",
+            "Properties": {
+                "ClusterName": "ECS-Data-Ingress"
+            }
+        },
+        "ECSClusterOrchestrator": {
+            "Type": "AWS::ECS::Cluster",
+            "Properties": {
+                "ClusterName": "ECS-Orchestrator"
+            }
+        },
+        "ECSClusterReasoner": {
+            "Type": "AWS::ECS::Cluster",
+            "Properties": {
+                "ClusterName": "ECS-Reasoner"
+            }
+        },
+        "ECSClusterReportingAPIs": {
+            "Type": "AWS::ECS::Cluster",
+            "Properties": {
+                "ClusterName": "ECS-Reporting-APIs"
+            }
+        },
+        "MSKCluster": {
+            "Type": "AWS::MSK::Cluster",
+            "Properties": {
+                "ClusterName": "MSK-Sensor-Data-Streams",
+                "BrokerNodeGroupInfo": {
+                    "InstanceType": "kafka.m5.large",
+                    "ClientSubnets": [
+                        "subnet-12345",
+                        "subnet-67890"
+                    ],
+                    "SecurityGroups": [
+                        "sg-12345"
+                    ]
+                },
+                "NumberOfBrokerNodes": 3
+            }
+        },
+        "EMRCluster": {
+            "Type": "AWS::EMR::Cluster",
+            "Properties": {
+                "Name": "EMR-Sensor-Processing-Pipeline",
+                "ReleaseLabel": "emr-6.4.0",
+                "Instances": {
+                    "InstanceGroups": [
+                        {
+                            "InstanceGroupType": "MASTER",
+                            "InstanceType": "m5.xlarge",
+                            "InstanceCount": 1
+                        },
+                        {
+                            "InstanceGroupType": "CORE",
+                            "InstanceType": "m5.xlarge",
+                            "InstanceCount": 2
+                        }
+                    ],
+                    "Ec2KeyName": "keypair-name",
+                    "KeepJobFlowAliveWhenNoSteps": true
+                },
+                "JobFlowRole": "EMR_EC2_DefaultRole",
+                "ServiceRole": "EMR_DefaultRole"
+            }
+        },
+        "AmazonMQBroker": {
+            "Type": "AWS::AmazonMQ::Broker",
+            "Properties": {
+                "BrokerName": "AmazonMQ-Broker",
+                "EngineType": "ActiveMQ",
+                "EngineVersion": "5.15.14",
+                "HostInstanceType": "mq.m5.large",
+                "SecurityGroups": [
+                    "sg-12345"
+                ],
+                "SubnetIds": [
+                    "subnet-12345",
+                    "subnet-67890"
+                ],
+                "Users": [
+                    {
+                        "Username": "admin",
+                        "Password": "password123"
+                    }
+                ]
+            }
+        },
+        "AuroraPostgreSQLCluster": {
+            "Type": "AWS::RDS::DBCluster",
+            "Properties": {
+                "Engine": "aurora-postgresql",
+                "DBClusterIdentifier": "Aurora-PostgreSQL",
+                "MasterUsername": "admin",
+                "MasterUserPassword": "password123",
+                "DBSubnetGroupName": "subnet-group-name",
+                "VpcSecurityGroupIds": [
+                    "sg-12345"
+                ]
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "raw-data-backup-processed-data"
+            }
+        },
+        "ALBWeb": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "ALB-Web",
+                "Subnets": [
+                    "subnet-12345",
+                    "subnet-67890"
+                ],
+                "SecurityGroups": [
+                    "sg-12345"
+                ],
+                "Type": "application"
+            }
+        },
+        "ALBData": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "ALB-Data",
+                "Subnets": [
+                    "subnet-12345",
+                    "subnet-67890"
+                ],
+                "SecurityGroups": [
+                    "sg-12345"
+                ],
+                "Type": "application"
+            }
+        },
+        "ALBReportingData": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "ALB-Reporting-Data",
+                "Subnets": [
+                    "subnet-12345",
+                    "subnet-67890"
+                ],
+                "SecurityGroups": [
+                    "sg-12345"
+                ],
+                "Type": "application"
+            }
+        }
+    }
+}

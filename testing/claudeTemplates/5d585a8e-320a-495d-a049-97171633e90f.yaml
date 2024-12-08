@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Architecture
+
+Resources:
+
+  Route53Route:
+    Type: AWS::Route53::Route
+    Properties:
+      # Route53 Route configuration
+
+  WAFWebACL:
+    Type: AWS::WAF::WebACL
+    Properties:
+      # WAF Web ACL configuration
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      # Internet Gateway configuration
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      # Load Balancer configuration
+
+  NATGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      # NAT Gateway configuration
+
+  BastionHost:
+    Type: AWS::EC2::Instance
+    Properties:
+      # Bastion Host configuration
+
+  WebServer1:
+    Type: AWS::EC2::Instance
+    Properties:
+      # Web Server configuration
+
+  WebServer2:
+    Type: AWS::EC2::Instance
+    Properties:
+      # Web Server configuration
+
+  AppServer1:
+    Type: AWS::EC2::Instance
+    Properties:
+      # App Server configuration
+
+  AppServer2:
+    Type: AWS::EC2::Instance
+    Properties:
+      # App Server configuration  
+
+  ProcessServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      # Process Server configuration
+
+  ElasticsearchDomain:
+    Type: AWS::ElasticsearchService::Domain
+    Properties:
+      # Elasticsearch Domain configuration
+
+  AutoScalingGroup1:
+    Type: AWS::AutoScaling::Group
+    Properties:
+      # Auto Scaling Group configuration
+
+  AutoScalingGroup2:
+    Type: AWS::AutoScaling::Group
+    Properties:
+      # Auto Scaling Group configuration
+
+  AutoScalingGroup3:
+    Type: AWS::AutoScaling::Group
+    Properties:
+      # Auto Scaling Group configuration
+
+  RDSProductionDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      # RDS Production Database configuration
+
+  RDSStandbyDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      # RDS Standby Database configuration

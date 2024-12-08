@@ -1,0 +1,105 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for deploying ComfyUI on AWS EKS.",
+    "Resources": {
+        "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::Sub": "alb-${AWS::Region}.amazonaws.com"
+                            },
+                            "Id": "ALBOrigin"
+                        }
+                    ],
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "ALBOrigin",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    },
+                    "Enabled": true
+                }
+            }
+        },
+        "ApplicationLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "ComfyUILoadBalancer",
+                "Scheme": "internet-facing",
+                "Type": "application",
+                "Subnets": [
+                    "subnet-12345",
+                    "subnet-67890"
+                ]
+            }
+        },
+        "EKSCluster": {
+            "Type": "AWS::EKS::Cluster",
+            "Properties": {
+                "Name": "ComfyUICluster",
+                "RoleArn": {
+                    "Ref": "EKSClusterRole"
+                },
+                "ResourcesVpcConfig": {
+                    "SubnetIds": [
+                        "subnet-12345",
+                        "subnet-67890"
+                    ],
+                    "EndpointPublicAccess": true
+                }
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Ref": "LambdaExecutionRole"
+                },
+                "Code": {
+                    "ZipFile": "exports.handler = async (event) => { console.log(event); };"
+                },
+                "Runtime": "nodejs14.x"
+            }
+        },
+        "S3ModelsBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "comfyui-models"
+            }
+        },
+        "S3InputBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "comfyui-input"
+            }
+        },
+        "S3OutputBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "comfyui-output"
+            }
+        },
+        "ECRRepository": {
+            "Type": "AWS::ECR::Repository",
+            "Properties": {
+                "RepositoryName": "comfyui-repository"
+            }
+        },
+        "InstanceStore": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": "m5.large",
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/xvda",
+                        "Ebs": {
+                            "VolumeSize": 30
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

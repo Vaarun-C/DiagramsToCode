@@ -1,0 +1,131 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "Route53HostedZone": {
+            "Type": "AWS::Route53::HostedZone",
+            "Properties": {
+                "Name": "example.com"
+            }
+        },
+        "EKSCluster": {
+            "Type": "AWS::EKS::Cluster",
+            "Properties": {
+                "Name": "EKSCluster",
+                "Version": "1.27",
+                "ResourcesVpcConfig": {
+                    "SubnetIds": [
+                        "subnet-12345",
+                        "subnet-67890"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-12345"
+                    ]
+                }
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Runtime": "python3.9",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "def handler(event, context):\n    print('Lambda function triggered')"
+                }
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ]
+            }
+        },
+        "OpenSearchDomain": {
+            "Type": "AWS::OpenSearchService::Domain",
+            "Properties": {
+                "DomainName": "opensearch-cluster",
+                "ElasticsearchVersion": "7.10",
+                "NodeToNodeEncryptionOptions": {
+                    "Enabled": true
+                },
+                "EBSOptions": {
+                    "EBSEnabled": true,
+                    "VolumeSize": 10,
+                    "VolumeType": "gp2"
+                }
+            }
+        },
+        "RDSInstancePrimary": {
+            "Type": "AWS::RDS::DBInstance",
+            "Properties": {
+                "DBInstanceClass": "db.t3.micro",
+                "AllocatedStorage": "20",
+                "Engine": "postgres",
+                "MasterUsername": "admin",
+                "MasterUserPassword": "AdminPassword123",
+                "DBName": "PrimaryDB",
+                "MultiAZ": true,
+                "StorageType": "gp2"
+            }
+        },
+        "ElastiCacheCluster": {
+            "Type": "AWS::ElastiCache::CacheCluster",
+            "Properties": {
+                "CacheNodeType": "cache.t2.micro",
+                "Engine": "redis",
+                "NumCacheNodes": 1,
+                "VpcSecurityGroupIds": [
+                    "sg-12345"
+                ]
+            }
+        },
+        "S3BucketBackupRegion1": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "backup-bucket-region1"
+            }
+        },
+        "S3BucketBackupRegion2": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "backup-bucket-region2"
+            }
+        },
+        "AWSBackupVault": {
+            "Type": "AWS::Backup::BackupVault",
+            "Properties": {
+                "BackupVaultName": "DefaultBackupVault"
+            }
+        },
+        "RedshiftCluster": {
+            "Type": "AWS::Redshift::Cluster",
+            "Properties": {
+                "ClusterIdentifier": "redshift-cluster",
+                "NodeType": "dc2.large",
+                "NumberOfNodes": 2,
+                "MasterUsername": "admin",
+                "MasterUserPassword": "AdminPassword123"
+            }
+        }
+    }
+}

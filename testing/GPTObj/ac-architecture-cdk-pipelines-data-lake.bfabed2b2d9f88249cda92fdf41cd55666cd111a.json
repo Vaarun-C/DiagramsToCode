@@ -1,0 +1,178 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for AWS data lake architecture.",
+    "Resources": {
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Runtime": "python3.9",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "def handler(event, context):\n    print('Hello from AWS Lambda')"
+                }
+            }
+        },
+        "StepFunctionsStateMachine": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+                "DefinitionString": {
+                    "Fn::Sub": "{\"StartAt\":\"LambdaStep\",\"States\":{\"LambdaStep\":{\"Type\":\"Task\",\"Resource\":\"${LambdaFunction.Arn}\",\"End\":true}}}"
+                },
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "StepFunctionsRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "GlueETLJob": {
+            "Type": "AWS::Glue::Job",
+            "Properties": {
+                "Name": "GlueETLJob",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "GlueRole",
+                        "Arn"
+                    ]
+                },
+                "Command": {
+                    "Name": "glueetl",
+                    "ScriptLocation": "s3://scripts/glue-etl-script.py"
+                },
+                "MaxCapacity": 2
+            }
+        },
+        "GlueDataCatalog": {
+            "Type": "AWS::Glue::Database",
+            "Properties": {
+                "CatalogId": {
+                    "Ref": "AWS::AccountId"
+                },
+                "DatabaseInput": {
+                    "Name": "data_lake_catalog"
+                }
+            }
+        },
+        "LakeFormationPermissions": {
+            "Type": "AWS::LakeFormation::Permissions",
+            "Properties": {
+                "DataLakePrincipal": {
+                    "DataLakePrincipalIdentifier": {
+                        "Fn::GetAtt": [
+                            "LakeFormationRole",
+                            "Arn"
+                        ]
+                    }
+                },
+                "Resource": {
+                    "DatabaseResource": {
+                        "Name": {
+                            "Ref": "GlueDataCatalog"
+                        }
+                    }
+                },
+                "Permissions": [
+                    "ALL"
+                ]
+            }
+        },
+        "S3RawBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "data-lake-raw"
+            }
+        },
+        "S3ConformedBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "data-lake-conformed"
+            }
+        },
+        "S3PurposeBuiltBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "data-lake-purpose-built"
+            }
+        },
+        "AthenaWorkGroup": {
+            "Type": "AWS::Athena::WorkGroup",
+            "Properties": {
+                "Name": "AthenaWorkGroup",
+                "WorkGroupConfiguration": {
+                    "ResultConfiguration": {
+                        "OutputLocation": "s3://data-lake-purpose-built/results/"
+                    }
+                }
+            }
+        },
+        "QuickSightAnalysis": {
+            "Type": "AWS::QuickSight::Analysis",
+            "Properties": {
+                "AnalysisId": "DataLakeAnalysis",
+                "SourceEntity": {
+                    "SourceTemplate": {
+                        "DataSetReferences": [
+                            {
+                                "DataSetArn": {
+                                    "Fn::GetAtt": [
+                                        "AthenaWorkGroup",
+                                        "Arn"
+                                    ]
+                                },
+                                "DataSetPlaceholder": "DataLakeDataSet"
+                            }
+                        ],
+                        "Arn": "arn:aws:quicksight::aws:analysis-template"
+                    }
+                },
+                "AwsAccountId": {
+                    "Ref": "AWS::AccountId"
+                }
+            }
+        },
+        "CodePipeline": {
+            "Type": "AWS::CodePipeline::Pipeline",
+            "Properties": {
+                "Name": "DataLakePipeline",
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "CodePipelineRole",
+                        "Arn"
+                    ]
+                },
+                "Stages": [
+                    {
+                        "Name": "Source",
+                        "Actions": [
+                            {
+                                "Name": "SourceAction",
+                                "ActionTypeId": {
+                                    "Category": "Source",
+                                    "Owner": "AWS",
+                                    "Provider": "CodeCommit",
+                                    "Version": "1"
+                                },
+                                "OutputArtifacts": [
+                                    {
+                                        "Name": "SourceOutput"
+                                    }
+                                ],
+                                "Configuration": {
+                                    "RepositoryName": "data-lake-repo",
+                                    "BranchName": "main"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

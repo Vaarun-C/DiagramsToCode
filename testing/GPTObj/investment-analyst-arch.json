@@ -1,0 +1,126 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for investment analyst architecture.",
+    "Resources": {
+        "WAF": {
+            "Type": "AWS::WAFv2::WebACL",
+            "Properties": {
+                "Scope": "REGIONAL",
+                "DefaultAction": {
+                    "Allow": {}
+                },
+                "VisibilityConfig": {
+                    "SampledRequestsEnabled": true,
+                    "CloudWatchMetricsEnabled": true,
+                    "MetricName": "WebACL"
+                }
+            }
+        },
+        "CognitoUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "InvestmentAnalystUserPool"
+            }
+        },
+        "SecretsManagerSecret": {
+            "Type": "AWS::SecretsManager::Secret",
+            "Properties": {
+                "Name": "InvestmentAnalystSecret",
+                "Description": "Secret for application."
+            }
+        },
+        "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::Sub": "${ALB}.amazonaws.com"
+                            },
+                            "Id": "ALBOrigin"
+                        }
+                    ],
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "ALBOrigin",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    }
+                }
+            }
+        },
+        "ApplicationLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Type": "application",
+                "Subnets": [
+                    "subnet-1",
+                    "subnet-2"
+                ]
+            }
+        },
+        "ECSFargateCluster": {
+            "Type": "AWS::ECS::Cluster",
+            "Properties": {
+                "ClusterName": "InvestmentAnalystCluster"
+            }
+        },
+        "ECRRepository": {
+            "Type": "AWS::ECR::Repository",
+            "Properties": {
+                "RepositoryName": "InvestmentAnalystRepo"
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "investment-analyst-data"
+            }
+        },
+        "AuroraPostgres": {
+            "Type": "AWS::RDS::DBCluster",
+            "Properties": {
+                "Engine": "aurora-postgresql",
+                "DBClusterIdentifier": "InvestmentAnalystAurora",
+                "MasterUsername": "admin",
+                "MasterUserPassword": {
+                    "Ref": "DBPassword"
+                }
+            }
+        },
+        "CloudWatchLogs": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+                "LogGroupName": "InvestmentAnalystLogs",
+                "RetentionInDays": 7
+            }
+        },
+        "CloudTrail": {
+            "Type": "AWS::CloudTrail::Trail",
+            "Properties": {
+                "TrailName": "InvestmentAnalystTrail",
+                "S3BucketName": {
+                    "Ref": "S3Bucket"
+                }
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Runtime": "python3.8",
+                "Code": {
+                    "S3Bucket": {
+                        "Ref": "S3Bucket"
+                    },
+                    "S3Key": "lambda-code.zip"
+                },
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                }
+            }
+        }
+    }
+}

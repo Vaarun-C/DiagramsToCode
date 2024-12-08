@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template for S3 static website with CloudFront and Lambda@Edge
+
+Resources:
+  PrimaryBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-primary-origin'
+      VersioningConfiguration:
+        Status: Enabled
+
+  FailoverBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-failover-origin'
+      VersioningConfiguration:
+        Status: Enabled
+
+  URLRewriteFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            const request = event.Records[0].cf.request;
+            // Add URL rewrite logic here
+            return request;
+          }
+      Runtime: nodejs18.x
+      Timeout: 5
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - lambda.amazonaws.com
+                - edgelambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Origins:
+          - Id: PrimaryS3Origin
+            DomainName: !GetAtt PrimaryBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+          - Id: FailoverS3Origin
+            DomainName: !GetAtt FailoverBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+        DefaultCacheBehavior:
+          TargetOriginId: PrimaryS3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          LambdaFunctionAssociations:
+            - EventType: origin-request
+              LambdaFunctionARN: !Ref URLRewriteFunction.Version

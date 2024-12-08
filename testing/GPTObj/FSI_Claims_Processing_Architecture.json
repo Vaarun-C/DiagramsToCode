@@ -1,0 +1,190 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "PinpointApp": {
+            "Type": "AWS::Pinpoint::App",
+            "Properties": {
+                "Name": "ClaimsProcessingApp"
+            }
+        },
+        "ConnectInstance": {
+            "Type": "AWS::Connect::Instance",
+            "Properties": {
+                "InstanceAlias": "ClaimsProcessingConnect",
+                "IdentityManagementType": "CONNECT_MANAGED"
+            }
+        },
+        "LexBot": {
+            "Type": "AWS::Lex::Bot",
+            "Properties": {
+                "Name": "ClaimsProcessingBot",
+                "Locale": {
+                    "Id": "en_US",
+                    "VoiceSettings": {
+                        "VoiceId": "Joanna"
+                    }
+                }
+            }
+        },
+        "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Enabled": true,
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::GetAtt": [
+                                    "S3Bucket",
+                                    "DomainName"
+                                ]
+                            },
+                            "Id": "S3Origin"
+                        }
+                    ],
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "S3Origin",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    }
+                }
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "claims-processing-docs"
+            }
+        },
+        "WAFWebACL": {
+            "Type": "AWS::WAFv2::WebACL",
+            "Properties": {
+                "Scope": "CLOUDFRONT",
+                "DefaultAction": {
+                    "Allow": {}
+                },
+                "VisibilityConfig": {
+                    "CloudWatchMetricsEnabled": true,
+                    "MetricName": "webACL",
+                    "SampledRequestsEnabled": true
+                }
+            }
+        },
+        "ApplicationLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "ClaimsProcessingALB",
+                "Scheme": "internet-facing",
+                "Subnets": [
+                    "subnet-12345",
+                    "subnet-67890"
+                ]
+            }
+        },
+        "FargateService": {
+            "Type": "AWS::ECS::Service",
+            "Properties": {
+                "Cluster": "FargateCluster",
+                "TaskDefinition": "FargateTaskDefinition",
+                "LaunchType": "FARGATE"
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Runtime": "python3.9",
+                "Code": {
+                    "ZipFile": "def handler(event, context):\n    print('Claims processing Lambda invoked')"
+                }
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ]
+            }
+        },
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "ClaimsProcessingTable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "ClaimId",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "ClaimId",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "TextractJob": {
+            "Type": "AWS::Textract::Document",
+            "Properties": {
+                "Document": {
+                    "S3Object": {
+                        "Bucket": {
+                            "Ref": "S3Bucket"
+                        },
+                        "Name": "sample-document.pdf"
+                    }
+                }
+            }
+        },
+        "BedrockEndpoint": {
+            "Type": "AWS::Bedrock::Endpoint",
+            "Properties": {
+                "Model": "AnthropicClaude",
+                "ServiceName": "ClaimsProcessing"
+            }
+        },
+        "APIGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "ClaimsProcessingAPI"
+            }
+        },
+        "OpenSearchDomain": {
+            "Type": "AWS::OpenSearchService::Domain",
+            "Properties": {
+                "DomainName": "claims-processing-opensearch",
+                "ElasticsearchVersion": "7.10",
+                "NodeToNodeEncryptionOptions": {
+                    "Enabled": true
+                }
+            }
+        },
+        "SQSQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "ClaimsProcessingQueue"
+            }
+        }
+    }
+}

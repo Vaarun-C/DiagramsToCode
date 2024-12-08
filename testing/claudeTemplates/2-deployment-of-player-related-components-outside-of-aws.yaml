@@ -1,0 +1,168 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Player-Related Components Infrastructure"
+
+Resources:
+  # CloudFront Distribution
+  PlayerContentDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: "Player Content Distribution"
+        Origins:
+          - DomainName: "game-content.example.com"
+            Id: "PrimaryOrigin"
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+
+  # API Gateway
+  PlayerAPIGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: "PlayerAPI"
+      Description: "API for Player Services"
+
+  # VPC
+  PlayerVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: PlayerVPC
+
+  # Public Subnet
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref PlayerVPC
+      CidrBlock: "10.0.1.0/24"
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select 
+        - 0
+        - !GetAZs 
+          Ref: 'AWS::Region'
+      Tags:
+        - Key: Name
+          Value: PublicSubnet
+
+  # Private Subnet
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref PlayerVPC
+      CidrBlock: "10.0.2.0/24"
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select 
+        - 1
+        - !GetAZs 
+          Ref: 'AWS::Region'
+      Tags:
+        - Key: Name
+          Value: PrivateSubnet
+
+  # NAT Gateway
+  PlayerNATGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NATGatewayEIP.AllocationId
+      SubnetId: !Ref PublicSubnet
+
+  # Elastic IP for NAT Gateway
+  NATGatewayEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  # EKS Cluster
+  PlayerEKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: "PlayerGameCluster"
+      RoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/EKSClusterRole"
+      ResourcesVpcConfig:
+        SubnetIds:
+          - !Ref PublicSubnet
+          - !Ref PrivateSubnet
+
+  # MSK Cluster
+  PlayerKafkaCluster:
+    Type: AWS::MSK::Cluster
+    Properties:
+      ClusterName: "PlayerEventsCluster"
+      KafkaVersion: "2.8.1"
+      NumberOfBrokerNodes: 3
+      BrokerNodeGroupInfo:
+        InstanceType: "kafka.m5.large"
+        ClientSubnets:
+          - !Ref PrivateSubnet
+        StorageInfo:
+          EBSStorageInfo:
+            VolumeSize: 100
+
+  # RDS Instance
+  PlayerDatabase:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: "mysql"
+      EngineVersion: "8.0"
+      MasterUsername: !Sub "{{resolve:ssm-secure:PlayerDBUsername:1}}"
+      MasterUserPassword: !Sub "{{resolve:ssm-secure:PlayerDBPassword:1}}"
+      DBInstanceClass: "db.t3.micro"
+      AllocatedStorage: 20
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroup
+
+  # DynamoDB Table
+  PlayerDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "PlayerProfiles"
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "Id"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+
+  # Application Load Balancer
+  PlayerLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: "PlayerGameALB"
+      Type: "application"
+      Subnets:
+        - !Ref PublicSubnet
+        - !Ref PrivateSubnet
+      SecurityGroups:
+        - !Ref LoadBalancerSecurityGroup
+
+  # Outpost
+  PlayerOutpost:
+    Type: AWS::Outposts::Outpost
+    Properties:
+      Name: "PlayerGameOutpost"
+      SiteId: "op-gameinfra"
+      AvailabilityZone: !Select 
+        - 0
+        - !GetAZs 
+          Ref: 'AWS::Region'
+
+  # Security Group for Load Balancer
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for Player Game Load Balancer"
+      VpcId: !Ref PlayerVPC
+
+  # Security Group for Database
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for Player Game Database"
+      VpcId: !Ref PlayerVPC

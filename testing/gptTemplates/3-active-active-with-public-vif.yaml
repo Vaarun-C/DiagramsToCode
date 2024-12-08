@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  MyDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "Id"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "my-public-bucket"
+
+  MyCloudWatchAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: 1
+      MetricName: "CPUUtilization"
+      Namespace: "AWS/EC2"
+      Period: 300
+      Statistic: Average
+      Threshold: 80.0
+
+  MyDirectConnectConnection1:
+    Type: AWS::DirectConnect::Connection
+    Properties:
+      Location: "EqSe2"
+      Bandwidth: "1Gbps"
+
+  MyDirectConnectConnection2:
+    Type: AWS::DirectConnect::Connection
+    Properties:
+      Location: "EqSe2"
+      Bandwidth: "1Gbps"
+
+  MyDirectConnectConnection3:
+    Type: AWS::DirectConnect::Connection
+    Properties:
+      Location: "EqSe2"
+      Bandwidth: "1Gbps"
+
+  MyDirectConnectConnection4:
+    Type: AWS::DirectConnect::Connection
+    Properties:
+      Location: "EqSe2"
+      Bandwidth: "1Gbps"

@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Cloud Infrastructure
+
+Resources:
+
+  DirectConnectGateway:
+    Type: AWS::DirectConnect::DirectConnectGateway
+    Properties:
+      AmazonSideAsn: 64512
+      Name: MyDirectConnectGateway
+
+  DirectConnectGatewayAssociation:
+    Type: AWS::DirectConnect::DirectConnectGatewayAssociation
+    Properties:
+      DirectConnectGatewayId: !Ref DirectConnectGateway
+      GatewayId: !Ref VPCGateway
+      VpnGatewayId: !Ref VPNGateway
+
+  VPCGateway:
+    Type: AWS::EC2::InternetGateway
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref VPCGateway
+      VpcId: !Ref VPC
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: MyDynamoDBTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: my-s3-bucket
+
+  CloudWatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: my-cloudwatch-log-group

@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "AWS Infrastructure for Data Pipeline"
+
+Resources:
+
+  # IoT Device Management
+  IoTDeviceManagement:
+    Type: AWS::IoT::Device
+    Properties:
+      RegistrationConfig:
+        AwsIotRoleArn: !GetAtt IoTRole.Arn
+
+  # Lambda Function for Data Processing
+  DataProcessingLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "DataProcessingFunction"
+      Role: !GetAtt LambdaRole.Arn
+      Runtime: "python3.9"
+      Handler: "index.handler"
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            # Process data here
+            return {
+                'statusCode': 200,
+                'body': 'Data processed successfully'
+            }
+
+  # DynamoDB Table for Storing Data
+  DataTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "DataTable"
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "Id"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+
+  # Timestream Database for Time Series Data
+  DataTimestream:
+    Type: AWS::Timestream::Database
+    Properties:
+      DatabaseName: "DataTimestreamDB"
+
+  # S3 Bucket for Data Storage
+  DataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-data-bucket"
+
+  # QuickSight Analysis for Data Visualization
+  DataAnalysis:
+    Type: AWS::QuickSight::Analysis
+    Properties:
+      AwsAccountId: !Ref AWS::AccountId
+      Analysis:
+        Name: "DataAnalysis"
+        QuickSightUserRef: "AUTHOR"
+
+  # IoT Topic Rule for Data Ingestion
+  DataIngestionRule:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      RuleName: "DataIngestionRule"
+      TopicRulePayload:
+        Actions:
+          - DynamoDB:
+              TableName: !Ref DataTable
+              HashKeyField: "Id"
+              RoleArn: !GetAtt IoTRole.Arn
+
+  # IAM Role for IoT Devices
+  IoTRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "iot.amazonaws.com"
+            Action: "sts:AssumeRole"
+
+  # IAM Role for Lambda Function
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"

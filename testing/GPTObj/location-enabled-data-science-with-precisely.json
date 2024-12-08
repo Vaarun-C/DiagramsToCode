@@ -1,0 +1,198 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for the provided architecture.",
+    "Resources": {
+        "CloudWatchLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+                "LogGroupName": "/aws/lambda/example-log-group",
+                "RetentionInDays": 14
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "example-lambda-function",
+                "Runtime": "python3.8",
+                "Handler": "lambda_function.lambda_handler",
+                "Code": {
+                    "S3Bucket": "example-bucket",
+                    "S3Key": "lambda-function-code.zip"
+                },
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "LambdaPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents"
+                                    ],
+                                    "Resource": "arn:aws:logs:*:*:*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "EC2Instance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": "t2.micro",
+                "ImageId": "ami-12345678",
+                "KeyName": "example-key-pair",
+                "SecurityGroupIds": [
+                    "sg-12345678"
+                ]
+            }
+        },
+        "S3BucketPrecisely": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "precisely-data-bucket"
+            }
+        },
+        "S3BucketCustomer": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "customer-data-bucket"
+            }
+        },
+        "SageMakerNotebook": {
+            "Type": "AWS::SageMaker::NotebookInstance",
+            "Properties": {
+                "NotebookInstanceName": "example-sagemaker-notebook",
+                "InstanceType": "ml.t2.medium",
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "SageMakerExecutionRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "SageMakerExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "sagemaker.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "SageMakerPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "s3:*",
+                                    "Resource": "arn:aws:s3:::precisely-data-bucket/*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "EMRCluster": {
+            "Type": "AWS::EMR::Cluster",
+            "Properties": {
+                "Name": "example-emr-cluster",
+                "ReleaseLabel": "emr-5.32.0",
+                "Instances": {
+                    "MasterInstanceGroup": {
+                        "InstanceCount": 1,
+                        "InstanceType": "m5.xlarge"
+                    },
+                    "CoreInstanceGroup": {
+                        "InstanceCount": 2,
+                        "InstanceType": "m5.xlarge"
+                    }
+                },
+                "ServiceRole": {
+                    "Fn::GetAtt": [
+                        "EMRServiceRole",
+                        "Arn"
+                    ]
+                },
+                "JobFlowRole": {
+                    "Fn::GetAtt": [
+                        "EMRJobFlowRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "EMRServiceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "elasticmapreduce.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                }
+            }
+        },
+        "EMRJobFlowRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "ec2.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

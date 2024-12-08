@@ -1,0 +1,269 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+
+  MyInternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  MyHostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: "example.com"
+
+  MyWAF:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: "MyWAF"
+      Scope: "CLOUDFRONT"
+      DefaultAction:
+        Allow: {}
+
+  # Creating 10 subnets (2 public, 8 private)
+  PublicSubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.1.0/24"
+
+  PublicSubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.2.0/24"
+
+  PrivateSubnetWebAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.3.0/24"
+
+  PrivateSubnetWebAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.4.0/24"
+
+  PrivateSubnetAppAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.5.0/24"
+
+  PrivateSubnetAppAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.6.0/24"
+
+  PrivateSubnetProcessAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.7.0/24"
+
+  PrivateSubnetProcessAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.8.0/24"
+
+  PrivateSubnetRDSAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.9.0/24"
+
+  PrivateSubnetRDSAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.10.0/24"
+
+  MyLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: "MyALB"
+      Subnets:
+        - !Ref PublicSubnetAZ1
+        - !Ref PublicSubnetAZ2
+      Type: "application"
+
+  MyEIP1:
+    Type: AWS::EC2::EIP
+
+  MyEIP2:
+    Type: AWS::EC2::EIP
+
+  MyNatGateway1:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt MyEIP1.AllocationId
+      SubnetId: !Ref PublicSubnetAZ1
+
+  MyNatGateway2:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt MyEIP2.AllocationId
+      SubnetId: !Ref PublicSubnetAZ2
+
+  BastionHostAZ1:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PublicSubnetAZ1
+
+  BastionHostAZ2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PublicSubnetAZ2
+
+  WebASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      MinSize: "2"
+      MaxSize: "4"
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnetWebAZ1
+        - !Ref PrivateSubnetWebAZ2
+      LaunchConfigurationName: "MyWebLaunchConfig"
+
+  WebServer1:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PrivateSubnetWebAZ1
+
+  WebServer2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PrivateSubnetWebAZ1
+
+  WebServer3:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PrivateSubnetWebAZ2
+
+  WebServer4:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PrivateSubnetWebAZ2
+
+  AppASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      MinSize: "2"
+      MaxSize: "4"
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnetAppAZ1
+        - !Ref PrivateSubnetAppAZ2
+      LaunchConfigurationName: "MyAppLaunchConfig"
+
+  AppServer1:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PrivateSubnetAppAZ1
+
+  AppServer2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PrivateSubnetAppAZ1
+
+  AppServer3:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PrivateSubnetAppAZ2
+
+  AppServer4:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PrivateSubnetAppAZ2
+
+  ProcessASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      MinSize: "2"
+      MaxSize: "4"
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnetProcessAZ1
+        - !Ref PrivateSubnetProcessAZ2
+      LaunchConfigurationName: "MyProcessLaunchConfig"
+
+  ProcessServerAZ1:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PrivateSubnetProcessAZ1
+
+  ElasticsearchServerAZ1:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PrivateSubnetProcessAZ1
+
+  ProcessServerAZ2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PrivateSubnetProcessAZ2
+
+  ElasticsearchServerAZ2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-0c55b159cbfafe1f0"
+      InstanceType: "t2.micro"
+      SubnetId: !Ref PrivateSubnetProcessAZ2
+
+  MyEFS:
+    Type: AWS::EFS::FileSystem
+
+  MyRDSPrimary:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: "mysql"
+      MasterUsername: "admin"
+      MasterUserPassword: "SecretPass123"
+      DBInstanceClass: "db.t3.micro"
+      AllocatedStorage: 20
+      DBSubnetGroupName:
+        Ref: MyRDSSubnetGroup
+
+  MyRDSStandby:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: "mysql"
+      SourceDBInstanceIdentifier: !Ref MyRDSPrimary
+      DBInstanceClass: "db.t3.micro"
+      DBSubnetGroupName:
+        Ref: MyRDSSubnetGroup
+
+  MyRDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "RDS Subnet Group"
+      SubnetIds:
+        - !Ref PrivateSubnetRDSAZ1
+        - !Ref PrivateSubnetRDSAZ2

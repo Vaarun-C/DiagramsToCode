@@ -1,0 +1,109 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for the provided architecture.",
+    "Resources": {
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "model-repository"
+            }
+        },
+        "EKSCluster": {
+            "Type": "AWS::EKS::Cluster",
+            "Properties": {
+                "Name": "example-eks-cluster",
+                "ResourcesVpcConfig": {
+                    "SubnetIds": [
+                        "subnet-12345678",
+                        "subnet-87654321"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-12345678"
+                    ]
+                },
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "EKSClusterRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "EKSClusterRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "eks.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "EKSClusterPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "ec2:*",
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "EC2AutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "LaunchConfigurationName": {
+                    "Ref": "EC2LaunchConfiguration"
+                },
+                "MinSize": "1",
+                "MaxSize": "10",
+                "VPCZoneIdentifier": [
+                    "subnet-12345678",
+                    "subnet-87654321"
+                ]
+            }
+        },
+        "EC2LaunchConfiguration": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "InstanceType": "inf2.xlarge",
+                "ImageId": "ami-12345678",
+                "SecurityGroups": [
+                    "sg-12345678"
+                ]
+            }
+        },
+        "ElasticLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "example-load-balancer",
+                "Subnets": [
+                    "subnet-12345678",
+                    "subnet-87654321"
+                ],
+                "SecurityGroups": [
+                    "sg-12345678"
+                ],
+                "Type": "application"
+            }
+        },
+        "ECRRepository": {
+            "Type": "AWS::ECR::Repository",
+            "Properties": {
+                "RepositoryName": "example-repository"
+            }
+        }
+    }
+}

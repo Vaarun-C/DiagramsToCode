@@ -1,0 +1,138 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for centralized model governance architecture.",
+    "Resources": {
+        "SageMakerModelRegistry": {
+            "Type": "AWS::SageMaker::ModelPackageGroup",
+            "Properties": {
+                "ModelPackageGroupName": "CentralizedModelRegistry",
+                "ModelPackageGroupDescription": "Centralized registry for model governance."
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "ml-governance-model-artifacts"
+            }
+        },
+        "ECRRepository": {
+            "Type": "AWS::ECR::Repository",
+            "Properties": {
+                "RepositoryName": "model-registry-repository"
+            }
+        },
+        "EventBridgeRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "Name": "ModelGovernanceEventRule",
+                "EventPattern": {
+                    "source": [
+                        "aws.sagemaker"
+                    ],
+                    "detail-type": [
+                        "SageMaker Model State Change"
+                    ]
+                },
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "GovernanceLambda",
+                                "Arn"
+                            ]
+                        },
+                        "Id": "GovernanceLambdaTarget"
+                    }
+                ]
+            }
+        },
+        "GovernanceLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "ModelGovernanceLambda",
+                "Runtime": "python3.9",
+                "Handler": "lambda_function.lambda_handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "def lambda_handler(event, context):\n    return {'statusCode': 200, 'body': 'Hello World'}"
+                }
+            }
+        },
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "ModelGovernanceTable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "ModelID",
+                        "AttributeType": "S"
+                    },
+                    {
+                        "AttributeName": "Stage",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "ModelID",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "Stage",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "AthenaWorkgroup": {
+            "Type": "AWS::Athena::WorkGroup",
+            "Properties": {
+                "Name": "ModelGovernanceWorkgroup",
+                "State": "ENABLED",
+                "WorkGroupConfiguration": {
+                    "ResultConfiguration": {
+                        "OutputLocation": "s3://ml-governance-model-artifacts/athena-results/"
+                    }
+                }
+            }
+        },
+        "QuickSightDashboard": {
+            "Type": "AWS::QuickSight::Dashboard",
+            "Properties": {
+                "AwsAccountId": {
+                    "Ref": "AWS::AccountId"
+                },
+                "DashboardId": "ModelGovernanceDashboard",
+                "Name": "Model Governance Dashboard"
+            }
+        },
+        "APIGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "ModelGovernanceAPI",
+                "Description": "API Gateway for model governance."
+            }
+        },
+        "SageMakerStudio": {
+            "Type": "AWS::SageMaker::Domain",
+            "Properties": {
+                "DomainName": "SageMakerStudioDomain",
+                "AuthMode": "IAM",
+                "DefaultUserSettings": {
+                    "ExecutionRole": {
+                        "Fn::GetAtt": [
+                            "SageMakerExecutionRole",
+                            "Arn"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

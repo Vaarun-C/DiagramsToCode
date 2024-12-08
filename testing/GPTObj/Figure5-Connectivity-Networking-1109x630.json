@@ -1,0 +1,131 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Enabled": true,
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::GetAtt": [
+                                    "S3Bucket",
+                                    "DomainName"
+                                ]
+                            },
+                            "Id": "S3Origin"
+                        }
+                    ],
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "S3Origin",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    }
+                }
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "networking-data-bucket"
+            }
+        },
+        "WAFWebACL": {
+            "Type": "AWS::WAFv2::WebACL",
+            "Properties": {
+                "Scope": "CLOUDFRONT",
+                "DefaultAction": {
+                    "Allow": {}
+                },
+                "VisibilityConfig": {
+                    "CloudWatchMetricsEnabled": true,
+                    "MetricName": "webACL",
+                    "SampledRequestsEnabled": true
+                }
+            }
+        },
+        "Route53HostedZone": {
+            "Type": "AWS::Route53::HostedZone",
+            "Properties": {
+                "Name": "example.com"
+            }
+        },
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true
+            }
+        },
+        "PublicSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.1.0/24",
+                "AvailabilityZone": "us-east-1a",
+                "MapPublicIpOnLaunch": true
+            }
+        },
+        "PrivateSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.2.0/24",
+                "AvailabilityZone": "us-east-1a"
+            }
+        },
+        "NATGateway": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnet1"
+                },
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "EIP",
+                        "AllocationId"
+                    ]
+                }
+            }
+        },
+        "EIP": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": "vpc"
+            }
+        },
+        "InternetGateway": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {}
+        },
+        "AttachGateway": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "InternetGatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "LoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "NetworkingLoadBalancer",
+                "Scheme": "internet-facing",
+                "Subnets": [
+                    {
+                        "Ref": "PublicSubnet1"
+                    }
+                ]
+            }
+        }
+    }
+}

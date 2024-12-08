@@ -1,0 +1,123 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Resources": {
+        "MySageMakerDomain": {
+            "Type": "AWS::SageMaker::Domain",
+            "Properties": {
+                "DomainName": "MySageMakerDomain",
+                "AuthMode": "IAM",
+                "DefaultUserSettings": {
+                    "ExecutionRole": "arn:aws:iam::123456789012:role/SageMakerRole"
+                },
+                "SubnetIds": [
+                    "subnet-12345678"
+                ],
+                "VpcId": "vpc-12345678"
+            }
+        },
+        "MyCodeCommitRepo": {
+            "Type": "AWS::CodeCommit::Repository",
+            "Properties": {
+                "RepositoryName": "MyRepo",
+                "RepositoryDescription": "My source repository"
+            }
+        },
+        "MyEventBridgeRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "ScheduleExpression": "rate(5 minutes)",
+                "State": "ENABLED"
+            }
+        },
+        "MyModelPackageGroup": {
+            "Type": "AWS::SageMaker::ModelPackageGroup",
+            "Properties": {
+                "ModelPackageGroupName": "MyModelPackageGroup"
+            }
+        },
+        "MyModelPackage": {
+            "Type": "AWS::SageMaker::ModelPackage",
+            "Properties": {
+                "ModelPackageGroupName": {
+                    "Ref": "MyModelPackageGroup"
+                },
+                "ModelPackageDescription": "My model package"
+            }
+        },
+        "MyPipeline": {
+            "Type": "AWS::CodePipeline::Pipeline",
+            "Properties": {
+                "Name": "MyPipeline",
+                "RoleArn": "arn:aws:iam::123456789012:role/CodePipelineRole",
+                "Stages": []
+            }
+        },
+        "MyCodeBuildProject": {
+            "Type": "AWS::CodeBuild::Project",
+            "Properties": {
+                "Name": "MyCodeBuildProject",
+                "ServiceRole": "arn:aws:iam::123456789012:role/CodeBuildRole",
+                "Source": {
+                    "Type": "CODECOMMIT",
+                    "Location": {
+                        "Fn::GetAtt": [
+                            "MyCodeCommitRepo",
+                            "CloneUrlHttp"
+                        ]
+                    }
+                },
+                "Environment": {
+                    "ComputeType": "BUILD_GENERAL1_SMALL",
+                    "Image": "aws/codebuild/standard:5.0",
+                    "Type": "LINUX_CONTAINER"
+                },
+                "Artifacts": {
+                    "Type": "NO_ARTIFACTS"
+                }
+            }
+        },
+        "MyCloudFormationStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": "https://s3.amazonaws.com/mybucket/mytemplate.yaml"
+            }
+        },
+        "MySageMakerEndpoint": {
+            "Type": "AWS::SageMaker::Endpoint",
+            "Properties": {
+                "EndpointName": "MyEndpoint",
+                "EndpointConfigName": "MyEndpointConfig"
+            }
+        },
+        "MyMonitoringSchedule": {
+            "Type": "AWS::SageMaker::MonitoringSchedule",
+            "Properties": {
+                "MonitoringScheduleName": "MyMonitoringSchedule",
+                "MonitoringScheduleConfig": {
+                    "ScheduleConfig": {
+                        "ScheduleExpression": "cron(0 * ? * * *)"
+                    },
+                    "MonitoringJobDefinitionName": "MyMonitoringJob"
+                }
+            }
+        },
+        "MySageMakerPipeline": {
+            "Type": "AWS::SageMaker::Pipeline",
+            "Properties": {
+                "PipelineName": "MySageMakerPipeline",
+                "RoleArn": "arn:aws:iam::123456789012:role/SageMakerRole",
+                "PipelineDefinition": "{}"
+            }
+        },
+        "MySageMakerProject": {
+            "Type": "AWS::SageMaker::Project",
+            "Properties": {
+                "ProjectName": "MySageMakerProject",
+                "ServiceCatalogProvisioningDetails": {
+                    "ProductId": "prod-abc123",
+                    "ProvisioningArtifactId": "pa-abc123"
+                }
+            }
+        }
+    }
+}

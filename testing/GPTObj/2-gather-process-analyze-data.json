@@ -1,0 +1,178 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Resources": {
+        "MyIoTFleetWiseCampaign": {
+            "Type": "AWS::IoTFleetWise::Campaign",
+            "Properties": {
+                "Name": "MyFleetWiseCampaign",
+                "SignalCatalogArn": "arn:aws:iotfleetwise:us-east-1:123456789012:signalcatalog/MyCatalog",
+                "TargetArn": "arn:aws:iotfleetwise:us-east-1:123456789012:fleet/MyFleet",
+                "CollectionScheme": {
+                    "ConditionBasedCollectionScheme": {
+                        "Expression": "$variable < 100"
+                    }
+                }
+            }
+        },
+        "MyIoTThing": {
+            "Type": "AWS::IoT::Thing",
+            "Properties": {
+                "ThingName": "MyIoTThing"
+            }
+        },
+        "MyIoTThingGroup": {
+            "Type": "AWS::IoT::ThingGroup",
+            "Properties": {
+                "ThingGroupName": "MyThingGroup"
+            }
+        },
+        "MyHostedZone": {
+            "Type": "AWS::Route53::HostedZone",
+            "Properties": {
+                "Name": "example.com"
+            }
+        },
+        "MyDynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "Id",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "Id",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "MyLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "ZipFile": "exports.handler = async () => 'OK';\n"
+                },
+                "Handler": "index.handler",
+                "Runtime": "nodejs14.x",
+                "Role": "arn:aws:iam::123456789012:role/MyLambdaRole"
+            }
+        },
+        "MyTimestreamDatabase": {
+            "Type": "AWS::Timestream::Database",
+            "Properties": {
+                "DatabaseName": "MyTimestreamDB"
+            }
+        },
+        "MySageMakerNotebook": {
+            "Type": "AWS::SageMaker::NotebookInstance",
+            "Properties": {
+                "InstanceType": "ml.t2.medium",
+                "RoleArn": "arn:aws:iam::123456789012:role/SageMakerRole",
+                "NotebookInstanceName": "MyNotebook"
+            }
+        },
+        "MyQuickSightDataSet": {
+            "Type": "AWS::QuickSight::DataSet",
+            "Properties": {
+                "AwsAccountId": "123456789012",
+                "DataSetId": "MyDataSetId",
+                "Name": "MyDataSet",
+                "ImportMode": "SPICE"
+            }
+        },
+        "MyS3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "my-data-bucket"
+            }
+        },
+        "MyIoTJob": {
+            "Type": "AWS::IoT::Job",
+            "Properties": {
+                "JobId": "MyJob",
+                "Targets": [
+                    "arn:aws:iot:us-east-1:123456789012:thing/MyIoTThing"
+                ],
+                "Description": "My IoT Job",
+                "TargetSelection": "SNAPSHOT"
+            }
+        },
+        "MyIoTThingIndexingConfig": {
+            "Type": "AWS::IoT::ThingIndexingConfiguration",
+            "Properties": {
+                "ThingIndexingMode": "REGISTRY"
+            }
+        },
+        "MyAppSyncApi": {
+            "Type": "AWS::AppSync::GraphQLApi",
+            "Properties": {
+                "Name": "MyAppSyncApi",
+                "AuthenticationType": "API_KEY"
+            }
+        },
+        "MyCognitoUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "MyUserPool"
+            }
+        },
+        "MyAmplifyApp": {
+            "Type": "AWS::Amplify::App",
+            "Properties": {
+                "Name": "MyAmplifyApp",
+                "Repository": "https://github.com/myrepo/myapp"
+            }
+        },
+        "MyCloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Enabled": true,
+                    "Origins": [
+                        {
+                            "DomainName": "example.com",
+                            "Id": "Origin1"
+                        }
+                    ]
+                }
+            }
+        },
+        "MyGrafanaWorkspace": {
+            "Type": "AWS::Grafana::Workspace",
+            "Properties": {
+                "AccountAccessType": "CURRENT_ACCOUNT",
+                "AuthenticationProviders": [
+                    "AWS_SSO"
+                ],
+                "Name": "MyGrafanaWorkspace"
+            }
+        },
+        "MyMSKCluster": {
+            "Type": "AWS::MSK::Cluster",
+            "Properties": {
+                "ClusterName": "MyMSKCluster",
+                "KafkaVersion": "2.8.1",
+                "NumberOfBrokerNodes": 2,
+                "BrokerNodeGroupInfo": {
+                    "InstanceType": "kafka.m5.large",
+                    "ClientSubnets": [
+                        "subnet-12345678"
+                    ],
+                    "SecurityGroups": [
+                        "sg-12345678"
+                    ]
+                }
+            }
+        },
+        "MyApiGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "MyAPI"
+            }
+        }
+    }
+}

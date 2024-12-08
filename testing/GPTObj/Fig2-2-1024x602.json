@@ -1,0 +1,217 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "S3BucketFrontend": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "frontend-assets-bucket"
+            }
+        },
+        "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Enabled": true,
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::GetAtt": [
+                                    "S3BucketFrontend",
+                                    "DomainName"
+                                ]
+                            },
+                            "Id": "S3Origin"
+                        }
+                    ],
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "S3Origin",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    }
+                }
+            }
+        },
+        "AmplifyApp": {
+            "Type": "AWS::Amplify::App",
+            "Properties": {
+                "Name": "LoadTestingFrontend",
+                "Repository": "https://github.com/example/repo"
+            }
+        },
+        "APIGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "LoadTestingAPI"
+            }
+        },
+        "LambdaFunctionAPI": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Runtime": "python3.9",
+                "Code": {
+                    "ZipFile": "def handler(event, context):\n    print('API Lambda triggered')"
+                }
+            }
+        },
+        "CognitoUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "LoadTestingUserPool"
+            }
+        },
+        "IAMRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ]
+            }
+        },
+        "CodePipeline": {
+            "Type": "AWS::CodePipeline::Pipeline",
+            "Properties": {
+                "Name": "DockerImagePipeline",
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "PipelineExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "ArtifactStore": {
+                    "Type": "S3",
+                    "Location": {
+                        "Ref": "S3BucketBackend"
+                    }
+                },
+                "Stages": [
+                    {
+                        "Name": "Source",
+                        "Actions": [
+                            {
+                                "Name": "Source",
+                                "ActionTypeId": {
+                                    "Category": "Source",
+                                    "Owner": "AWS",
+                                    "Version": "1",
+                                    "Provider": "S3"
+                                },
+                                "OutputArtifacts": [
+                                    {
+                                        "Name": "SourceOutput"
+                                    }
+                                ],
+                                "Configuration": {
+                                    "S3Bucket": {
+                                        "Ref": "S3BucketBackend"
+                                    },
+                                    "S3ObjectKey": "source.zip"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "CodeBuildProject": {
+            "Type": "AWS::CodeBuild::Project",
+            "Properties": {
+                "Name": "DockerBuildProject",
+                "Source": {
+                    "Type": "S3",
+                    "Location": {
+                        "Fn::Sub": "${S3BucketBackend}/source.zip"
+                    }
+                },
+                "Environment": {
+                    "ComputeType": "BUILD_GENERAL1_SMALL",
+                    "Image": "aws/codebuild/standard:5.0",
+                    "Type": "LINUX_CONTAINER",
+                    "PrivilegedMode": true
+                },
+                "ServiceRole": {
+                    "Fn::GetAtt": [
+                        "BuildExecutionRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "FargateTask": {
+            "Type": "AWS::ECS::TaskDefinition",
+            "Properties": {
+                "Family": "LoadTestingTask",
+                "Cpu": "512",
+                "Memory": "1024",
+                "NetworkMode": "awsvpc",
+                "ContainerDefinitions": [
+                    {
+                        "Name": "TaskRunner",
+                        "Image": {
+                            "Ref": "ECRImage"
+                        },
+                        "Essential": true,
+                        "LogConfiguration": {
+                            "LogDriver": "awslogs",
+                            "Options": {
+                                "awslogs-group": "/ecs/load-testing",
+                                "awslogs-region": "us-east-1",
+                                "awslogs-stream-prefix": "ecs"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "LoadTestingData",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "RequestId",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "RequestId",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "ECRRepository": {
+            "Type": "AWS::ECR::Repository",
+            "Properties": {
+                "RepositoryName": "LoadTestingRepo"
+            }
+        },
+        "CloudWatchLogs": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+                "LogGroupName": "/ecs/load-testing",
+                "RetentionInDays": 30
+            }
+        }
+    }
+}

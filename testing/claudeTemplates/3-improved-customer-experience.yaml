@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Architecture Resources
+
+Resources:
+
+  ConnectCallRouting:
+    Type: AWS::Connect::CallRouting
+    Properties:
+      # Properties for the Connect Call Routing resource
+
+  CognitoUser:
+    Type: AWS::Cognito::User
+    Properties:
+      # Properties for the Cognito User resource
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      # Properties for the DynamoDB Table resource
+
+  SageMakerModel:
+    Type: AWS::SageMaker::Model
+    Properties:
+      # Properties for the SageMaker Model resource
+
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      # Properties for the Lambda Function resource
+
+  KinesisDataFirehose:
+    Type: AWS::Kinesis::DataFirehose
+    Properties:
+      # Properties for the Kinesis Data Firehose resource
+
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      # Properties for the S3 Bucket resource
+
+  AmplifyApp:
+    Type: AWS::Amplify::App
+    Properties:
+      # Properties for the Amplify App resource
+
+  IAMUser:
+    Type: AWS::IAM::User
+    Properties:
+      # Properties for the IAM User resource
+
+  CloudWatchAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      # Properties for the CloudWatch Alarm resource
+
+  CloudTrailTrail:
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      # Properties for the CloudTrail Trail resource
+
+  KMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      # Properties for the KMS Key resource
+
+  HealthLakeFhir:
+    Type: AWS::HealthLake::Fhir
+    Properties:
+      # Properties for the HealthLake Fhir resource
+
+  S3Bucket2:
+    Type: AWS::S3::Bucket
+    Properties:
+      # Properties for the S3 Bucket resource
+
+  ProfileUser:
+    Type: AWS::Profile::User
+    Properties:
+      # Properties for the Profile User resource
+
+  ProfileUserProvider:
+    Type: AWS::Profile::UserProvider
+    Properties:
+      # Properties for the Profile User Provider resource

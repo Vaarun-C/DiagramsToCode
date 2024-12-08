@@ -1,0 +1,110 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  MyGeofenceBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "my-geofence-location-data"
+
+  MyJobManagementBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "my-job-management-data"
+
+  MyGlueCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Role: "arn:aws:iam::123456789012:role/MyGlueRole"
+      DatabaseName: "my_database"
+      Targets:
+        S3Targets:
+          - Path: "s3://my-geofence-location-data/"
+
+  MyGlueDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: "123456789012"
+      DatabaseInput:
+        Name: "my_database"
+
+  MyGlueJob:
+    Type: AWS::Glue::Job
+    Properties:
+      Name: "MyETLJob"
+      Role: "arn:aws:iam::123456789012:role/MyGlueRole"
+      Command:
+        Name: "glueetl"
+        PythonVersion: "3"
+        ScriptLocation: "s3://my-geofence-location-data/scripts/etl.py"
+
+  MyProcessedDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "my-processed-data"
+
+  MyAthenaWorkGroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: "MyAthenaWorkGroup"
+
+  MyQuickSightDataSet:
+    Type: AWS::QuickSight::DataSet
+    Properties:
+      AwsAccountId: "123456789012"
+      DataSetId: "MyDataSetId"
+      Name: "MyDataSet"
+      ImportMode: "SPICE"
+
+  MySageMakerModel:
+    Type: AWS::SageMaker::Model
+    Properties:
+      ExecutionRoleArn: "arn:aws:iam::123456789012:role/MySageMakerRole"
+      PrimaryContainer:
+        Image: "123456789012.dkr.ecr.us-east-1.amazonaws.com/my-sagemaker-image:latest"
+        Mode: "SingleModel"
+
+  MyWebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: "MyWebACL"
+      Scope: "CLOUDFRONT"
+      DefaultAction:
+        Allow: {}
+
+  MyHostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: "example.com"
+
+  MyDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Origins:
+          - DomainName: "example.com"
+            Id: "Origin1"
+
+  MyStaticWebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "my-static-website"
+
+  MyUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: "MyUserPool"
+
+  MyApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: "MyAPI"
+
+  MyLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |
+          exports.handler = async () => 'OK';
+      Handler: "index.handler"
+      Runtime: "nodejs14.x"
+      Role: "arn:aws:iam::123456789012:role/MyLambdaRole"

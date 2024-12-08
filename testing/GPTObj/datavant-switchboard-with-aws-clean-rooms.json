@@ -1,0 +1,190 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for Datavant Switchboard and analytics services integration.",
+    "Resources": {
+        "S3BucketRaw": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "datavant-raw-bucket"
+            }
+        },
+        "S3BucketProcessed": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "datavant-processed-bucket"
+            }
+        },
+        "GlueCrawler": {
+            "Type": "AWS::Glue::Crawler",
+            "Properties": {
+                "Role": {
+                    "Ref": "GlueServiceRole"
+                },
+                "DatabaseName": "datavant_db",
+                "Targets": {
+                    "S3Targets": [
+                        {
+                            "Path": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "s3://",
+                                        {
+                                            "Ref": "S3BucketProcessed"
+                                        }
+                                    ]
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "GlueServiceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "glue.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "GlueAccessPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:*",
+                                        "glue:*"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "CleanRooms": {
+            "Type": "AWS::CleanRooms::Collaboration",
+            "Properties": {
+                "Name": "DatavantCleanRooms",
+                "Description": "Collaboration for Datavant Switchboard",
+                "MemberAbilities": [
+                    "ANALYTICS"
+                ]
+            }
+        },
+        "RedshiftCluster": {
+            "Type": "AWS::Redshift::Cluster",
+            "Properties": {
+                "ClusterType": "multi-node",
+                "NodeType": "dc2.large",
+                "NumberOfNodes": 2,
+                "MasterUsername": "admin",
+                "MasterUserPassword": "Admin1234",
+                "DBName": "datavant"
+            }
+        },
+        "AthenaWorkGroup": {
+            "Type": "AWS::Athena::WorkGroup",
+            "Properties": {
+                "Name": "datavant-workgroup",
+                "State": "ENABLED",
+                "Description": "WorkGroup for Athena Queries"
+            }
+        },
+        "EMRCluster": {
+            "Type": "AWS::EMR::Cluster",
+            "Properties": {
+                "Name": "DatavantEMRCluster",
+                "ReleaseLabel": "emr-6.4.0",
+                "Applications": [
+                    {
+                        "Name": "Hadoop"
+                    },
+                    {
+                        "Name": "Spark"
+                    }
+                ],
+                "Instances": {
+                    "InstanceGroups": [
+                        {
+                            "InstanceCount": 1,
+                            "InstanceType": "m5.xlarge",
+                            "InstanceRole": "MASTER",
+                            "Name": "MasterNode"
+                        },
+                        {
+                            "InstanceCount": 2,
+                            "InstanceType": "m5.xlarge",
+                            "InstanceRole": "CORE",
+                            "Name": "CoreNode"
+                        }
+                    ]
+                },
+                "JobFlowRole": "EMR_EC2_DefaultRole",
+                "ServiceRole": "EMR_DefaultRole"
+            }
+        },
+        "SageMakerNotebook": {
+            "Type": "AWS::SageMaker::NotebookInstance",
+            "Properties": {
+                "InstanceType": "ml.t2.medium",
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "SageMakerExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "NotebookInstanceName": "datavant-notebook"
+            }
+        },
+        "SageMakerExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "sagemaker.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "SageMakerAccessPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:*",
+                                        "glue:*",
+                                        "cleanrooms:*"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

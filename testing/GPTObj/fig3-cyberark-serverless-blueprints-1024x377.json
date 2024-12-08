@@ -1,0 +1,100 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for the provided architecture.",
+    "Resources": {
+        "EventBridgeScheduler": {
+            "Type": "AWS::Scheduler::Schedule",
+            "Properties": {
+                "Name": "EventBridgeScheduler",
+                "ScheduleExpression": "rate(5 minutes)",
+                "Target": {
+                    "Arn": {
+                        "Fn::GetAtt": [
+                            "SQSQueue",
+                            "Arn"
+                        ]
+                    },
+                    "RoleArn": {
+                        "Fn::GetAtt": [
+                            "SchedulerRole",
+                            "Arn"
+                        ]
+                    }
+                }
+            }
+        },
+        "SQSQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "PrimaryQueue"
+            }
+        },
+        "DeadLetterQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "DeadLetterQueue"
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "ProcessingFunction",
+                "Handler": "index.handler",
+                "Runtime": "nodejs14.x",
+                "Code": {
+                    "ZipFile": "exports.handler = async (event) => { console.log(event); };"
+                },
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "ObjectsBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "ObjectsBucket"
+            }
+        },
+        "AccessLogsBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "AccessLogsBucket"
+            }
+        },
+        "CloudWatchAlarm": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmName": "QueueFailuresAlarm",
+                "MetricName": "ApproximateNumberOfMessagesVisible",
+                "Namespace": "AWS/SQS",
+                "Dimensions": [
+                    {
+                        "Name": "QueueName",
+                        "Value": {
+                            "Ref": "DeadLetterQueue"
+                        }
+                    }
+                ],
+                "Statistic": "Sum",
+                "Period": 300,
+                "EvaluationPeriods": 1,
+                "Threshold": 1,
+                "ComparisonOperator": "GreaterThanThreshold",
+                "AlarmActions": [
+                    {
+                        "Ref": "SNSTopic"
+                    }
+                ]
+            }
+        },
+        "SNSTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "TopicName": "NotificationsTopic"
+            }
+        }
+    }
+}

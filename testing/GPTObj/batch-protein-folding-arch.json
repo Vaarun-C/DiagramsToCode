@@ -1,0 +1,99 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for protein folding on AWS architecture.",
+    "Resources": {
+        "CloudFormationStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": "https://example.com/cloudformation-template.yaml"
+            }
+        },
+        "ElasticContainerRegistry": {
+            "Type": "AWS::ECR::Repository",
+            "Properties": {
+                "RepositoryName": "ProteinFoldingRepo"
+            }
+        },
+        "CodeBuildProject": {
+            "Type": "AWS::CodeBuild::Project",
+            "Properties": {
+                "Name": "ProteinFoldingBuildProject",
+                "Source": {
+                    "Type": "CODECOMMIT",
+                    "Location": "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/ProteinFoldingRepo"
+                },
+                "Environment": {
+                    "Type": "LINUX_CONTAINER",
+                    "ComputeType": "BUILD_GENERAL1_MEDIUM",
+                    "Image": "aws/codebuild/standard:5.0"
+                }
+            }
+        },
+        "CodeCommitRepository": {
+            "Type": "AWS::CodeCommit::Repository",
+            "Properties": {
+                "RepositoryName": "ProteinFoldingRepo",
+                "RepositoryDescription": "Repository for protein folding workloads."
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "ProteinFoldingLambda",
+                "Runtime": "python3.8",
+                "Handler": "lambda_function.lambda_handler",
+                "Code": {
+                    "ZipFile": "def lambda_handler(event, context):\n    print('Triggered Lambda Function')"
+                }
+            }
+        },
+        "BatchComputeEnvironment": {
+            "Type": "AWS::Batch::ComputeEnvironment",
+            "Properties": {
+                "ComputeEnvironmentName": "ProteinFoldingEnvironment",
+                "Type": "MANAGED",
+                "ComputeResources": {
+                    "Type": "EC2",
+                    "MinvCpus": 0,
+                    "MaxvCpus": 64,
+                    "InstanceTypes": [
+                        "optimal"
+                    ]
+                },
+                "State": "ENABLED",
+                "ServiceRole": "arn:aws:iam::123456789012:role/service-role/AWSBatchServiceRole"
+            }
+        },
+        "BatchJobQueue": {
+            "Type": "AWS::Batch::JobQueue",
+            "Properties": {
+                "JobQueueName": "ProteinFoldingQueue",
+                "Priority": 1,
+                "ComputeEnvironmentOrder": [
+                    {
+                        "Order": 1,
+                        "ComputeEnvironment": {
+                            "Ref": "BatchComputeEnvironment"
+                        }
+                    }
+                ]
+            }
+        },
+        "FSxForLustreFileSystem": {
+            "Type": "AWS::FSx::FileSystem",
+            "Properties": {
+                "FileSystemType": "LUSTRE",
+                "StorageCapacity": 1200,
+                "SubnetIds": [
+                    "subnet-12345678"
+                ]
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "protein-folding-results"
+            }
+        }
+    }
+}

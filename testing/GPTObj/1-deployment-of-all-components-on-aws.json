@@ -1,0 +1,355 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Sample template for image4 with recognized AWS resources",
+    "Parameters": {
+        "VpcCidr": {
+            "Type": "String",
+            "Default": "10.0.0.0/16"
+        },
+        "PublicSubnetCidr": {
+            "Type": "String",
+            "Default": "10.0.1.0/24"
+        }
+    },
+    "Resources": {
+        "MyVPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "VpcCidr"
+                },
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "MyVPC"
+                    }
+                ]
+            }
+        },
+        "PublicSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "MyVPC"
+                },
+                "CidrBlock": {
+                    "Ref": "PublicSubnetCidr"
+                },
+                "MapPublicIpOnLaunch": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PublicSubnet"
+                    }
+                ]
+            }
+        },
+        "EIPForNAT": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": "vpc"
+            }
+        },
+        "MyNatGateway": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "EIPForNAT",
+                        "AllocationId"
+                    ]
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "MyNatGateway"
+                    }
+                ]
+            }
+        },
+        "MyApiGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "MyApiGateway",
+                "EndpointConfiguration": {
+                    "Types": [
+                        "REGIONAL"
+                    ]
+                }
+            }
+        },
+        "MyWAFWebACL": {
+            "Type": "AWS::WAFv2::WebACL",
+            "Properties": {
+                "Name": "MyWAFWebACL",
+                "Scope": "CLOUDFRONT",
+                "DefaultAction": {
+                    "Allow": {}
+                },
+                "VisibilityConfig": {
+                    "SampledRequestsEnabled": true,
+                    "CloudWatchMetricsEnabled": true,
+                    "MetricName": "MyWAFWebACLMetric"
+                }
+            }
+        },
+        "MyS3BucketForCloudFront": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "my-cloudfront-origin-bucket-example"
+            }
+        },
+        "MyCloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Enabled": true,
+                    "DefaultRootObject": "index.html",
+                    "Origins": [
+                        {
+                            "Id": "MyS3Origin",
+                            "DomainName": {
+                                "Fn::GetAtt": [
+                                    "MyS3BucketForCloudFront",
+                                    "DomainName"
+                                ]
+                            },
+                            "S3OriginConfig": {}
+                        }
+                    ],
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "MyS3Origin",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    },
+                    "Comment": "CloudFront distribution",
+                    "HttpVersion": "http2",
+                    "PriceClass": "PriceClass_100"
+                }
+            }
+        },
+        "MyEKSClusterRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "eks.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
+                    "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "EKSClusterRole"
+                    }
+                ]
+            }
+        },
+        "MyEKSCluster": {
+            "Type": "AWS::EKS::Cluster",
+            "Properties": {
+                "Name": "MyEKSCluster",
+                "Version": "1.21",
+                "ResourcesVpcConfig": {
+                    "SubnetIds": [
+                        {
+                            "Ref": "PublicSubnet"
+                        }
+                    ]
+                },
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "MyEKSClusterRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "MyMSKCluster": {
+            "Type": "AWS::MSK::Cluster",
+            "Properties": {
+                "ClusterName": "MyMSKCluster",
+                "KafkaVersion": "2.8.1",
+                "NumberOfBrokerNodes": 2,
+                "BrokerNodeGroupInfo": {
+                    "InstanceType": "kafka.m5.large",
+                    "ClientSubnets": [
+                        {
+                            "Ref": "PublicSubnet"
+                        }
+                    ],
+                    "StorageInfo": {
+                        "EbsStorageInfo": {
+                            "VolumeSize": 100
+                        }
+                    }
+                },
+                "EncryptionInfo": {
+                    "EncryptionInTransit": {
+                        "ClientBroker": "TLS"
+                    }
+                }
+            }
+        },
+        "MyRDSInstance": {
+            "Type": "AWS::RDS::DBInstance",
+            "Properties": {
+                "Engine": "mysql",
+                "MasterUsername": "admin",
+                "MasterUserPassword": "MySecretPassword123",
+                "AllocatedStorage": 20,
+                "DBInstanceClass": "db.t3.micro",
+                "MultiAZ": true,
+                "PubliclyAccessible": false
+            }
+        },
+        "MyDynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "MyDDBTable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "ID",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "ID",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "MyCustomerGateway": {
+            "Type": "AWS::EC2::CustomerGateway",
+            "Properties": {
+                "BgpAsn": 65000,
+                "IpAddress": "1.2.3.4",
+                "Type": "ipsec.1",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "MyCustomerGateway"
+                    }
+                ]
+            }
+        },
+        "MyVirtualPrivateGateway": {
+            "Type": "AWS::EC2::VPNGateway",
+            "Properties": {
+                "Type": "ipsec.1",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "MyVPNGateway"
+                    }
+                ]
+            }
+        },
+        "MyVPNConnection": {
+            "Type": "AWS::EC2::VPNConnection",
+            "Properties": {
+                "Type": "ipsec.1",
+                "CustomerGatewayId": {
+                    "Ref": "MyCustomerGateway"
+                },
+                "StaticRoutesOnly": true,
+                "VpnGatewayId": {
+                    "Ref": "MyVirtualPrivateGateway"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "MyVPNConnection"
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "AWSCloud": {
+            "Description": "Represents the AWS Cloud (conceptual).",
+            "Value": "AWS Cloud environment"
+        },
+        "AWSAccount": {
+            "Description": "Represents the AWS Account boundary (conceptual).",
+            "Value": "AWS Account environment"
+        },
+        "PlayerAccountManagement": {
+            "Description": "Represents the player account management application running on EKS (not an AWS resource).",
+            "Value": "Application component running on EKS"
+        },
+        "Wallets": {
+            "Description": "Represents the wallets application running on EKS (not an AWS resource).",
+            "Value": "Application component running on EKS"
+        },
+        "Sportsbook": {
+            "Description": "Represents the sportsbook application running on EKS (not an AWS resource).",
+            "Value": "Application component running on EKS"
+        },
+        "ManagementTools": {
+            "Description": "Represents management tools application (not an AWS resource).",
+            "Value": "Application component running on EKS"
+        },
+        "OddsEngine": {
+            "Description": "Represents the odds engine application (not an AWS resource).",
+            "Value": "Application component running on EKS"
+        },
+        "RiskFraud": {
+            "Description": "Represents the risk/fraud application (not an AWS resource).",
+            "Value": "Application component running on EKS"
+        },
+        "Promo": {
+            "Description": "Represents the promo application (not an AWS resource).",
+            "Value": "Application component running on EKS"
+        },
+        "BetBasket": {
+            "Description": "Represents the bet basket application (not an AWS resource).",
+            "Value": "Application component running on EKS"
+        },
+        "InternalDatabaseGroup": {
+            "Description": "Represents a conceptual internal database group.",
+            "Value": "Conceptual grouping of internal databases"
+        },
+        "ComplianceKYCAndPaymentProcessor": {
+            "Description": "Represents external compliance, KYC, and payment processor.",
+            "Value": "External entity outside AWS"
+        },
+        "ExternalFeeds": {
+            "Description": "Represents external feeds.",
+            "Value": "External entity outside AWS"
+        },
+        "Client": {
+            "Description": "Represents a client (external).",
+            "Value": "External client"
+        },
+        "MobileClient": {
+            "Description": "Represents a mobile client (external).",
+            "Value": "External client"
+        },
+        "BetsFeed": {
+            "Description": "Represents bets (WebSocket live feed - external).",
+            "Value": "External feed"
+        },
+        "LocalDataCenter": {
+            "Description": "Represents a local data center (external).",
+            "Value": "On-premises data center"
+        }
+    }
+}

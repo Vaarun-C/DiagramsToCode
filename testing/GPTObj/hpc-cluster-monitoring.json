@@ -1,0 +1,110 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for HPC cluster monitoring with cross-account observability.",
+    "Resources": {
+        "ComputeClusterEC2Instance1": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": "t3.medium",
+                "ImageId": "ami-0abcdef1234567890"
+            }
+        },
+        "ComputeClusterEC2Instance2": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": "t3.medium",
+                "ImageId": "ami-0abcdef1234567890"
+            }
+        },
+        "ComputeClusterEC2Instance3": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": "t3.medium",
+                "ImageId": "ami-0abcdef1234567890"
+            }
+        },
+        "EventBridgeRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "Name": "EC2StatusRule",
+                "EventPattern": {
+                    "source": [
+                        "aws.ec2"
+                    ]
+                },
+                "State": "ENABLED",
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "LambdaFunction",
+                                "Arn"
+                            ]
+                        },
+                        "Id": "LambdaTarget"
+                    }
+                ]
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "EC2StatusProcessor",
+                "Runtime": "python3.9",
+                "Handler": "lambda_function.lambda_handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "def lambda_handler(event, context):\n    return {'statusCode': 200, 'body': 'Processed EC2 status'}"
+                }
+            }
+        },
+        "CloudWatchLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+                "LogGroupName": "/aws/lambda/EC2StatusProcessor",
+                "RetentionInDays": 14
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "LambdaBasicExecution",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents"
+                                    ],
+                                    "Resource": "arn:aws:logs:*:*:*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,232 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Enabled": true,
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::GetAtt": [
+                                    "S3Bucket",
+                                    "DomainName"
+                                ]
+                            },
+                            "Id": "S3Origin"
+                        }
+                    ],
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "S3Origin",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    }
+                }
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "iot-data-bucket"
+            }
+        },
+        "APIGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "IoTControlAPI"
+            }
+        },
+        "CognitoUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "IoTUserPool"
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Runtime": "python3.9",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "def handler(event, context):\n    print('Lambda function triggered')"
+                }
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ]
+            }
+        },
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "IoTControlData",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "Id",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "Id",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "IoTCorePolicy": {
+            "Type": "AWS::IoT::Policy",
+            "Properties": {
+                "PolicyName": "IoTCorePolicy",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "iot:Publish",
+                                "iot:Subscribe",
+                                "iot:Connect",
+                                "iot:Receive"
+                            ],
+                            "Resource": "*"
+                        }
+                    ]
+                }
+            }
+        },
+        "IoTSiteWiseGateway": {
+            "Type": "AWS::IoTSiteWise::Gateway",
+            "Properties": {
+                "GatewayName": "SiteWiseGateway",
+                "GatewayPlatform": {
+                    "Greengrass": {
+                        "GroupArn": {
+                            "Fn::Sub": "arn:aws:greengrass:${AWS::Region}:${AWS::AccountId}:group/SiteWiseGroup"
+                        }
+                    }
+                }
+            }
+        },
+        "KinesisDataStream": {
+            "Type": "AWS::Kinesis::Stream",
+            "Properties": {
+                "Name": "IoTDataStream",
+                "ShardCount": 1
+            }
+        },
+        "KinesisDataFirehose": {
+            "Type": "AWS::KinesisFirehose::DeliveryStream",
+            "Properties": {
+                "DeliveryStreamName": "IoTDataFirehose",
+                "S3DestinationConfiguration": {
+                    "BucketARN": {
+                        "Fn::GetAtt": [
+                            "S3Bucket",
+                            "Arn"
+                        ]
+                    },
+                    "RoleARN": {
+                        "Fn::GetAtt": [
+                            "FirehoseRole",
+                            "Arn"
+                        ]
+                    }
+                }
+            }
+        },
+        "FirehoseRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "firehose.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "FirehoseS3Access",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:PutObject",
+                                        "s3:GetObject"
+                                    ],
+                                    "Resource": {
+                                        "Fn::Sub": "arn:aws:s3:::iot-data-bucket/*"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "GreengrassGroup": {
+            "Type": "AWS::Greengrass::Group",
+            "Properties": {
+                "Name": "IoTGreengrassGroup",
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "GreengrassRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "GreengrassRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "greengrass.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSGreengrassResourceAccessRolePolicy"
+                ]
+            }
+        }
+    }
+}

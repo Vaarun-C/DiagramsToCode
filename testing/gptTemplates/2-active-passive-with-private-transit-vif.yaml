@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+
+  MyTransitGateway:
+    Type: AWS::EC2::TransitGateway
+
+  MyDirectConnectGateway:
+    Type: AWS::DirectConnect::Gateway
+    Properties:
+      AmazonSideAsn: 64512
+
+  MyDirectConnectConnection1:
+    Type: AWS::DirectConnect::Connection
+    Properties:
+      Bandwidth: "1Gbps"
+      Location: "EqSe2"
+
+  MyDirectConnectConnection2:
+    Type: AWS::DirectConnect::Connection
+    Properties:
+      Bandwidth: "1Gbps"
+      Location: "EqSe2"
+
+  MyDirectConnectConnection3:
+    Type: AWS::DirectConnect::Connection
+    Properties:
+      Bandwidth: "1Gbps"
+      Location: "EqSe2"
+
+  MyDirectConnectConnection4:
+    Type: AWS::DirectConnect::Connection
+    Properties:
+      Bandwidth: "1Gbps"
+      Location: "EqSe2"
+
+  MyTransitVIF1:
+    Type: AWS::DirectConnect::TransitVirtualInterface
+    Properties:
+      AddressFamily: "ipv4"
+      Asn: 65000
+      DirectConnectGatewayId: !Ref MyDirectConnectGateway
+      VirtualInterfaceName: "MyTransitVIF1"
+      Vlan: 100
+
+  MyTransitVIF2:
+    Type: AWS::DirectConnect::TransitVirtualInterface
+    Properties:
+      AddressFamily: "ipv4"
+      Asn: 65000
+      DirectConnectGatewayId: !Ref MyDirectConnectGateway
+      VirtualInterfaceName: "MyTransitVIF2"
+      Vlan: 101
+
+  MyTransitVIF3:
+    Type: AWS::DirectConnect::TransitVirtualInterface
+    Properties:
+      AddressFamily: "ipv4"
+      Asn: 65000
+      DirectConnectGatewayId: !Ref MyDirectConnectGateway
+      VirtualInterfaceName: "MyTransitVIF3"
+      Vlan: 102
+
+  MyTransitVIF4:
+    Type: AWS::DirectConnect::TransitVirtualInterface
+    Properties:
+      AddressFamily: "ipv4"
+      Asn: 65000
+      DirectConnectGatewayId: !Ref MyDirectConnectGateway
+      VirtualInterfaceName: "MyTransitVIF4"
+      Vlan: 103

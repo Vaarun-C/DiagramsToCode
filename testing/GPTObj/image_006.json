@@ -1,0 +1,140 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for EV charge point management using AWS services.",
+    "Resources": {
+        "NetworkLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "EV-NLB",
+                "Scheme": "internet-facing",
+                "Type": "network",
+                "SubnetMappings": [
+                    {
+                        "SubnetId": "subnet-123456"
+                    }
+                ]
+            }
+        },
+        "FargateService": {
+            "Type": "AWS::ECS::Service",
+            "Properties": {
+                "Cluster": {
+                    "Ref": "FargateCluster"
+                },
+                "ServiceName": "OCPP-Gateway",
+                "TaskDefinition": {
+                    "Ref": "FargateTaskDefinition"
+                },
+                "LaunchType": "FARGATE"
+            }
+        },
+        "FargateCluster": {
+            "Type": "AWS::ECS::Cluster"
+        },
+        "FargateTaskDefinition": {
+            "Type": "AWS::ECS::TaskDefinition",
+            "Properties": {
+                "Family": "OCPP-Gateway",
+                "Cpu": "256",
+                "Memory": "512",
+                "NetworkMode": "awsvpc",
+                "ContainerDefinitions": [
+                    {
+                        "Name": "OCPPContainer",
+                        "Image": "ocpp-container-image",
+                        "PortMappings": [
+                            {
+                                "ContainerPort": 443,
+                                "Protocol": "tcp"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "IoTTopic": {
+            "Type": "AWS::IoT::TopicRule",
+            "Properties": {
+                "RuleName": "IoTMessageProcessing",
+                "Sql": "SELECT * FROM 'topic/in'",
+                "Actions": [
+                    {
+                        "Lambda": {
+                            "FunctionArn": {
+                                "Fn::GetAtt": [
+                                    "LambdaFunction",
+                                    "Arn"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "IoTRule": {
+            "Type": "AWS::IoT::TopicRule",
+            "Properties": {
+                "RuleName": "IoTThingLifecycle",
+                "Sql": "SELECT * FROM 'topic/out'",
+                "Actions": [
+                    {
+                        "Sqs": {
+                            "QueueUrl": {
+                                "Ref": "SQSQueue"
+                            },
+                            "UseBase64": false
+                        }
+                    }
+                ]
+            }
+        },
+        "SQSQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "EVQueue"
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "ProcessEVData",
+                "Runtime": "python3.9",
+                "Handler": "lambda_function.lambda_handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "def lambda_handler(event, context):\n    return {'statusCode': 200, 'body': 'Processed IoT data'}"
+                }
+            }
+        },
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "ChargePointData",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "ChargePointID",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "ChargePointID",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "IoTShadow": {
+            "Type": "AWS::IoT::Thing",
+            "Properties": {
+                "ThingName": "EVShadow"
+            }
+        }
+    }
+}

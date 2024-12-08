@@ -1,0 +1,194 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template based on recognized AWS resources
+
+Parameters:
+  VpcId:
+    Type: String
+    Description: VPC ID for VPC Endpoint
+  SubnetId:
+    Type: String
+    Description: Subnet ID for MSK Cluster
+
+Resources:
+  MyIoTThing:
+    Type: AWS::IoT::Thing
+    Properties:
+      ThingName: "MyIoTThing"
+
+  MyIoTTopicRule:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      RuleName: "MyIoTTopicRule"
+      TopicRulePayload:
+        Sql: "SELECT * FROM 'my/topic'"
+        Actions:
+          - DynamoDB:
+              TableName: !Ref MyDynamoDBTable
+              RoleArn: !GetAtt MyLambdaFunctionRole.Arn
+              HashKeyField: "ID"
+              HashKeyValue: "IoTMessage"
+        Description: "IoT rule for DynamoDB integration"
+        RuleDisabled: false
+
+  MyVPCEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VpcId
+      ServiceName: "com.amazonaws.us-east-1.s3"
+      VpcEndpointType: Gateway
+      RouteTableIds: []
+
+  MyECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: "MyECSCluster"
+
+  MyMSKCluster:
+    Type: AWS::MSK::Cluster
+    Properties:
+      ClusterName: "MyMSKCluster"
+      KafkaVersion: "2.8.1"
+      NumberOfBrokerNodes: 2
+      BrokerNodeGroupInfo:
+        InstanceType: kafka.m5.large
+        ClientSubnets: [!Ref SubnetId]
+        SecurityGroups: []
+      EncryptionInfo:
+        EncryptionInTransit:
+          ClientBroker: "TLS"
+          InCluster: true
+
+  MyLambdaFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: "/"
+
+  MyLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "MyLambdaFunction"
+      Handler: index.handler
+      Runtime: nodejs14.x
+      Role: !GetAtt MyLambdaFunctionRole.Arn
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            return {
+              statusCode: 200,
+              body: "Hello from Lambda"
+            };
+          };
+
+  MyDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "MyTable"
+      AttributeDefinitions:
+        - AttributeName: "ID"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "ID"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+
+  MyAmplifyApp:
+    Type: AWS::Amplify::App
+    Properties:
+      Name: "MyAmplifyApp"
+      Repository: "https://github.com/example/myapp"
+      OAuthToken: "{{resolve:secretsmanager:GithubToken:SecretString:token}}"
+      BuildSpec: |
+        version: 1
+        frontend:
+          phases:
+            preBuild:
+              commands: ["npm install"]
+            build:
+              commands: ["npm run build"]
+          artifacts:
+            baseDirectory: "build"
+            files:
+              - "**/*"
+          cache:
+            paths: ["node_modules/**/*"]
+
+  MyApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: "MyApi"
+      EndpointConfiguration:
+        Types: ["REGIONAL"]
+
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-bucket"
+      
+  MyCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultCacheBehavior:
+          TargetOriginId: "S3Origin"
+          ViewerProtocolPolicy: "redirect-to-https"
+          ForwardedValues:
+            QueryString: false
+        Origins:
+          - Id: "S3Origin"
+            DomainName: !GetAtt MyS3Bucket.DomainName
+            S3OriginConfig: {}
+        Comment: "CloudFront Distribution for S3 Bucket"
+        HttpVersion: http2
+        PriceClass: PriceClass_100
+
+  MyUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: "MyUserPool"
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      AutoVerifiedAttributes:
+        - email
+
+  MyTimestreamDatabase:
+    Type: AWS::Timestream::Database
+    Properties:
+      DatabaseName: "MyTimestreamDB"
+
+Outputs:
+  IoTThingName:
+    Value: !Ref MyIoTThing
+  IoTTopicRuleName:
+    Value: !Ref MyIoTTopicRule
+  VpcEndpointId:
+    Value: !Ref MyVPCEndpoint
+  ECSClusterName:
+    Value: !Ref MyECSCluster
+  MSKClusterArn:
+    Value: !GetAtt MyMSKCluster.Arn
+  LambdaFunctionArn:
+    Value: !GetAtt MyLambdaFunction.Arn
+  DynamoDBTableName:
+    Value: !Ref MyDynamoDBTable
+  AmplifyAppId:
+    Value: !Ref MyAmplifyApp
+  ApiGatewayId:
+    Value: !Ref MyApiGateway
+  S3BucketName:
+    Value: !Ref MyS3Bucket
+  CloudFrontDistributionId:
+    Value: !Ref MyCloudFrontDistribution
+  UserPoolId:
+    Value: !Ref MyUserPool
+  TimestreamDatabaseName:
+    Value: !Ref MyTimestreamDatabase

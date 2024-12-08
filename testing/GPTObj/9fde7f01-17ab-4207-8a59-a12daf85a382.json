@@ -1,0 +1,45 @@
+{
+
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "CloudFormation template for recognized AWS services",
+      "Resources": {
+        "RedshiftCluster": {
+          "Type": "AWS::Redshift::Cluster",
+          "Properties": {
+            "ClusterType": "single-node",
+            "DBName": "exampledb",
+            "MasterUsername": "adminuser",
+            "MasterUserPassword": "AdminPassword123!",
+            "NodeType": "dc2.large"
+          }
+        },
+        "S3Bucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+            "BucketName": "example-logs-bucket"
+          }
+        },
+        "AthenaWorkGroup": {
+          "Type": "AWS::Athena::WorkGroup",
+          "Properties": {
+            "Name": "PrimaryWorkGroup",
+            "State": "ENABLED",
+            "WorkGroupConfiguration": {
+              "ResultConfiguration": {
+                "OutputLocation": {
+                  "Fn::Sub": "s3://${S3Bucket}/athena-results/"
+                }
+              }
+            }
+          }
+        },
+        "QuickSightAccountSettings": {
+          "Type": "AWS::QuickSight::AccountSettings",
+          "Properties": {
+            "DefaultNamespace": "default",
+            "NotificationEmail": "admin@example.com"
+          }
+        }
+      }
+  }
+  

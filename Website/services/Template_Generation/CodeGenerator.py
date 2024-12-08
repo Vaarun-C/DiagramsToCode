@@ -82,6 +82,11 @@ class template_generator:
                         candidate_node.consumedBy.add(type_name)
                         dep_node_id = candidate_node_id
                         break
+                else:
+                    dep_node:Node = self.createNode(dep_type_name)
+                    graph.add_node(dep_node)
+                    queue.append(dep_node)
+                    dep_node_id = dep_node.id
             dep_node:Node = graph.nodes[dep_node_id]
         return dep_node
 
@@ -99,11 +104,11 @@ class template_generator:
         
         while node_queue:
             node:Node = node_queue.popleft()
-            print(f"Creating Node for: {node}")
+            # print(f"Creating Node for: {node}")
             # Add dependency nodes
             for dependency_type in node.dependencies:
                 dep_node = self.get_or_makeNode(node.type_name, dependency_type, graph=graph, queue=node_queue)
-                print(f"Adding Edge for dependency: {dep_node}")
+                # print(f"Adding Edge for dependency: {dep_node}")
                 graph.add_edge(node, dep_node)
 
         ids_to_remove = []
@@ -138,13 +143,14 @@ class template_generator:
         # Get detected classes
         # detected_classes_types:list[str] = get_detected_types(result)
         graph = self.build_graph_from_types(detected_classes_types)
-        sorted_nodes:list[Node] = graph.topological_sort_out_degree()
-
+        # sorted_nodes:list[Node] = graph.topological_sort_out_degree()
+        sorted_nodes = graph.nodes.values()
         for node in sorted_nodes:
             node_name = self.createName(node.type_name, graph=graph)
             node.replaceMap[node.type_name] = node_name
             for nbr_id in node.dependency_edges:
                 graph.nodes[nbr_id].replaceMap[node.type_name] = node_name
+        for node in sorted_nodes:
             node.setData(data)
 
         return data

@@ -1,0 +1,714 @@
+{
+    "images (1).png": [],
+    "4-encryption-and-monitoring-security.png": [
+        "AWS::Lambda::Function",
+        "AWS::StepFunctions::StateMachine",
+        "AWS::DynamoDB::Table",
+        "AWS::Events::EventBus",
+        "AWS::ApiGateway::RestApi",
+        "AWS::KMS::Key"
+    ],
+    "ac-tenant-portability-architecture.44de20eb9fcfa2baa63446794716e1ed83fe6b60.png": [
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function"
+    ],
+    "Figure-4.-Multi-AZ-architecture.png": [
+        "AWS::S3::Bucket"
+    ],
+    "architecture-diagram-salesforce-health-cloud-virtual-care.png": [
+        "AWS::KMS::Key",
+        "AWS::IAM::RoleForTranscribeExecution",
+        "AWS::Events::EventBus"
+    ],
+    "1-active-active-with-private-transit-vif.png": [],
+    "Figure-1.-A-proxy-solution-to-the-Amazon-Cognito-regional-endpoint-1024x523.png": [],
+    "1_4sb209LohOyh_JCo-Zonzg.png": [
+        "AWS::Route53::RecordSet",
+        "AWS::CloudFront::Distribution",
+        "AWS::S3::Bucket",
+        "AWS::CloudFront::Distribution"
+    ],
+    "2-advanced-analytics.png": [
+        "AWS::Redshift::Cluster",
+        "AWS::IAM::RoleForBedrock",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::IAM::RoleForBedrock",
+        "AWS::DynamoDB::Table",
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function"
+    ],
+    "DREM-aws-reference-architecture-overview.png": [
+        "AWS::S3::Bucket",
+        "AWS::DynamoDB::Table",
+        "AWS::Events::EventBus",
+        "AWS::Lambda::Function",
+        "AWS::AppSync::GraphQLApi"
+    ],
+    "low-latency-high-bandwidth-updated-architecture.jpg": [
+        "AWS::ElasticLoadBalancingV2::TargetGroup",
+        "AWS::EKS::Cluster",
+        "AWS::S3::Bucket"
+    ],
+    "3-operational-certificate-lifecycle.png": [
+        "AWS::DynamoDB::Table",
+        "AWS::Events::EventBus",
+        "AWS::StepFunctions::StateMachine"
+    ],
+    "electric-vehicle-charging-station-management-software-option-2.png": [
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::ElasticLoadBalancingV2::TargetGroup",
+        "AWS::DynamoDB::Table",
+        "AWS::SQS::Queue",
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function",
+        "AWS::DynamoDB::Table",
+        "AWS::Lambda::Function",
+        "AWS::SQS::Queue",
+        "AWS::SQS::Queue",
+        "AWS::ECS::FargateCluster",
+        "AWS::DynamoDB::Table",
+        "AWS::CloudFront::Distribution",
+        "AWS::DynamoDB::Table",
+        "AWS::S3::Bucket",
+        "AWS::CloudWatch::Dashboard",
+        "AWS::ElasticLoadBalancingV2::TargetGroup",
+        "AWS::SQS::Queue",
+        "AWS::StepFunctions::StateMachine"
+    ],
+    "e9975d3a-f75b-41a2-8c08-5b82539adf8c.png": [
+        "AWS::Glue::Database",
+        "AWS::S3::Bucket",
+        "AWS::Redshift::Cluster",
+        "AWS::Route53::RecordSet",
+        "AWS::RDS::DBInstance",
+        "AWS::EKS::Cluster"
+    ],
+    "download.png": [],
+    "images.jpeg": [],
+    "626aa365-e6e6-4874-a873-1c71adbe5306.png": [
+        "AWS::Lambda::Function",
+        "AWS::Redshift::Cluster",
+        "AWS::Glue::Database"
+    ],
+    "Figure-2.1.-Multi-Region-backup-1024x992.png": [
+        "AWS::Route53::RecordSet",
+        "AWS::OpenSearchService::Domain",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket",
+        "AWS::Redshift::Cluster"
+    ],
+    "FSI_Claims_Processing_Architecture.png": [
+        "AWS::DynamoDB::Table",
+        "AWS::ECS::FargateCluster",
+        "AWS::Lambda::Function",
+        "AWS::IAM::RoleForBedrock",
+        "AWS::Lex::Bot",
+        "AWS::SQS::Queue",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::OpenSearchService::Domain",
+        "AWS::ApiGateway::RestApi",
+        "AWS::IAM::RoleForBedrock",
+        "AWS::CloudFront::Distribution"
+    ],
+    "1_RmtrVcCycVcFEuR4v_A8DA.jpg": [
+        "AWS::Lambda::Function",
+        "AWS::CloudFront::Distribution"
+    ],
+    "ac-compute-general-hpc-architecture.4312d891b8a48822d1cabdc4bfb5ba4190691fed.png": [
+        "AWS::AutoScaling::AutoScalingGroup",
+        "AWS::CloudWatch::Dashboard",
+        "AWS::S3::Bucket"
+    ],
+    "electric-vehicle-charging-station-management-software-option-1.png": [
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function",
+        "AWS::DynamoDB::Table",
+        "AWS::ElasticLoadBalancingV2::TargetGroup",
+        "AWS::ECS::FargateCluster",
+        "AWS::DynamoDB::Table",
+        "AWS::S3::Bucket",
+        "AWS::DynamoDB::Table",
+        "AWS::CloudFront::Distribution",
+        "AWS::DynamoDB::Table",
+        "AWS::ECS::FargateCluster",
+        "AWS::CloudWatch::Dashboard",
+        "AWS::ECS::FargateCluster",
+        "AWS::ECS::FargateCluster",
+        "AWS::ECS::FargateCluster",
+        "AWS::ElasticLoadBalancingV2::TargetGroup"
+    ],
+    "Figure4-M2C2-1260x579.png": [
+        "AWS::Kinesis::Stream",
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket",
+        "AWS::CloudFront::Distribution",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::S3::Bucket"
+    ],
+    "ARCHBLOG-1076-arch-diag-1024x461.png": [
+        "AWS::Lambda::Function",
+        "AWS::CloudFront::Distribution"
+    ],
+    "6f842774-26a6-48f8-9f9d-a8fc741a9f73.png": [
+        "AWS::EC2::VPCEndpointService"
+    ],
+    "electric-vehicle-charging-ocpp-handler.png": [
+        "AWS::S3::Bucket",
+        "AWS::DynamoDB::Table",
+        "AWS::Lambda::Function",
+        "AWS::Route53::RecordSet",
+        "AWS::ECS::FargateCluster",
+        "AWS::SQS::Queue",
+        "AWS::Lambda::Function",
+        "AWS::Grafana::Workspace",
+        "AWS::StepFunctions::StateMachine"
+    ],
+    "ac-iot-distributed-load-testing-on-aws-architecture.9bd2edaca0931b57c4a22d2d1ebe0e971796319b.png": [
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::CloudFront::Distribution",
+        "AWS::ECS::FargateCluster",
+        "AWS::S3::Bucket"
+    ],
+    "Jordan_low-content-management-sys.png": [
+        "AWS::EC2::Instance",
+        "AWS::CloudFront::Distribution",
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function"
+    ],
+    "9fde7f01-17ab-4207-8a59-a12daf85a382.png": [
+        "AWS::Redshift::Cluster"
+    ],
+    "governancearch-all.png": [
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::DynamoDB::Table"
+    ],
+    "4-active-passive-with-public-vif.png": [
+        "AWS::DynamoDB::Table",
+        "AWS::CloudWatch::Dashboard",
+        "AWS::S3::Bucket"
+    ],
+    "272a7fb2-ecbc-41f7-a556-d555e4e39a59.png": [
+        "AWS::Glue::Database",
+        "AWS::Lambda::Function",
+        "AWS::Events::EventBus",
+        "AWS::CloudTrail::Trail"
+    ],
+    "Figure-1.-Single-AZ-architecture.png": [
+        "AWS::S3::Bucket"
+    ],
+    "1-deployment-of-all-components-on-aws.png": [
+        "AWS::DynamoDB::Table",
+        "AWS::ECS::Cluster",
+        "AWS::RDS::DBInstance",
+        "AWS::MSK::Cluster",
+        "AWS::MSK::Cluster",
+        "AWS::RDS::DBInstance",
+        "AWS::CloudFront::Distribution",
+        "AWS::ECS::Cluster"
+    ],
+    "luminai-refinery-advisor-on-aws.png": [
+        "AWS::S3::Bucket",
+        "AWS::ECS::Cluster",
+        "AWS::ECS::Cluster",
+        "AWS::ECS::Cluster",
+        "AWS::AmazonMQ::Broker",
+        "AWS::ECS::Cluster",
+        "AWS::ECS::Cluster",
+        "AWS::ECS::Cluster",
+        "AWS::MSK::Cluster"
+    ],
+    "location-enabled-data-science-with-precisely.png": [
+        "AWS::Lambda::Function",
+        "AWS::CloudWatch::Dashboard",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket",
+        "AWS::EMR::Cluster",
+        "AWS::EC2::Instance",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::ElasticLoadBalancingV2::TargetGroup"
+    ],
+    "bd07fc47-7b33-46a4-a53b-846e7d83bd87.png": [
+        "AWS::S3::Bucket",
+        "AWS::EKS::Cluster",
+        "AWS::EC2::VPCEndpointService"
+    ],
+    "3-active-active-with-public-vif.png": [
+        "AWS::DynamoDB::Table",
+        "AWS::CloudWatch::Dashboard",
+        "AWS::S3::Bucket"
+    ],
+    "aae8f8f3-8125-4868-a8e5-eac1cc42812f.png": [
+        "AWS::EC2::Instance",
+        "AWS::Route53::RecordSet",
+        "AWS::EC2::Instance",
+        "AWS::EC2::Instance",
+        "AWS::EC2::Instance",
+        "AWS::EC2::Instance",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::SageMaker::NotebookInstance"
+    ],
+    "2-gather-process-analyze-data.png": [
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket",
+        "AWS::DynamoDB::Table",
+        "AWS::AppSync::GraphQLApi",
+        "AWS::Route53::RecordSet",
+        "AWS::CloudFront::Distribution",
+        "AWS::AppSync::GraphQLApi",
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function",
+        "AWS::DynamoDB::Table",
+        "AWS::MSK::Cluster",
+        "AWS::DynamoDB::Table",
+        "AWS::Lambda::Function"
+    ],
+    "insurancelake-highlevel-architecture.png": [
+        "AWS::Glue::Database",
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket"
+    ],
+    "1-modernization.png": [
+        "AWS::DynamoDB::Table",
+        "AWS::Lambda::Function",
+        "AWS::EC2::VPCEndpointService",
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::MSK::Cluster",
+        "AWS::CloudFront::Distribution",
+        "AWS::S3::Bucket",
+        "AWS::ECS::Cluster"
+    ],
+    "e780916a-4ab7-4fdc-8ecc-c837c7d90d13.png": [
+        "AWS::Events::EventBus",
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket"
+    ],
+    "sap-cnf-hlt-ref-arch.PNG": [
+        "AWS::DynamoDB::Table",
+        "AWS::Events::EventBus",
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket"
+    ],
+    "Aws-cdk-insurancelake-etl.png": [
+        "AWS::S3::Bucket",
+        "AWS::Glue::Database",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket",
+        "AWS::Glue::Database",
+        "AWS::S3::Bucket"
+    ],
+    "powering-multiple-contact-centers-with-gen-ai-using-amazon-bedrock.png": [
+        "AWS::Lex::Bot",
+        "AWS::Lambda::Function",
+        "AWS::IAM::RoleForTranscribeExecution",
+        "AWS::Lambda::Function",
+        "AWS::IAM::RoleForTranscribeExecution",
+        "AWS::CloudFront::Distribution",
+        "AWS::Lambda::Function",
+        "AWS::CloudFront::Distribution",
+        "AWS::Kinesis::Stream",
+        "AWS::Kendra::Index",
+        "AWS::Lambda::Function",
+        "AWS::DynamoDB::Table",
+        "AWS::S3::Bucket",
+        "AWS::ECS::FargateCluster",
+        "AWS::Kendra::Index",
+        "AWS::Lambda::Function",
+        "AWS::IAM::RoleForComprehend",
+        "AWS::Lambda::Function",
+        "AWS::Kinesis::Stream",
+        "AWS::SNS::Topic"
+    ],
+    "5d585a8e-320a-495d-a049-97171633e90f.png": [
+        "AWS::Route53::RecordSet"
+    ],
+    "investment-analyst-arch.png": [
+        "AWS::S3::Bucket",
+        "AWS::CloudFront::Distribution",
+        "AWS::CloudTrail::Trail",
+        "AWS::Lambda::Function",
+        "AWS::IAM::RoleForBedrock",
+        "AWS::CloudWatch::Dashboard",
+        "AWS::IAM::RoleForBedrock",
+        "AWS::IAM::RoleForBedrock"
+    ],
+    "3-deployment-of-all-core-components-outside-of-aws.png": [
+        "AWS::MSK::Cluster",
+        "AWS::MSK::Cluster",
+        "AWS::ECS::Cluster",
+        "AWS::CloudFront::Distribution"
+    ],
+    "3-full-ml-lifecycle-with-spatial-temporal-model.png": [
+        "AWS::Events::EventBus",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::IAM::RoleForBedrock",
+        "AWS::IAM::RoleForBedrock"
+    ],
+    "batch-protein-folding-arch.png": [
+        "AWS::Batch::ComputeEnvironment",
+        "AWS::Kendra::Index"
+    ],
+    "1-sample-web-application.png": [
+        "AWS::Kinesis::Stream",
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket",
+        "AWS::DynamoDB::Table",
+        "AWS::Route53::RecordSet",
+        "AWS::CloudFront::Distribution",
+        "AWS::Events::EventBus"
+    ],
+    "2-active-passive-with-private-transit-vif.png": [],
+    "fig1-comfyui-on-eks-1024x532.png": [
+        "AWS::S3::Bucket",
+        "AWS::EKS::Cluster",
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function",
+        "AWS::CloudFront::Distribution",
+        "AWS::S3::Bucket"
+    ],
+    "detect-malware-threats-using-aws-transfer-family.png": [
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Events::EventBus",
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket"
+    ],
+    "architecture_diagram.png": [
+        "AWS::Events::EventBus",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::CloudWatch::Dashboard",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket"
+    ],
+    "3-1024x655.png": [
+        "AWS::OpenSearchService::Domain",
+        "AWS::Route53::RecordSet",
+        "AWS::OpenSearchService::Domain",
+        "AWS::Redshift::Cluster",
+        "AWS::ApiGateway::RestApi",
+        "AWS::Batch::ComputeEnvironment",
+        "AWS::SNS::Topic"
+    ],
+    "lets-architect-well-architected-fig3.png": [
+        "AWS::CloudWatch::Dashboard",
+        "AWS::SQS::Queue"
+    ],
+    "AWS_Let's_Architect_blog_post_logo_0.png": [
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function"
+    ],
+    "agones-openmatch-multicluster.final.png": [
+        "AWS::CloudWatch::Dashboard"
+    ],
+    "LLM_Auto_Tag_architecture.png": [
+        "AWS::RDS::DBInstance",
+        "AWS::KMS::Key",
+        "AWS::IAM::RoleForBedrock",
+        "AWS::SNS::Topic",
+        "AWS::Events::EventBus",
+        "AWS::S3::Bucket",
+        "AWS::StepFunctions::StateMachine"
+    ],
+    "vpc-lattice-dns-reference-architecture-updated.jpg": [
+        "AWS::StepFunctions::StateMachine"
+    ],
+    "hpc-cluster-monitoring.png": [
+        "AWS::EC2::Instance",
+        "AWS::EC2::Instance",
+        "AWS::Events::EventBus",
+        "AWS::EC2::Instance",
+        "AWS::Lambda::Function",
+        "AWS::CloudWatch::Dashboard",
+        "AWS::CloudWatch::Dashboard"
+    ],
+    "1_zwOJDra3DF8Vc1ey4qGX0w.png": [
+        "AWS::EC2::Instance"
+    ],
+    "stable-diffusion-reference-architecture-updated.png": [
+        "AWS::S3::Bucket",
+        "AWS::EKS::Cluster",
+        "AWS::Lambda::Function",
+        "AWS::SNS::Topic",
+        "AWS::SNS::Topic",
+        "AWS::SQS::Queue",
+        "AWS::SQS::Queue",
+        "AWS::S3::Bucket"
+    ],
+    "highlevelarchitecture.png": [
+        "AWS::Lambda::Function",
+        "AWS::CloudFront::Distribution",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket"
+    ],
+    "electric-vehicle-charging-station-management-software-iot.png": [
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::DynamoDB::Table",
+        "AWS::SNS::Topic",
+        "AWS::Lambda::Function",
+        "AWS::CloudWatch::Dashboard",
+        "AWS::S3::Bucket",
+        "AWS::DynamoDB::Table",
+        "AWS::ApiGateway::RestApi"
+    ],
+    "Fig2-2-1024x602.png": [
+        "AWS::CloudWatch::Dashboard",
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket",
+        "AWS::StepFunctions::StateMachine",
+        "AWS::CloudFront::Distribution",
+        "AWS::ECS::FargateCluster"
+    ],
+    "cloudfront_dynamic_ota_sequence.png": [
+        "AWS::S3::Bucket",
+        "AWS::ElasticBeanstalk::Application",
+        "AWS::CloudFront::Distribution"
+    ],
+    "1_5_Y7ZhcRdRkLVuh_wR5vPg.png": [
+        "AWS::CloudFront::Distribution"
+    ],
+    "1-modernize-core-functions.png": [
+        "AWS::CloudWatch::Dashboard",
+        "AWS::Redshift::Cluster",
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function",
+        "AWS::CloudTrail::Trail",
+        "AWS::Redshift::Cluster",
+        "AWS::DMS::ReplicationInstance",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket",
+        "AWS::Glue::Database",
+        "AWS::S3::Bucket",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::RDS::DBInstance"
+    ],
+    "cloudfront_dynamic_ota_overview.png": [
+        "AWS::ElasticBeanstalk::Application",
+        "AWS::CloudFront::Distribution"
+    ],
+    "fraud-ring-detection-using-Neo4j-and-graphs.png": [
+        "AWS::Lambda::Function",
+        "AWS::MSK::Cluster",
+        "AWS::S3::Bucket",
+        "AWS::Glue::Database",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::Kinesis::Stream"
+    ],
+    "media-delivery-reference-architecture.png": [
+        "AWS::S3::Bucket",
+        "AWS::CloudFront::Distribution"
+    ],
+    "security-rich-api-management-using-ibm-api-connect.png": [
+        "AWS::ElasticBeanstalk::Application",
+        "AWS::EC2::Instance",
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function",
+        "AWS::EKS::Cluster"
+    ],
+    "fig3-cyberark-serverless-blueprints-1024x377.png": [
+        "AWS::S3::Bucket",
+        "AWS::SNS::Topic",
+        "AWS::Events::EventBus",
+        "AWS::Lambda::Function",
+        "AWS::SQS::Queue",
+        "AWS::SQS::Queue",
+        "AWS::CloudWatch::Dashboard",
+        "AWS::S3::Bucket"
+    ],
+    "3-improved-customer-experience.png": [
+        "AWS::DynamoDB::Table",
+        "AWS::S3::Bucket",
+        "AWS::CloudTrail::Trail",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::KMS::Key",
+        "AWS::CloudWatch::Dashboard",
+        "AWS::Lex::Bot",
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket",
+        "AWS::ApiGateway::RestApi"
+    ],
+    "describe-for-me-web-app.png": [
+        "AWS::S3::Bucket",
+        "AWS::IAM::RoleForPollyExecution",
+        "AWS::StepFunctions::StateMachine",
+        "AWS::S3::Bucket",
+        "AWS::SageMaker::NotebookInstance"
+    ],
+    "Reference-Architecture.png": [
+        "AWS::EC2::Instance",
+        "AWS::EC2::Instance",
+        "AWS::EC2::Instance",
+        "AWS::S3::Bucket",
+        "AWS::ECS::Cluster"
+    ],
+    "Figure-1.-Optimize-digital-channels-monitoring-and-management-for-Marketing-828x630.png": [
+        "AWS::Lambda::Function",
+        "AWS::Kinesis::Stream",
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket",
+        "AWS::CloudFront::Distribution",
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function"
+    ],
+    "a60e585f-27be-4dd6-897b-c38adf1d283f.png": [
+        "AWS::SQS::Queue",
+        "AWS::ECS::FargateCluster",
+        "AWS::Kinesis::Stream"
+    ],
+    "Figure1-UploadFileX.png": [
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket"
+    ],
+    "diagram_11_11.png": [],
+    "protegrity-data-protection-for-amazon-s3-and-snowflake.png": [
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket"
+    ],
+    "2-deployment-of-player-related-components-outside-of-aws.png": [
+        "AWS::DynamoDB::Table",
+        "AWS::RDS::DBInstance",
+        "AWS::ECS::Cluster",
+        "AWS::CloudFront::Distribution",
+        "AWS::MSK::Cluster"
+    ],
+    "Figure5-Connectivity-Networking-1109x630.png": [
+        "AWS::ElasticLoadBalancingV2::TargetGroup",
+        "AWS::ElasticLoadBalancingV2::TargetGroup",
+        "AWS::Route53::RecordSet",
+        "AWS::S3::Bucket"
+    ],
+    "2-real-time-ml-forecasting.png": [
+        "AWS::S3::Bucket",
+        "AWS::Lambda::Function",
+        "AWS::Glue::Database",
+        "AWS::S3::Bucket",
+        "AWS::S3::Bucket",
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::Route53::RecordSet",
+        "AWS::S3::Bucket",
+        "AWS::Glue::Database",
+        "AWS::CloudFront::Distribution",
+        "AWS::Kendra::Index"
+    ],
+    "fig1-tenant-portability-1.png": [
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::DynamoDB::Table",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function"
+    ],
+    "image_006.png": [
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::ECS::Cluster"
+    ],
+    "Screenshot-2023-06-02-at-10.06.21-AM-1024x850.png": [
+        "AWS::KMS::Key"
+    ],
+    "Figure-2.-Example-of-a-stateless-architecture-1024x580.png": [
+        "AWS::S3::Bucket",
+        "AWS::CloudFront::Distribution",
+        "AWS::Route53::RecordSet",
+        "AWS::ElastiCache::CacheCluster"
+    ],
+    "integrating-external-single-sign-on-providers-with-amazon-eks.png": [
+        "AWS::EKS::Cluster",
+        "AWS::EKS::Cluster",
+        "AWS::KMS::Key"
+    ],
+    "ac-architecture-cdk-pipelines-data-lake.bfabed2b2d9f88249cda92fdf41cd55666cd111a.png": [
+        "AWS::Lambda::Function",
+        "AWS::Glue::Database",
+        "AWS::SNS::Topic"
+    ],
+    "kelvin-ai-on-aws.png": [
+        "AWS::SageMaker::NotebookInstance",
+        "AWS::RDS::DBInstance",
+        "AWS::S3::Bucket",
+        "AWS::SNS::Topic",
+        "AWS::EKS::Cluster"
+    ],
+    "RTBCodekitArchitecture.png": [
+        "AWS::Kendra::Index",
+        "AWS::Kendra::Index",
+        "AWS::Kendra::Index",
+        "AWS::Kendra::Index"
+    ],
+    "Screenshot-2023-07-26-at-4.00.06-PM-1024x660.png": [
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function",
+        "AWS::S3::Bucket",
+        "AWS::CloudFront::Distribution",
+        "AWS::SNS::Topic"
+    ],
+    "images (2).png": [],
+    "images.png": [],
+    "1-several-private-vifs.png": [],
+    "1.png": [
+        "AWS::Route53::RecordSet",
+        "AWS::ApiGateway::RestApi",
+        "AWS::S3::Bucket",
+        "AWS::SNS::Topic",
+        "AWS::Lambda::Function",
+        "AWS::Lambda::Function"
+    ]
+}

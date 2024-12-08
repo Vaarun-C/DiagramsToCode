@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Architecture
+
+Resources:
+
+  IoTBroker:
+    Type: AWS::IoT::Broker
+    Properties:
+      # IoT Broker configuration
+
+  IoTCore:
+    Type: AWS::IoT::Core
+    Properties:
+      # IoT Core configuration
+
+  LambdaFunction1:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs12.x
+      # Function properties
+
+  LambdaFunction2:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs12.x
+      # Function properties
+
+  Amplify:
+    Type: AWS::Amplify::App
+    Properties:
+      # Amplify configuration
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  IoTDevice:
+    Type: AWS::IoT::Device
+    Properties:
+      # IoT Device configuration
+
+  IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      # IAM Role configuration

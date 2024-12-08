@@ -1,0 +1,44 @@
+{
+"image": "image1",
+"icons": [
+    "AWS::Redshift::Cluster",
+    "AWS::Logs::LogGroup",
+    "AWS::S3::Bucket",
+    "AWS::Athena::WorkGroup",
+    "AWS::QuickSight::DataSet"
+],
+"template": "AWSTemplateFormatVersion: \"2010-09-09\"
+Resources:
+  MyRedshiftCluster:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterType: \"single-node\"
+      DBName: \"dev\"
+      MasterUsername: \"masteruser\"
+      MasterUserPassword: \"SecretPass123\"
+      NodeType: \"dc2.large\"
+
+  MyLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: \"MyRedshiftLogs\"
+
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: \"my-logs-bucket\"
+
+  MyAthenaWorkGroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: \"MyWorkGroup\"
+
+  MyQuickSightDataSet:
+    Type: AWS::QuickSight::DataSet
+    Properties:
+      AwsAccountId: \"123456789012\"
+      DataSetId: \"MyDataSetId\"
+      Name: \"MyDataSet\"
+      ImportMode: \"SPICE\"
+"
+}

@@ -1,0 +1,108 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  MyCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Origins:
+          - DomainName: "example.com"
+            Id: "Origin1"
+
+  MyApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: "MyAPI"
+
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+
+  MyPublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.1.0/24"
+
+  MyPrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: "10.0.2.0/24"
+
+  MyNatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: "eipalloc-1234567890abcdef0"
+      SubnetId: !Ref MyPublicSubnet
+
+  MyEKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: "MyEKSCluster"
+      RoleArn: "arn:aws:iam::123456789012:role/EKSRole"
+      ResourcesVpcConfig:
+        SubnetIds:
+          - !Ref MyPublicSubnet
+          - !Ref MyPrivateSubnet
+
+  MyMSKCluster:
+    Type: AWS::MSK::Cluster
+    Properties:
+      ClusterName: "MyCluster"
+      KafkaVersion: "2.8.1"
+      NumberOfBrokerNodes: 2
+      BrokerNodeGroupInfo:
+        InstanceType: "kafka.m5.large"
+        ClientSubnets:
+          - !Ref MyPrivateSubnet
+        StorageInfo:
+          EBSStorageInfo:
+            VolumeSize: 100
+
+  MyRDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: "mysql"
+      MasterUsername: "admin"
+      MasterUserPassword: "SecretPass123"
+      DBInstanceClass: "db.t3.micro"
+      AllocatedStorage: 20
+
+  MyDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "Id"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+
+  MyLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: "MyALB"
+      Type: "application"
+      Subnets:
+        - !Ref MyPublicSubnet
+
+  MyOutpost:
+    Type: AWS::Outposts::Outpost
+    Properties:
+      Name: "MyOutpost"
+      SiteId: "op-abcdefgh"
+      AvailabilityZone: "us-east-1a"
+
+
+Can you recognize the various service icons in this AWS architecture diagrams I provided. Don't skip any icons and give me a list instead of a set. Do not include custom resources, conceptual and external elements. Do not include comments For example:
+"image1": [
+    "AWS::Lambda::Function",
+    "AWS::Lambda::Function",
+    "AWS::KMS::Key"
+],
+Give the to me in the same format as the example with each resource separated by newline. Surround the list with three ''
+
+Then generate a CloudFormation template based on the recognized resources. Do not forget any resource. Do not include custom resources. Keep the template valid.

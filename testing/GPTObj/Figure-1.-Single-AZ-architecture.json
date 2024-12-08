@@ -1,0 +1,141 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true
+            }
+        },
+        "PublicSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.1.0/24",
+                "AvailabilityZone": "us-east-1a",
+                "MapPublicIpOnLaunch": true
+            }
+        },
+        "PrivateSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.2.0/24",
+                "AvailabilityZone": "us-east-1a"
+            }
+        },
+        "NATGateway": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnet"
+                },
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "EIP",
+                        "AllocationId"
+                    ]
+                }
+            }
+        },
+        "EIP": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": "vpc"
+            }
+        },
+        "LoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "AppLoadBalancer",
+                "Scheme": "internet-facing",
+                "Subnets": [
+                    {
+                        "Ref": "PublicSubnet"
+                    }
+                ]
+            }
+        },
+        "AutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "PublicSubnet"
+                    }
+                ],
+                "LaunchConfigurationName": {
+                    "Ref": "LaunchConfiguration"
+                },
+                "MinSize": "1",
+                "MaxSize": "3",
+                "DesiredCapacity": "2"
+            }
+        },
+        "LaunchConfiguration": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "ImageId": "ami-12345678",
+                "InstanceType": "t2.micro",
+                "SecurityGroups": [
+                    {
+                        "Ref": "InstanceSecurityGroup"
+                    }
+                ]
+            }
+        },
+        "InstanceSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Enable SSH and HTTP access",
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 22,
+                        "ToPort": 22,
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 80,
+                        "ToPort": 80,
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "RDSInstance": {
+            "Type": "AWS::RDS::DBInstance",
+            "Properties": {
+                "DBInstanceClass": "db.t3.micro",
+                "AllocatedStorage": "20",
+                "Engine": "MySQL",
+                "MasterUsername": "admin",
+                "MasterUserPassword": "AdminPassword123",
+                "DBName": "AppDB",
+                "VpcSecurityGroups": [
+                    {
+                        "Ref": "InstanceSecurityGroup"
+                    }
+                ],
+                "PubliclyAccessible": false
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "app-data-bucket"
+            }
+        }
+    }
+}

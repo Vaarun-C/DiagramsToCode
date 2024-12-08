@@ -1,0 +1,156 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for architecture with IAM, Lambda, S3, EventBridge, Glue, Athena, and QuickSight.",
+    "Resources": {
+        "IAMRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "lambda.amazonaws.com",
+                                    "glue.amazonaws.com"
+                                ]
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "GlueAndS3Access",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:*",
+                                        "glue:*",
+                                        "athena:*",
+                                        "quicksight:*",
+                                        "logs:*",
+                                        "events:*"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "data-analytics-bucket"
+            }
+        },
+        "EventBridgeRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "Name": "TriggerLambda",
+                "EventPattern": {
+                    "source": [
+                        "aws.account"
+                    ]
+                },
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "LambdaFunction",
+                                "Arn"
+                            ]
+                        },
+                        "Id": "LambdaTarget"
+                    }
+                ]
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "DataProcessingFunction",
+                "Runtime": "python3.9",
+                "Handler": "lambda_function.lambda_handler",
+                "Code": {
+                    "ZipFile": "def lambda_handler(event, context):\n    print('Lambda triggered')"
+                },
+                "Role": {
+                    "Fn::GetAtt": [
+                        "IAMRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "GlueCrawler": {
+            "Type": "AWS::Glue::Crawler",
+            "Properties": {
+                "Name": "DataCrawler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "IAMRole",
+                        "Arn"
+                    ]
+                },
+                "DatabaseName": "analytics_db",
+                "Targets": {
+                    "S3Targets": [
+                        {
+                            "Path": {
+                                "Fn::Sub": "s3://${S3Bucket}/data/"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "AthenaWorkGroup": {
+            "Type": "AWS::Athena::WorkGroup",
+            "Properties": {
+                "Name": "DataAnalysisWorkGroup",
+                "State": "ENABLED",
+                "Description": "WorkGroup for Athena queries",
+                "WorkGroupConfiguration": {
+                    "ResultConfiguration": {
+                        "OutputLocation": {
+                            "Fn::Sub": "s3://${S3Bucket}/athena-results/"
+                        }
+                    }
+                }
+            }
+        },
+        "QuickSightDataset": {
+            "Type": "AWS::QuickSight::DataSet",
+            "Properties": {
+                "AwsAccountId": {
+                    "Ref": "AWS::AccountId"
+                },
+                "DataSetId": "DataAnalyticsDataset",
+                "Name": "DataAnalytics",
+                "ImportMode": "SPICE",
+                "PhysicalTableMap": {
+                    "AthenaTable": {
+                        "AthenaSource": {
+                            "WorkGroup": {
+                                "Ref": "AthenaWorkGroup"
+                            },
+                            "DataSourceArn": {
+                                "Fn::Sub": "arn:aws:quicksight:${AWS::Region}:${AWS::AccountId}:datasource/DataAnalyticsSource"
+                            },
+                            "Catalog": "AwsDataCatalog",
+                            "Database": "analytics_db",
+                            "TableName": "data_table"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

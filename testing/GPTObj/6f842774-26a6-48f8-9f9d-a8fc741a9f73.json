@@ -1,0 +1,163 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Resources": {
+        "MyVPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16"
+            }
+        },
+        "PublicSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "MyVPC"
+                },
+                "CidrBlock": "10.0.1.0/24"
+            }
+        },
+        "NatEIP1": {
+            "Type": "AWS::EC2::EIP"
+        },
+        "NatGateway1": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "NatEIP1",
+                        "AllocationId"
+                    ]
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet1"
+                }
+            }
+        },
+        "MyLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Type": "application",
+                "Subnets": [
+                    {
+                        "Ref": "PublicSubnet1"
+                    }
+                ]
+            }
+        },
+        "PublicSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "MyVPC"
+                },
+                "CidrBlock": "10.0.2.0/24"
+            }
+        },
+        "NatEIP2": {
+            "Type": "AWS::EC2::EIP"
+        },
+        "NatGateway2": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "NatEIP2",
+                        "AllocationId"
+                    ]
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet2"
+                }
+            }
+        },
+        "PrivateSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "MyVPC"
+                },
+                "CidrBlock": "10.0.3.0/24"
+            }
+        },
+        "DAPSInstance1": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": "ami-0c55b159cbfafe1f0",
+                "InstanceType": "t2.micro",
+                "SubnetId": {
+                    "Ref": "PrivateSubnet1"
+                }
+            }
+        },
+        "MyEFS": {
+            "Type": "AWS::EFS::FileSystem"
+        },
+        "MyMountTarget1": {
+            "Type": "AWS::EFS::MountTarget",
+            "Properties": {
+                "FileSystemId": {
+                    "Ref": "MyEFS"
+                },
+                "SubnetId": {
+                    "Ref": "PrivateSubnet1"
+                },
+                "SecurityGroups": []
+            }
+        },
+        "PrivateSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "MyVPC"
+                },
+                "CidrBlock": "10.0.4.0/24"
+            }
+        },
+        "DAPSInstance2": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": "ami-0c55b159cbfafe1f0",
+                "InstanceType": "t2.micro",
+                "SubnetId": {
+                    "Ref": "PrivateSubnet2"
+                }
+            }
+        },
+        "MyMountTarget2": {
+            "Type": "AWS::EFS::MountTarget",
+            "Properties": {
+                "FileSystemId": {
+                    "Ref": "MyEFS"
+                },
+                "SubnetId": {
+                    "Ref": "PrivateSubnet2"
+                },
+                "SecurityGroups": []
+            }
+        },
+        "MyAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "MinSize": "1",
+                "MaxSize": "2",
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "PrivateSubnet1"
+                    },
+                    {
+                        "Ref": "PrivateSubnet2"
+                    }
+                ],
+                "LaunchConfigurationName": "MyLaunchConfig"
+            }
+        },
+        "MyRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "MyVPC"
+                }
+            }
+        }
+    }
+}

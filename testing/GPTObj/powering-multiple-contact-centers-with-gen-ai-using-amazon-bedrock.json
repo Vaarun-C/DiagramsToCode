@@ -1,0 +1,149 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for a multi-contact center architecture with GenAI and AWS services.",
+    "Resources": {
+        "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Enabled": true,
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::Sub": "${S3Bucket}.s3.amazonaws.com"
+                            },
+                            "Id": "S3Origin",
+                            "S3OriginConfig": {}
+                        }
+                    ],
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "S3Origin",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    }
+                }
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "contact-center-recordings"
+            }
+        },
+        "SecretsManager": {
+            "Type": "AWS::SecretsManager::Secret",
+            "Properties": {
+                "Name": "ContactCenterSecret"
+            }
+        },
+        "FargateTask": {
+            "Type": "AWS::ECS::TaskDefinition",
+            "Properties": {
+                "ContainerDefinitions": [
+                    {
+                        "Name": "WebSocketServer",
+                        "Image": "websocket-server-image",
+                        "Essential": true
+                    }
+                ],
+                "Family": "WebSocketTask"
+            }
+        },
+        "TranscribeStream": {
+            "Type": "AWS::Transcribe::StreamingConfiguration",
+            "Properties": {
+                "LanguageCode": "en-US"
+            }
+        },
+        "ConnectInstance": {
+            "Type": "AWS::Connect::Instance",
+            "Properties": {
+                "InstanceAlias": "ContactCenter"
+            }
+        },
+        "KinesisDataStream": {
+            "Type": "AWS::Kinesis::Stream",
+            "Properties": {
+                "ShardCount": 1
+            }
+        },
+        "ComprehendAnalysis": {
+            "Type": "AWS::Comprehend::DocumentClassifier",
+            "Properties": {
+                "LanguageCode": "en",
+                "DocumentClassifierName": "SentimentAnalysis"
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "TranscriptProcessing",
+                "Handler": "index.handler",
+                "Runtime": "nodejs14.x",
+                "Code": {
+                    "S3Bucket": "lambda-functions",
+                    "S3Key": "transcript-processing.zip"
+                }
+            }
+        },
+        "SNSNotification": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "TopicName": "AgentAssistNotifications"
+            }
+        },
+        "LexBot": {
+            "Type": "AWS::Lex::Bot",
+            "Properties": {
+                "Name": "AgentAssistBot",
+                "Locale": "en-US",
+                "ChildDirected": false
+            }
+        },
+        "KendraIndex": {
+            "Type": "AWS::Kendra::Index",
+            "Properties": {
+                "Name": "KnowledgeBaseIndex",
+                "Edition": "DEVELOPER_EDITION"
+            }
+        },
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "EventRecords",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "EventId",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "EventId",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "BedrockLLM": {
+            "Type": "AWS::Bedrock::Model",
+            "Properties": {
+                "ModelName": "TextSummaryModel",
+                "ModelArn": "arn:aws:bedrock:us-east-1::model/TextSummaryModel"
+            }
+        },
+        "AppSyncAPI": {
+            "Type": "AWS::AppSync::GraphQLApi",
+            "Properties": {
+                "Name": "ContactCenterAPI",
+                "AuthenticationType": "AMAZON_COGNITO_USER_POOLS"
+            }
+        },
+        "CognitoUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "ContactCenterUserPool"
+            }
+        }
+    }
+}

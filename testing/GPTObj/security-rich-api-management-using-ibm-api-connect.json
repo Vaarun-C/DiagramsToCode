@@ -1,0 +1,151 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for security-rich API management using AWS services.",
+    "Resources": {
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "api-management-data"
+            }
+        },
+        "QuickSightDataset": {
+            "Type": "AWS::QuickSight::DataSet",
+            "Properties": {
+                "DataSetId": "ApiManagementDataset",
+                "Name": "ApiManagementDataset",
+                "PhysicalTableMap": {
+                    "ApiManagementTable": {
+                        "S3Source": {
+                            "DataSourceArn": {
+                                "Fn::Sub": "arn:aws:quicksight:${AWS::Region}:${AWS::AccountId}:datasource/S3DataSource"
+                            },
+                            "InputColumns": [
+                                {
+                                    "Name": "ID",
+                                    "Type": "STRING"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "ApiManagementLambda",
+                "Handler": "index.handler",
+                "Runtime": "python3.9",
+                "Code": {
+                    "S3Bucket": "lambda-functions",
+                    "S3Key": "api-management-lambda.zip"
+                },
+                "Role": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/LambdaExecutionRole"
+                }
+            }
+        },
+        "ElasticBeanstalkEnvironment": {
+            "Type": "AWS::ElasticBeanstalk::Environment",
+            "Properties": {
+                "ApplicationName": "ApiManagementApp",
+                "EnvironmentName": "ApiManagementEnv",
+                "SolutionStackName": "64bit Amazon Linux 2 v3.3.6 running Python 3.8",
+                "OptionSettings": [
+                    {
+                        "Namespace": "aws:autoscaling:launchconfiguration",
+                        "OptionName": "InstanceType",
+                        "Value": "t3.micro"
+                    }
+                ]
+            }
+        },
+        "EKSCluster": {
+            "Type": "AWS::EKS::Cluster",
+            "Properties": {
+                "Name": "ApiManagementEKSCluster",
+                "ResourcesVpcConfig": {
+                    "SubnetIds": [
+                        "subnet-abc123",
+                        "subnet-def456"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-xyz789"
+                    ]
+                },
+                "RoleArn": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/EKSClusterRole"
+                }
+            }
+        },
+        "CodePipeline": {
+            "Type": "AWS::CodePipeline::Pipeline",
+            "Properties": {
+                "Name": "ApiManagementPipeline",
+                "RoleArn": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/CodePipelineRole"
+                },
+                "ArtifactStore": {
+                    "Type": "S3",
+                    "Location": {
+                        "Ref": "S3Bucket"
+                    }
+                },
+                "Stages": [
+                    {
+                        "Name": "Source",
+                        "Actions": [
+                            {
+                                "Name": "Source",
+                                "ActionTypeId": {
+                                    "Category": "Source",
+                                    "Owner": "AWS",
+                                    "Provider": "S3",
+                                    "Version": "1"
+                                },
+                                "Configuration": {
+                                    "S3Bucket": {
+                                        "Ref": "S3Bucket"
+                                    },
+                                    "S3ObjectKey": "source.zip"
+                                },
+                                "OutputArtifacts": [
+                                    {
+                                        "Name": "SourceArtifact"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "Deploy",
+                        "Actions": [
+                            {
+                                "Name": "Deploy",
+                                "ActionTypeId": {
+                                    "Category": "Deploy",
+                                    "Owner": "AWS",
+                                    "Provider": "ElasticBeanstalk",
+                                    "Version": "1"
+                                },
+                                "Configuration": {
+                                    "ApplicationName": {
+                                        "Ref": "ElasticBeanstalkEnvironment"
+                                    },
+                                    "EnvironmentName": {
+                                        "Ref": "ElasticBeanstalkEnvironment"
+                                    }
+                                },
+                                "InputArtifacts": [
+                                    {
+                                        "Name": "SourceArtifact"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

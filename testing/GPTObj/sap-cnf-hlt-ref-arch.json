@@ -1,0 +1,115 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for SAP Configuration Health Checks on AWS.",
+    "Resources": {
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "SAPConfigurationHealth",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "ID",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "ID",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "sap-health-check-bucket"
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "SAPHealthCheckLambda",
+                "Handler": "index.handler",
+                "Runtime": "python3.9",
+                "Code": {
+                    "S3Bucket": "lambda-functions",
+                    "S3Key": "sap-health-check-lambda.zip"
+                },
+                "Role": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/LambdaExecutionRole"
+                }
+            }
+        },
+        "EventBridgeRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "Name": "SAPHealthCheckSchedule",
+                "ScheduleExpression": "rate(1 day)",
+                "State": "ENABLED",
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "LambdaFunction",
+                                "Arn"
+                            ]
+                        },
+                        "Id": "LambdaTarget"
+                    }
+                ]
+            }
+        },
+        "SESConfigurationSet": {
+            "Type": "AWS::SES::ConfigurationSet",
+            "Properties": {
+                "Name": "SAPHealthCheckSESConfig"
+            }
+        },
+        "CloudFormationStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": "https://s3.amazonaws.com/cloudformation-templates/sap-health-check.yaml",
+                "Parameters": {
+                    "BucketName": {
+                        "Ref": "S3Bucket"
+                    },
+                    "TableName": {
+                        "Ref": "DynamoDBTable"
+                    }
+                }
+            }
+        },
+        "AthenaWorkGroup": {
+            "Type": "AWS::Athena::WorkGroup",
+            "Properties": {
+                "Name": "SAPHealthCheckAthenaWorkGroup",
+                "State": "ENABLED",
+                "Description": "Workgroup for SAP Health Check Athena queries."
+            }
+        },
+        "QuickSightDataset": {
+            "Type": "AWS::QuickSight::DataSet",
+            "Properties": {
+                "DataSetId": "SAPHealthCheckDataset",
+                "Name": "SAPHealthCheckDataset",
+                "PhysicalTableMap": {
+                    "SAPHealthCheckTable": {
+                        "S3Source": {
+                            "DataSourceArn": {
+                                "Fn::Sub": "arn:aws:quicksight:${AWS::Region}:${AWS::AccountId}:datasource/S3DataSource"
+                            },
+                            "InputColumns": [
+                                {
+                                    "Name": "ID",
+                                    "Type": "STRING"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,232 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  MyEKSCluster1:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: "MyEKSCluster1"
+      RoleArn: "arn:aws:iam::123456789012:role/EKSRole"
+      ResourcesVpcConfig:
+        SubnetIds: ["subnet-12345678"]
+
+  MyEKSCluster2:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: "MyEKSCluster2"
+      RoleArn: "arn:aws:iam::123456789012:role/EKSRole"
+      ResourcesVpcConfig:
+        SubnetIds: ["subnet-12345678"]
+
+  MyEKSCluster3:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: "MyEKSCluster3"
+      RoleArn: "arn:aws:iam::123456789012:role/EKSRole"
+      ResourcesVpcConfig:
+        SubnetIds: ["subnet-12345678"]
+
+  MyLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: "MyALB"
+      Type: "application"
+      Subnets:
+        - "subnet-12345678"
+
+  MyEKSCluster4:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: "MyEKSCluster4"
+      RoleArn: "arn:aws:iam::123456789012:role/EKSRole"
+      ResourcesVpcConfig:
+        SubnetIds: ["subnet-12345678"]
+
+  MyEKSCluster5:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: "MyEKSCluster5"
+      RoleArn: "arn:aws:iam::123456789012:role/EKSRole"
+      ResourcesVpcConfig:
+        SubnetIds: ["subnet-12345678"]
+
+  MyEKSCluster6:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: "MyEKSCluster6"
+      RoleArn: "arn:aws:iam::123456789012:role/EKSRole"
+      ResourcesVpcConfig:
+        SubnetIds: ["subnet-12345678"]
+
+  MyAutoScalingGroup1:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      MinSize: "1"
+      MaxSize: "3"
+      DesiredCapacity: "2"
+      VPCZoneIdentifier: ["subnet-12345678"]
+      LaunchConfigurationName: "MyLaunchConfig"
+
+  MyOpenSearchDomain1:
+    Type: AWS::OpenSearchService::Domain
+    Properties:
+      DomainName: "my-opensearch-domain1"
+      EngineVersion: "OpenSearch_1.0"
+      ClusterConfig:
+        InstanceType: "m5.large.search"
+        InstanceCount: 2
+      EBSOptions:
+        EBSEnabled: true
+        VolumeSize: 10
+
+  MyRDSPrimary:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: "postgres"
+      MasterUsername: "admin"
+      MasterUserPassword: "SecretPass123"
+      DBInstanceClass: "db.t3.micro"
+      AllocatedStorage: 20
+
+  MyRDSReplica1:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: "postgres"
+      SourceDBInstanceIdentifier: !Ref MyRDSPrimary
+      DBInstanceClass: "db.t3.micro"
+
+  MyElastiCachePrimary:
+    Type: AWS::ElastiCache::ReplicationGroup
+    Properties:
+      ReplicationGroupDescription: "Primary cluster"
+      Engine: "redis"
+      AutomaticFailoverEnabled: true
+      CacheNodeType: "cache.t3.micro"
+      NumCacheClusters: 2
+
+  MyRedshiftCluster:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterType: "single-node"
+      DBName: "dev"
+      MasterUsername: "masteruser"
+      MasterUserPassword: "SecretPass123"
+      NodeType: "dc2.large"
+
+  MyLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |
+          exports.handler = async () => 'OK';
+      Handler: "index.handler"
+      Runtime: "nodejs14.x"
+      Role: "arn:aws:iam::123456789012:role/MyLambdaRole"
+
+  MySQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: "MyQueue"
+
+  MySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: "MyTopic"
+
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "my-data-bucket"
+
+  MyEKSCluster7:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: "MyEKSCluster7"
+      RoleArn: "arn:aws:iam::123456789012:role/EKSRole"
+      ResourcesVpcConfig:
+        SubnetIds: ["subnet-12345678"]
+
+  MyEKSCluster8:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: "MyEKSCluster8"
+      RoleArn: "arn:aws:iam::123456789012:role/EKSRole"
+      ResourcesVpcConfig:
+        SubnetIds: ["subnet-12345678"]
+
+  MyEKSCluster9:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: "MyEKSCluster9"
+      RoleArn: "arn:aws:iam::123456789012:role/EKSRole"
+      ResourcesVpcConfig:
+        SubnetIds: ["subnet-12345678"]
+
+  MyAutoScalingGroup2:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      MinSize: "1"
+      MaxSize: "3"
+      DesiredCapacity: "2"
+      VPCZoneIdentifier: ["subnet-12345678"]
+      LaunchConfigurationName: "MyLaunchConfig2"
+
+  MyOpenSearchDomain2:
+    Type: AWS::OpenSearchService::Domain
+    Properties:
+      DomainName: "my-opensearch-domain2"
+      EngineVersion: "OpenSearch_1.0"
+      ClusterConfig:
+        InstanceType: "m5.large.search"
+        InstanceCount: 2
+      EBSOptions:
+        EBSEnabled: true
+        VolumeSize: 10
+
+  MyRDSReplica2:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: "postgres"
+      SourceDBInstanceIdentifier: !Ref MyRDSPrimary
+      DBInstanceClass: "db.t3.micro"
+
+  MyElastiCacheSecondary:
+    Type: AWS::ElastiCache::ReplicationGroup
+    Properties:
+      ReplicationGroupDescription: "Secondary cluster"
+      Engine: "redis"
+      AutomaticFailoverEnabled: true
+      CacheNodeType: "cache.t3.micro"
+      NumCacheClusters: 2
+
+  MyRedshiftCluster2:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterType: "single-node"
+      DBName: "dev"
+      MasterUsername: "masteruser"
+      MasterUserPassword: "SecretPass123"
+      NodeType: "dc2.large"
+
+  MyLambdaFunction2:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |
+          exports.handler = async () => 'OK';
+      Handler: "index.handler"
+      Runtime: "nodejs14.x"
+      Role: "arn:aws:iam::123456789012:role/MyLambdaRole"
+
+  MySQSQueue2:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: "MyQueue2"
+
+  MySNSTopic2:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: "MyTopic2"
+
+  MyS3Bucket2:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "my-data-bucket-2"

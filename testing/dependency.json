@@ -1,0 +1,43 @@
+[
+    {
+        "name": "AWS:Amplify::App",
+        "depends": []
+    },
+    {
+        "name": "AWS:Amplify::Branch",
+        "depends": [
+            "AWS:Amplify::App"
+        ]
+    },
+    {
+        "name": "AWS:Amplify::Domain",
+        "depends": [
+            "AWS:Amplify::App"
+        ]
+    },
+    {
+        "name": "AWS::ApiGateway::RestApi",
+        "depends": []
+    },
+    {
+        "name": "AWS::ApiGateway::Resource",
+        "depends": [
+            "AWS::ApiGateway::RestApi"
+        ]
+    },
+    {
+        "name": "AWS::ApiGateway::Model",
+        "depends": [
+            "AWS::ApiGateway::RestApi"
+        ]
+    },
+    {
+        "name": "AWS::ApiGateway::Method",
+        "depends": [
+            "AWS::ApiGateway::RestApi",
+            "AWS::ApiGateway::Resource",
+            "AWS::ApiGateway::Model"
+        ]
+    }
+]
+

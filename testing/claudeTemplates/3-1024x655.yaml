@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS EKS Infrastructure
+
+Resources:
+
+  EKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: my-eks-cluster
+      RoleArn: !GetAtt EKSClusterRole.Arn
+      ResourcesVpcConfig:
+        SubnetIds: 
+          - subnet-abc123def456
+          - subnet-ghi789jkl012
+          - subnet-mno345pqr678
+
+  EKSClusterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: eks.amazonaws.com
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+
+  EKSNodeGroup:
+    Type: AWS::EKS::NodeGroup
+    Properties:
+      ClusterName: !Ref EKSCluster
+      NodeGroupName: my-nodegroup
+      NodeRole: !GetAtt EKSNodeGroupRole.Arn
+      ScalingConfig:
+        DesiredSize: 3
+        MaxSize: 5
+        MinSize: 1
+      Subnets:
+        - subnet-abc123def456
+        - subnet-ghi789jkl012
+        - subnet-mno345pqr678
+
+  EKSNodeGroupRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly

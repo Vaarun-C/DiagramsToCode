@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Architecture
+
+Resources:
+
+  IoTDevice:
+    Type: AWS::IoT::Device
+    Properties:
+      DeviceDefinition:
+        # Device properties
+
+  KMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS Key for encryption
+
+  LambdaFunction1:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs12.x
+      # Function properties
+
+  LambdaFunction2:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs12.x
+      # Function properties  
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  IoTCertificateAuthority:
+    Type: AWS::IoT::CertificateAuthority
+    Properties:
+      CertificateConfiguration:
+        # Certificate configuration
+
+  IoTCertificate:
+    Type: AWS::IoT::Certificate
+    Properties:
+      CertificateConfiguration:
+        # Certificate configuration
+
+  IoTDeviceSDK:
+    Type: AWS::IoT::DeviceSDK
+    Properties:
+      DeviceSDKConfiguration:
+        # Device SDK configuration
+
+  EncryptionSDK:
+    Type: AWS::Encryption::SDK
+    Properties:
+      EncryptionConfiguration:
+        # Encryption configuration

@@ -1,0 +1,124 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "CognitoUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "DREMUserPool"
+            }
+        },
+        "CognitoUserPoolClient": {
+            "Type": "AWS::Cognito::UserPoolClient",
+            "Properties": {
+                "ClientName": "DREMAppClient",
+                "UserPoolId": {
+                    "Ref": "CognitoUserPool"
+                }
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Runtime": "python3.9",
+                "Code": {
+                    "ZipFile": "def handler(event, context):\n    print('DREM Lambda Triggered')"
+                }
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ]
+            }
+        },
+        "AppSyncGraphQLApi": {
+            "Type": "AWS::AppSync::GraphQLApi",
+            "Properties": {
+                "Name": "DREMGraphQLApi",
+                "AuthenticationType": "AMAZON_COGNITO_USER_POOLS",
+                "UserPoolConfig": {
+                    "UserPoolId": {
+                        "Ref": "CognitoUserPool"
+                    }
+                }
+            }
+        },
+        "EventBridgeRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "Name": "DREMEventRule",
+                "EventPattern": {
+                    "source": [
+                        "aws.dynamodb"
+                    ]
+                },
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "LambdaFunction",
+                                "Arn"
+                            ]
+                        },
+                        "Id": "TargetLambda"
+                    }
+                ]
+            }
+        },
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "DREMEventTable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "EventId",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "EventId",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "drem-assets-bucket"
+            }
+        },
+        "SystemsManagerParameter": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+                "Name": "/DREM/DeepRacerConfig",
+                "Type": "String",
+                "Value": "DeepRacer configuration details"
+            }
+        }
+    }
+}

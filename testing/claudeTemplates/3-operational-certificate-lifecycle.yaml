@@ -1,0 +1,102 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS IoT Architecture
+
+Resources:
+
+  CertificateBroker:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: example.com
+      ValidationMethod: DNS
+
+  IoTCore:
+    Type: AWS::IoT::Core
+    Properties:
+      RegistrationConfig:
+        AwsIotTopic: my-iot-topic
+
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs12.x
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            // Lambda function code
+          };
+
+  IoTThing:
+    Type: AWS::IoT::Thing
+    Properties:
+      ThingName: my-iot-device
+      ThingTypeName: my-thing-type
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: my-iot-data
+      AttributeDefinitions:
+        - AttributeName: device_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: device_id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  StepFunctionsStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      DefinitionString: !Sub |
+        {
+          "StartAt": "MyState",
+          "States": {
+            "MyState": {
+              "Type": "Task",
+              "Resource": "${LambdaFunction.Arn}",
+              "End": true
+            }
+          }
+        }
+      RoleArn: !GetAtt StepFunctionsRole.Arn
+
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref LambdaFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: 'states.amazonaws.com'
+
+  EventBridgeRule:
+    Type: AWS::EventBridge::Rule
+    Properties:
+      EventBusName: default
+      EventPattern:
+        source:
+          - "aws.iot"
+        detail-type:
+          - "IoT Device Defender Alert"
+      Targets:
+        - Arn: !GetAtt StepFunctionsStateMachine.Arn
+
+  IoTDefender:
+    Type: AWS::IoT::Defender
+    Properties:
+      AuditCheckConfigurations:
+        - CheckName: authenticated-metrics
+          ResourceType: DEVICE
+          Enabled: true
+
+  SecurityHub:
+    Type: AWS::SecurityHub::Hub
+    Properties:
+      EnableDefaultStandards: true
+
+Outputs:
+  IoTCoreEndpoint:
+    Description: IoT Core Endpoint
+    Value: !GetAtt IoTCore.Endpoint
+    Export:
+      Name: IoTCoreEndpoint

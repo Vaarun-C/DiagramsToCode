@@ -1,0 +1,135 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Sample template for image3 with recognized resources",
+    "Parameters": {
+        "DirectConnectGatewayName": {
+            "Type": "String",
+            "Default": "MyDirectConnectGateway"
+        }
+    },
+    "Resources": {
+        "MyVPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16",
+                "EnableDnsHostnames": true,
+                "EnableDnsSupport": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "MyVPC"
+                    }
+                ]
+            }
+        },
+        "MyTransitGateway": {
+            "Type": "AWS::EC2::TransitGateway",
+            "Properties": {
+                "Description": "My Transit Gateway",
+                "DefaultRouteTableAssociation": "enable",
+                "DefaultRouteTablePropagation": "enable",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "MyTransitGateway"
+                    }
+                ]
+            }
+        },
+        "MyDirectConnectGateway": {
+            "Type": "AWS::DirectConnect::Gateway",
+            "Properties": {
+                "AmazonSideAsn": 64512,
+                "Name": {
+                    "Ref": "DirectConnectGatewayName"
+                }
+            }
+        },
+        "TransitVIF1": {
+            "Type": "AWS::DirectConnect::TransitVirtualInterface",
+            "Properties": {
+                "AddressFamily": "ipv4",
+                "BgpAsn": 65000,
+                "VirtualInterfaceName": "TransitVIF1",
+                "Vlan": 101,
+                "DirectConnectGatewayId": {
+                    "Ref": "MyDirectConnectGateway"
+                },
+                "AmazonAddress": "175.45.176.1",
+                "CustomerAddress": "175.45.176.2"
+            }
+        },
+        "TransitVIF2": {
+            "Type": "AWS::DirectConnect::TransitVirtualInterface",
+            "Properties": {
+                "AddressFamily": "ipv4",
+                "BgpAsn": 65000,
+                "VirtualInterfaceName": "TransitVIF2",
+                "Vlan": 102,
+                "DirectConnectGatewayId": {
+                    "Ref": "MyDirectConnectGateway"
+                },
+                "AmazonAddress": "175.45.177.1",
+                "CustomerAddress": "175.45.177.2"
+            }
+        },
+        "TransitVIF3": {
+            "Type": "AWS::DirectConnect::TransitVirtualInterface",
+            "Properties": {
+                "AddressFamily": "ipv4",
+                "BgpAsn": 65000,
+                "VirtualInterfaceName": "TransitVIF3",
+                "Vlan": 103,
+                "DirectConnectGatewayId": {
+                    "Ref": "MyDirectConnectGateway"
+                },
+                "AmazonAddress": "175.45.178.1",
+                "CustomerAddress": "175.45.178.2"
+            }
+        },
+        "TransitVIF4": {
+            "Type": "AWS::DirectConnect::TransitVirtualInterface",
+            "Properties": {
+                "AddressFamily": "ipv4",
+                "BgpAsn": 65000,
+                "VirtualInterfaceName": "TransitVIF4",
+                "Vlan": 104,
+                "DirectConnectGatewayId": {
+                    "Ref": "MyDirectConnectGateway"
+                },
+                "AmazonAddress": "175.45.179.1",
+                "CustomerAddress": "175.45.179.2"
+            }
+        },
+        "MyDirectConnectConnection1": {
+            "Type": "AWS::DirectConnect::Connection",
+            "Properties": {
+                "Location": "EqSe2",
+                "Bandwidth": "1Gbps",
+                "ConnectionName": "DirectConnect1"
+            }
+        },
+        "MyDirectConnectConnection2": {
+            "Type": "AWS::DirectConnect::Connection",
+            "Properties": {
+                "Location": "EqSe2",
+                "Bandwidth": "1Gbps",
+                "ConnectionName": "DirectConnect2"
+            }
+        }
+    },
+    "Outputs": {
+        "RegionInfo": {
+            "Description": "Represents the AWS Global Region (conceptual).",
+            "Value": "This template is deployed in a specific AWS Region."
+        },
+        "DirectConnectLocation1": {
+            "Description": "Represents Direct Connect location 1 (conceptual).",
+            "Value": "Direct Connect location 1 not managed by CloudFormation."
+        },
+        "DirectConnectLocation2": {
+            "Description": "Represents Direct Connect location 2 (conceptual).",
+            "Value": "Direct Connect location 2 not managed by CloudFormation."
+        }
+    }
+}

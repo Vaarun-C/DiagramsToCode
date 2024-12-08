@@ -1,0 +1,98 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "Route53HostedZone": {
+            "Type": "AWS::Route53::HostedZone",
+            "Properties": {
+                "Name": "example.com"
+            }
+        },
+        "ShieldProtection": {
+            "Type": "AWS::Shield::Protection",
+            "Properties": {
+                "Name": "ShieldProtection",
+                "ResourceArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/example-alb"
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "example-s3-bucket"
+            }
+        },
+        "RDSPostgresInstance": {
+            "Type": "AWS::RDS::DBInstance",
+            "Properties": {
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "postgres",
+                "DBName": "exampledb",
+                "MasterUsername": "adminuser",
+                "MasterUserPassword": "AdminPassword123!"
+            }
+        },
+        "KMSKey": {
+            "Type": "AWS::KMS::Key",
+            "Properties": {
+                "Description": "KMS key for encrypting RDS data"
+            }
+        },
+        "EFSFileSystem": {
+            "Type": "AWS::EFS::FileSystem",
+            "Properties": {
+                "Encrypted": true
+            }
+        },
+        "ApplicationLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "example-alb",
+                "Scheme": "internet-facing",
+                "Subnets": [
+                    "subnet-12345",
+                    "subnet-67890"
+                ]
+            }
+        },
+        "NATGateway": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "SubnetId": "subnet-12345",
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "ElasticIP",
+                        "AllocationId"
+                    ]
+                }
+            }
+        },
+        "ElasticIP": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": "vpc"
+            }
+        },
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true
+            }
+        },
+        "InternetGateway": {
+            "Type": "AWS::EC2::InternetGateway"
+        },
+        "VPCGatewayAttachment": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "InternetGatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        }
+    }
+}

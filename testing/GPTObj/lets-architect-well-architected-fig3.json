@@ -1,0 +1,91 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for the provided architecture.",
+    "Resources": {
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "example-s3-bucket",
+                "NotificationConfiguration": {
+                    "QueueConfigurations": [
+                        {
+                            "Event": "s3:ObjectCreated:*",
+                            "Queue": {
+                                "Ref": "SQSQueue"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "SQSQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "example-sqs-queue"
+            }
+        },
+        "CloudWatchScalingPolicy": {
+            "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+            "Properties": {
+                "PolicyName": "TargetTrackingScalingPolicy",
+                "PolicyType": "TargetTrackingScaling",
+                "ScalingTargetId": {
+                    "Ref": "AutoScalingGroup"
+                },
+                "TargetTrackingScalingPolicyConfiguration": {
+                    "PredefinedMetricSpecification": {
+                        "PredefinedMetricType": "SQSQueueMessagesVisible"
+                    },
+                    "TargetValue": 5.0
+                }
+            }
+        },
+        "AutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "AutoScalingGroupName": "example-auto-scaling-group",
+                "LaunchConfigurationName": {
+                    "Ref": "LaunchConfiguration"
+                },
+                "MinSize": "1",
+                "MaxSize": "10",
+                "DesiredCapacity": "1",
+                "VPCZoneIdentifier": [
+                    "subnet-1",
+                    "subnet-2"
+                ]
+            }
+        },
+        "LaunchConfiguration": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "InstanceType": "t4g.medium",
+                "ImageId": "ami-12345678",
+                "KeyName": "example-key-pair",
+                "SecurityGroups": [
+                    "sg-12345678"
+                ]
+            }
+        },
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "example-vpc"
+                    }
+                ]
+            }
+        },
+        "CloudFormationStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": "https://s3.amazonaws.com/example-bucket/cloudformation-template.json"
+            }
+        }
+    }
+}

@@ -1,0 +1,116 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for AWS Game Backend Framework.",
+    "Resources": {
+        "WAFWebACL": {
+            "Type": "AWS::WAFv2::WebACL",
+            "Properties": {
+                "Name": "GameBackendWAF",
+                "Scope": "REGIONAL",
+                "DefaultAction": {
+                    "Allow": {}
+                },
+                "VisibilityConfig": {
+                    "CloudWatchMetricsEnabled": true,
+                    "MetricName": "GameBackendWAFMetrics",
+                    "SampledRequestsEnabled": true
+                }
+            }
+        },
+        "APIGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "GameIdentityAPI",
+                "Description": "API Gateway for game identity management."
+            }
+        },
+        "LambdaGenerateKeys": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "GenerateKeysFunction",
+                "Runtime": "python3.9",
+                "Handler": "generate_keys.lambda_handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "def lambda_handler(event, context):\n    return {'statusCode': 200, 'body': 'Hello World'}"
+                }
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "game-backend-keys"
+            }
+        },
+        "SecretsManager": {
+            "Type": "AWS::SecretsManager::Secret",
+            "Properties": {
+                "Name": "GameBackendPrivateKey",
+                "Description": "Private key for JWT token generation."
+            }
+        },
+        "DynamoDBUserTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "UserTable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "UserId",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "UserId",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "DynamoDBIdentityProviderTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "IdentityProviderTable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "ProviderId",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "ProviderId",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Origins": [
+                        {
+                            "Id": "S3Origin",
+                            "DomainName": {
+                                "Fn::GetAtt": [
+                                    "S3Bucket",
+                                    "DomainName"
+                                ]
+                            },
+                            "S3OriginConfig": {}
+                        }
+                    ],
+                    "Enabled": true
+                }
+            }
+        }
+    }
+}

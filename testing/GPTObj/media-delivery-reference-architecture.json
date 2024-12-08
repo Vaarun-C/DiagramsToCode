@@ -1,0 +1,88 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for Media Delivery Reference Architecture.",
+    "Resources": {
+        "MediaPackageChannel": {
+            "Type": "AWS::MediaPackage::Channel",
+            "Properties": {
+                "Id": "MediaPackageChannel",
+                "Description": "MediaPackage Channel for streaming content"
+            }
+        },
+        "MediaStoreContainer": {
+            "Type": "AWS::MediaStore::Container",
+            "Properties": {
+                "ContainerName": "MediaStoreContainer"
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "MediaDeliveryBucket"
+            }
+        },
+        "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::GetAtt": [
+                                    "S3Bucket",
+                                    "DomainName"
+                                ]
+                            },
+                            "Id": "S3Origin",
+                            "S3OriginConfig": {}
+                        },
+                        {
+                            "DomainName": {
+                                "Fn::GetAtt": [
+                                    "MediaStoreContainer",
+                                    "Endpoint"
+                                ]
+                            },
+                            "Id": "MediaStoreOrigin",
+                            "CustomOriginConfig": {
+                                "HTTPPort": 80,
+                                "HTTPSPort": 443,
+                                "OriginProtocolPolicy": "https-only"
+                            }
+                        },
+                        {
+                            "DomainName": {
+                                "Fn::Sub": "${AWS::Region}.mediapackage.amazonaws.com"
+                            },
+                            "Id": "MediaPackageOrigin",
+                            "CustomOriginConfig": {
+                                "HTTPPort": 80,
+                                "HTTPSPort": 443,
+                                "OriginProtocolPolicy": "https-only"
+                            }
+                        }
+                    ],
+                    "Enabled": true,
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "S3Origin",
+                        "ViewerProtocolPolicy": "redirect-to-https",
+                        "AllowedMethods": [
+                            "GET",
+                            "HEAD"
+                        ],
+                        "CachedMethods": [
+                            "GET",
+                            "HEAD"
+                        ],
+                        "ForwardedValues": {
+                            "QueryString": false,
+                            "Cookies": {
+                                "Forward": "none"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

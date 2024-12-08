@@ -1,0 +1,106 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "WAFWebACL": {
+            "Type": "AWS::WAFv2::WebACL",
+            "Properties": {
+                "Scope": "REGIONAL",
+                "DefaultAction": {
+                    "Allow": {}
+                },
+                "VisibilityConfig": {
+                    "CloudWatchMetricsEnabled": true,
+                    "MetricName": "WebACL",
+                    "SampledRequestsEnabled": true
+                },
+                "Rules": [
+                    {
+                        "Name": "RateLimitRule",
+                        "Priority": 1,
+                        "Action": {
+                            "Block": {}
+                        },
+                        "Statement": {
+                            "RateBasedStatement": {
+                                "Limit": 1000,
+                                "AggregateKeyType": "IP"
+                            }
+                        },
+                        "VisibilityConfig": {
+                            "CloudWatchMetricsEnabled": true,
+                            "MetricName": "RateLimitRule",
+                            "SampledRequestsEnabled": true
+                        }
+                    }
+                ]
+            }
+        },
+        "APIGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "CognitoProxyAPI"
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Runtime": "python3.9",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "def handler(event, context):\n    print('Lambda proxy function triggered')"
+                }
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ]
+            }
+        },
+        "SecretsManagerSecret": {
+            "Type": "AWS::SecretsManager::Secret",
+            "Properties": {
+                "Name": "CognitoClientSecret",
+                "Description": "Client secret for Amazon Cognito",
+                "SecretString": "dummy-secret-value"
+            }
+        },
+        "CognitoUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "MyUserPool"
+            }
+        },
+        "CognitoUserPoolClient": {
+            "Type": "AWS::Cognito::UserPoolClient",
+            "Properties": {
+                "ClientName": "MyUserPoolClient",
+                "UserPoolId": {
+                    "Ref": "CognitoUserPool"
+                },
+                "GenerateSecret": true
+            }
+        }
+    }
+}

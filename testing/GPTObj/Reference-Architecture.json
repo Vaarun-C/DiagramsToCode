@@ -1,0 +1,229 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true
+            }
+        },
+        "PublicSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.1.0/24",
+                "AvailabilityZone": "us-east-1a",
+                "MapPublicIpOnLaunch": true
+            }
+        },
+        "PublicSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.2.0/24",
+                "AvailabilityZone": "us-east-1b",
+                "MapPublicIpOnLaunch": true
+            }
+        },
+        "PrivateSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.3.0/24",
+                "AvailabilityZone": "us-east-1a"
+            }
+        },
+        "PrivateSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.4.0/24",
+                "AvailabilityZone": "us-east-1b"
+            }
+        },
+        "NATGateway1": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnet1"
+                },
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "EIP1",
+                        "AllocationId"
+                    ]
+                }
+            }
+        },
+        "NATGateway2": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "PublicSubnet2"
+                },
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "EIP2",
+                        "AllocationId"
+                    ]
+                }
+            }
+        },
+        "EIP1": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": "vpc"
+            }
+        },
+        "EIP2": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": "vpc"
+            }
+        },
+        "ALB": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "JenkinsALB",
+                "Scheme": "internet-facing",
+                "Subnets": [
+                    {
+                        "Ref": "PublicSubnet1"
+                    },
+                    {
+                        "Ref": "PublicSubnet2"
+                    }
+                ]
+            }
+        },
+        "ECSFargateService": {
+            "Type": "AWS::ECS::Service",
+            "Properties": {
+                "Cluster": {
+                    "Ref": "ECSCluster"
+                },
+                "LaunchType": "FARGATE",
+                "TaskDefinition": {
+                    "Ref": "ECSTaskDefinition"
+                },
+                "NetworkConfiguration": {
+                    "AwsvpcConfiguration": {
+                        "Subnets": [
+                            {
+                                "Ref": "PrivateSubnet1"
+                            },
+                            {
+                                "Ref": "PrivateSubnet2"
+                            }
+                        ],
+                        "AssignPublicIp": "DISABLED"
+                    }
+                }
+            }
+        },
+        "ECSCluster": {
+            "Type": "AWS::ECS::Cluster",
+            "Properties": {
+                "ClusterName": "JenkinsCluster"
+            }
+        },
+        "ECSTaskDefinition": {
+            "Type": "AWS::ECS::TaskDefinition",
+            "Properties": {
+                "Family": "JenkinsTasks",
+                "ContainerDefinitions": [
+                    {
+                        "Name": "JenkinsController",
+                        "Image": "jenkins/jenkins:lts",
+                        "Memory": 512,
+                        "Cpu": 256,
+                        "Essential": true,
+                        "PortMappings": [
+                            {
+                                "ContainerPort": 8080
+                            }
+                        ]
+                    }
+                ],
+                "RequiresCompatibilities": [
+                    "FARGATE"
+                ]
+            }
+        },
+        "EFSFileSystem": {
+            "Type": "AWS::EFS::FileSystem",
+            "Properties": {
+                "Encrypted": true
+            }
+        },
+        "EBSVolume": {
+            "Type": "AWS::EC2::Volume",
+            "Properties": {
+                "Size": 20,
+                "VolumeType": "gp2",
+                "AvailabilityZone": "us-east-1a"
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "jenkins-artifacts"
+            }
+        },
+        "SecretsManager": {
+            "Type": "AWS::SecretsManager::Secret",
+            "Properties": {
+                "Name": "JenkinsSSHKey",
+                "SecretString": "ssh-rsa AAAA..."
+            }
+        },
+        "SystemsManagerParameter": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+                "Name": "/jenkins/config",
+                "Type": "String",
+                "Value": "Jenkins configuration details"
+            }
+        },
+        "AutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "MinSize": "1",
+                "MaxSize": "3",
+                "DesiredCapacity": "2",
+                "LaunchConfigurationName": {
+                    "Ref": "LaunchConfiguration"
+                },
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "PrivateSubnet1"
+                    },
+                    {
+                        "Ref": "PrivateSubnet2"
+                    }
+                ]
+            }
+        },
+        "LaunchConfiguration": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "ImageId": "ami-12345678",
+                "InstanceType": "t3.medium",
+                "SecurityGroups": [
+                    "sg-12345"
+                ]
+            }
+        }
+    }
+}

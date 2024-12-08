@@ -1,0 +1,110 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for Protegrity Data Protection architecture on AWS.",
+    "Resources": {
+        "DataSyncTask": {
+            "Type": "AWS::DataSync::Task",
+            "Properties": {
+                "Name": "DataSyncTask",
+                "SourceLocationArn": {
+                    "Ref": "SourceLocation"
+                },
+                "DestinationLocationArn": {
+                    "Ref": "DestinationLocation"
+                }
+            }
+        },
+        "SourceLocation": {
+            "Type": "AWS::DataSync::LocationS3",
+            "Properties": {
+                "S3BucketArn": {
+                    "Fn::Sub": "arn:aws:s3:::source-bucket"
+                },
+                "Subdirectory": "/raw-data",
+                "S3Config": {
+                    "BucketAccessRoleArn": {
+                        "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/DataSyncAccessRole"
+                    }
+                }
+            }
+        },
+        "DestinationLocation": {
+            "Type": "AWS::DataSync::LocationS3",
+            "Properties": {
+                "S3BucketArn": {
+                    "Fn::Sub": "arn:aws:s3:::destination-bucket"
+                },
+                "Subdirectory": "/tokenized-data",
+                "S3Config": {
+                    "BucketAccessRoleArn": {
+                        "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/DataSyncAccessRole"
+                    }
+                }
+            }
+        },
+        "RawDataBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "raw-data-bucket"
+            }
+        },
+        "TokenizedDataBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "tokenized-data-bucket"
+            }
+        },
+        "ProtegrityAcceleratorLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "ProtegrityAccelerator",
+                "Handler": "index.handler",
+                "Runtime": "nodejs14.x",
+                "Code": {
+                    "S3Bucket": "lambda-functions",
+                    "S3Key": "protegrity-accelerator.zip"
+                },
+                "Role": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/LambdaExecutionRole"
+                }
+            }
+        },
+        "ProtegrityCloudApiProtectorLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "ProtegrityCloudApiProtector",
+                "Handler": "index.handler",
+                "Runtime": "nodejs14.x",
+                "Code": {
+                    "S3Bucket": "lambda-functions",
+                    "S3Key": "protegrity-cloud-api-protector.zip"
+                },
+                "Role": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/LambdaExecutionRole"
+                }
+            }
+        },
+        "ProtegritySnowflakeProtectorLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "ProtegritySnowflakeProtector",
+                "Handler": "index.handler",
+                "Runtime": "nodejs14.x",
+                "Code": {
+                    "S3Bucket": "lambda-functions",
+                    "S3Key": "protegrity-snowflake-protector.zip"
+                },
+                "Role": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/LambdaExecutionRole"
+                }
+            }
+        },
+        "ApiGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "ProtegrityApiGateway",
+                "Description": "API Gateway for Protegrity integration."
+            }
+        }
+    }
+}

@@ -1,0 +1,63 @@
+{
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "CloudFormation template for recognized AWS services",
+      "Resources": {
+        "KinesisVideoStream": {
+          "Type": "AWS::KinesisVideo::Stream",
+          "Properties": {
+            "StreamName": "VideoStream",
+            "DataRetentionInHours": 24
+          }
+        },
+        "SQSQueue": {
+          "Type": "AWS::SQS::Queue",
+          "Properties": {
+            "QueueName": "VideoProcessingQueue"
+          }
+        },
+        "FargateTaskDefinition": {
+          "Type": "AWS::ECS::TaskDefinition",
+          "Properties": {
+            "Family": "VideoProcessingTask",
+            "Cpu": "512",
+            "Memory": "1024",
+            "NetworkMode": "awsvpc",
+            "RequiresCompatibilities": ["FARGATE"],
+            "ContainerDefinitions": [
+              {
+                "Name": "VideoProcessor",
+                "Image": "amazonlinux",
+                "Memory": 1024,
+                "Cpu": 512,
+                "Essential": true,
+                "Environment": [
+                  {
+                    "Name": "SQS_QUEUE_URL",
+                    "Value": {
+                      "Ref": "SQSQueue"
+                    }
+                  }
+                ],
+                "LogConfiguration": {
+                  "LogDriver": "awslogs",
+                  "Options": {
+                    "awslogs-group": "/ecs/video-processing",
+                    "awslogs-region": {
+                      "Ref": "AWS::Region"
+                    },
+                    "awslogs-stream-prefix": "ecs"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "S3Bucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+            "BucketName": "video-processing-results"
+          }
+        }
+      }
+    }
+  

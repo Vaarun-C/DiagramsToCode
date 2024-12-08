@@ -1,0 +1,108 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for Kelvin AI architecture on AWS.",
+    "Resources": {
+        "RDSInstance": {
+            "Type": "AWS::RDS::DBInstance",
+            "Properties": {
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "mysql",
+                "MasterUsername": "admin",
+                "MasterUserPassword": {
+                    "Ref": "DBPassword"
+                },
+                "AllocatedStorage": "20"
+            }
+        },
+        "SNS": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "TopicName": "KelvinNotifications"
+            }
+        },
+        "EKS": {
+            "Type": "AWS::EKS::Cluster",
+            "Properties": {
+                "Name": "KelvinEKSCluster",
+                "ResourcesVpcConfig": {
+                    "SubnetIds": [
+                        "subnet-1",
+                        "subnet-2"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-12345678"
+                    ]
+                }
+            }
+        },
+        "LoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Type": "application",
+                "Subnets": [
+                    "subnet-1",
+                    "subnet-2"
+                ]
+            }
+        },
+        "EC2Instance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": "t3.medium",
+                "ImageId": "ami-0abcdef1234567890",
+                "KeyName": "MyKeyPair",
+                "SubnetId": "subnet-1"
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "kelvin-data-bucket"
+            }
+        },
+        "IoTSiteWise": {
+            "Type": "AWS::IoTSiteWise::Gateway",
+            "Properties": {
+                "GatewayName": "KelvinIoTSiteWiseGateway",
+                "GatewayPlatform": {
+                    "Greengrass": {
+                        "GroupArn": "arn:aws:greengrass:region:account-id:/greengrass/groups/group-id"
+                    }
+                }
+            }
+        },
+        "QuickSight": {
+            "Type": "AWS::QuickSight::Dashboard",
+            "Properties": {
+                "AwsAccountId": {
+                    "Ref": "AWS::AccountId"
+                },
+                "DashboardId": "KelvinQuickSightDashboard",
+                "Name": "KelvinDashboard",
+                "SourceEntity": {
+                    "SourceTemplate": {
+                        "Arn": "arn:aws:quicksight:region:account-id:template/template-id"
+                    }
+                }
+            }
+        },
+        "SageMaker": {
+            "Type": "AWS::SageMaker::Model",
+            "Properties": {
+                "ExecutionRoleArn": {
+                    "Fn::GetAtt": [
+                        "SageMakerExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "ModelName": "KelvinModel",
+                "PrimaryContainer": {
+                    "Image": "123456789012.dkr.ecr.region.amazonaws.com/kelvin-model:latest",
+                    "ModelDataUrl": {
+                        "Ref": "S3Bucket"
+                    }
+                }
+            }
+        }
+    }
+}

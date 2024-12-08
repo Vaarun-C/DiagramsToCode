@@ -1,0 +1,73 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "ConnectInstance": {
+            "Type": "AWS::Connect::Instance",
+            "Properties": {
+                "InstanceAlias": "CustomerSupportConnectInstance",
+                "IdentityManagementType": "CONNECT_MANAGED"
+            }
+        },
+        "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Enabled": true,
+                    "Origins": [
+                        {
+                            "DomainName": "example.com",
+                            "Id": "OriginExample"
+                        }
+                    ],
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "OriginExample",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    }
+                }
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Runtime": "python3.9",
+                "Code": {
+                    "ZipFile": "def handler(event, context):\n    return 'Hello from Lambda'"
+                }
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ]
+            }
+        },
+        "PinpointApp": {
+            "Type": "AWS::Pinpoint::App",
+            "Properties": {
+                "Name": "CustomerEngagementApp"
+            }
+        }
+    }
+}

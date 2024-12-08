@@ -1,0 +1,195 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "S3CollectBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "example-collect-bucket"
+            }
+        },
+        "S3ScriptsBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "example-scripts-bucket"
+            }
+        },
+        "S3ConsumeBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "example-consume-bucket"
+            }
+        },
+        "ETLLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Runtime": "python3.9",
+                "Code": {
+                    "ZipFile": "def handler(event, context):\n    print('ETL Triggered')"
+                }
+            }
+        },
+        "ETLAuditLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Runtime": "python3.9",
+                "Code": {
+                    "ZipFile": "def handler(event, context):\n    print('ETL Audit Triggered')"
+                }
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ]
+            }
+        },
+        "DynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "JobAuditingTable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "JobId",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "JobId",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "GlueDataCatalog": {
+            "Type": "AWS::Glue::Database",
+            "Properties": {
+                "DatabaseInput": {
+                    "Name": "example-data-catalog"
+                }
+            }
+        },
+        "GlueETLJob": {
+            "Type": "AWS::Glue::Job",
+            "Properties": {
+                "Command": {
+                    "Name": "glueetl",
+                    "ScriptLocation": {
+                        "Fn::Sub": "s3://${S3ScriptsBucket}/scripts/etl_script.py"
+                    }
+                },
+                "Role": {
+                    "Fn::GetAtt": [
+                        "GlueExecutionRole",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "GlueExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "glue.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+                ]
+            }
+        },
+        "AthenaWorkGroup": {
+            "Type": "AWS::Athena::WorkGroup",
+            "Properties": {
+                "Name": "PrimaryWorkGroup",
+                "State": "ENABLED",
+                "WorkGroupConfiguration": {
+                    "ResultConfiguration": {
+                        "OutputLocation": {
+                            "Fn::Sub": "s3://${S3ConsumeBucket}/athena-results/"
+                        }
+                    }
+                }
+            }
+        },
+        "SNSTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "TopicName": "ETLNotifications"
+            }
+        },
+        "StepFunctionsStateMachine": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+                "StateMachineName": "ETLStateMachine",
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "StepFunctionsExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "DefinitionString": {
+                    "Fn::Sub": "{\"Comment\": \"ETL State Machine\",\"StartAt\": \"ETL Trigger\",\"States\": {\"ETL Trigger\": {\"Type\": \"Task\",\"Resource\": \"${ETLLambdaFunction}\",\"Next\": \"ETL Audit\"},\"ETL Audit\": {\"Type\": \"Task\",\"Resource\": \"${ETLAuditLambdaFunction}\",\"End\": true}}}"
+                }
+            }
+        },
+        "StepFunctionsExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "states.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSStepFunctionsFullAccess"
+                ]
+            }
+        }
+    }
+}

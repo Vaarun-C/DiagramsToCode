@@ -1,0 +1,283 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Sample template for image6 with recognized AWS resources",
+    "Parameters": {
+        "VpcId": {
+            "Type": "String",
+            "Default": "vpc-12345678"
+        },
+        "SubnetId": {
+            "Type": "String",
+            "Default": "subnet-12345678"
+        }
+    },
+    "Resources": {
+        "MyIoTThing": {
+            "Type": "AWS::IoT::Thing",
+            "Properties": {
+                "ThingName": "MyIoTThing"
+            }
+        },
+        "MyIoTTopicRule": {
+            "Type": "AWS::IoT::TopicRule",
+            "Properties": {
+                "RuleName": "MyIoTTopicRule",
+                "TopicRulePayload": {
+                    "Sql": "SELECT * FROM 'my/topic'",
+                    "Actions": [
+                        {
+                            "DynamoDB": {
+                                "TableName": {
+                                    "Ref": "MyDynamoDBTable"
+                                },
+                                "RoleArn": "arn:aws:iam::123456789012:role/AllowIoTtoDynamoDB",
+                                "HashKeyField": "ID",
+                                "HashKeyValue": "IoTMessage"
+                            }
+                        }
+                    ],
+                    "Description": "Sample IoT rule",
+                    "RuleDisabled": false
+                }
+            }
+        },
+        "MyVPCEndpoint": {
+            "Type": "AWS::EC2::VPCEndpoint",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VpcId"
+                },
+                "ServiceName": "com.amazonaws.us-east-1.s3",
+                "VpcEndpointType": "Gateway",
+                "RouteTableIds": []
+            }
+        },
+        "MyECSCluster": {
+            "Type": "AWS::ECS::Cluster",
+            "Properties": {
+                "ClusterName": "MyECSCluster"
+            }
+        },
+        "MyMSKCluster": {
+            "Type": "AWS::MSK::Cluster",
+            "Properties": {
+                "ClusterName": "MyMSKCluster",
+                "KafkaVersion": "2.8.1",
+                "NumberOfBrokerNodes": 2,
+                "BrokerNodeGroupInfo": {
+                    "InstanceType": "kafka.m5.large",
+                    "ClientSubnets": [
+                        {
+                            "Ref": "SubnetId"
+                        }
+                    ],
+                    "SecurityGroups": []
+                },
+                "EncryptionInfo": {
+                    "EncryptionInTransit": {
+                        "ClientBroker": "TLS",
+                        "InCluster": true
+                    }
+                }
+            }
+        },
+        "MyLambdaFunctionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ],
+                "Path": "/"
+            }
+        },
+        "MyLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "MyLambdaFunction",
+                "Handler": "index.handler",
+                "Runtime": "nodejs14.x",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "MyLambdaFunctionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "exports.handler = async (event) => {\n  return {\n    statusCode: 200,\n    body: \"Hello from Lambda\"\n  };\n};\n"
+                }
+            }
+        },
+        "MyDynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "TableName": "MyTable",
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "ID",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "ID",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST"
+            }
+        },
+        "MyAmplifyApp": {
+            "Type": "AWS::Amplify::App",
+            "Properties": {
+                "Name": "MyAmplifyApp",
+                "Repository": "https://github.com/example/myapp",
+                "OAuthToken": "ghp_exampletoken",
+                "BuildSpec": "version: 1\nfrontend:\n  phases:\n    preBuild:\n      commands: [\"npm install\"]\n    build:\n      commands: [\"npm run build\"]\n  artifacts:\n    baseDirectory: \"build\"\n    files:\n      - \"**/*\"\n  cache:\n    paths: [\"node_modules/**/*\"]\n"
+            }
+        },
+        "MyApiGateway": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "MyApi",
+                "EndpointConfiguration": {
+                    "Types": [
+                        "REGIONAL"
+                    ]
+                }
+            }
+        },
+        "MyS3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "my-bucket-example-123"
+            }
+        },
+        "MyCloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Enabled": true,
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "S3Origin",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    },
+                    "Origins": [
+                        {
+                            "Id": "S3Origin",
+                            "DomainName": {
+                                "Fn::GetAtt": [
+                                    "MyS3Bucket",
+                                    "DomainName"
+                                ]
+                            },
+                            "S3OriginConfig": {}
+                        }
+                    ],
+                    "Comment": "My CloudFront Distribution",
+                    "HttpVersion": "http2",
+                    "PriceClass": "PriceClass_100"
+                }
+            }
+        },
+        "MyUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "MyUserPool"
+            }
+        },
+        "MyTimestreamDatabase": {
+            "Type": "AWS::Timestream::Database",
+            "Properties": {
+                "DatabaseName": "MyTimestreamDB"
+            }
+        }
+    },
+    "Outputs": {
+        "IoTThingName": {
+            "Value": {
+                "Ref": "MyIoTThing"
+            }
+        },
+        "IoTTopicRuleName": {
+            "Value": {
+                "Ref": "MyIoTTopicRule"
+            }
+        },
+        "VpceId": {
+            "Value": {
+                "Ref": "MyVPCEndpoint"
+            }
+        },
+        "ECSClusterName": {
+            "Value": {
+                "Ref": "MyECSCluster"
+            }
+        },
+        "MSKClusterArn": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "MyMSKCluster",
+                    "Arn"
+                ]
+            }
+        },
+        "LambdaFunctionName": {
+            "Value": {
+                "Ref": "MyLambdaFunction"
+            }
+        },
+        "DynamoDBTableName": {
+            "Value": {
+                "Ref": "MyDynamoDBTable"
+            }
+        },
+        "AmplifyAppName": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "MyAmplifyApp",
+                    "AppName"
+                ]
+            }
+        },
+        "ApiGatewayId": {
+            "Value": {
+                "Ref": "MyApiGateway"
+            }
+        },
+        "S3BucketName": {
+            "Value": {
+                "Ref": "MyS3Bucket"
+            }
+        },
+        "CloudFrontDistributionId": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "MyCloudFrontDistribution",
+                    "DistributionId"
+                ]
+            }
+        },
+        "CognitoUserPoolId": {
+            "Value": {
+                "Ref": "MyUserPool"
+            }
+        },
+        "TimestreamDatabaseName": {
+            "Value": {
+                "Ref": "MyTimestreamDatabase"
+            }
+        }
+    }
+}

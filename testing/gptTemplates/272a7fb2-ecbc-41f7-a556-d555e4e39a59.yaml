@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  MySecurityHub:
+    Type: AWS::SecurityHub::Hub
+    Properties: 
+      Tags:
+        - Key: "Name"
+          Value: "MySecurityHub"
+
+  MyCloudTrail:
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      TrailName: "MyCloudTrail"
+      S3BucketName: "my-cloudtrail-logs-bucket"
+
+  MyLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |
+          exports.handler = async () => 'OK';
+      Handler: "index.handler"
+      Runtime: "nodejs14.x"
+      Role: "arn:aws:iam::123456789012:role/MyLambdaRole"
+
+  MyKinesisFirehose:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      DeliveryStreamName: "MyFirehoseStream"
+      S3DestinationConfiguration:
+        BucketARN: "arn:aws:s3:::my-destination-bucket"
+        RoleARN: "arn:aws:iam::123456789012:role/MyFirehoseRole"

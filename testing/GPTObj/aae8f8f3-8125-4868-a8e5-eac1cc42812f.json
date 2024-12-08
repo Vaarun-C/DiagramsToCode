@@ -1,0 +1,111 @@
+{
+
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "CloudFormation template for recognized AWS services",
+      "Resources": {
+        "Route53RecordSet": {
+          "Type": "AWS::Route53::RecordSet",
+          "Properties": {
+            "HostedZoneId": "Z3AQBSTGFYJSTF",
+            "Name": "example.com.",
+            "Type": "A",
+            "AliasTarget": {
+              "DNSName": {
+                "Fn::GetAtt": ["LoadBalancer", "DNSName"]
+              },
+              "HostedZoneId": {
+                "Fn::GetAtt": ["LoadBalancer", "CanonicalHostedZoneNameID"]
+              }
+            }
+          }
+        },
+        "LoadBalancer": {
+          "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+          "Properties": {
+            "Name": "AppLoadBalancer",
+            "Scheme": "internet-facing",
+            "Subnets": ["subnet-1", "subnet-2"]
+          }
+        },
+        "AutoScalingGroupWeb": {
+          "Type": "AWS::AutoScaling::AutoScalingGroup",
+          "Properties": {
+            "MinSize": "2",
+            "MaxSize": "6",
+            "DesiredCapacity": "4",
+            "LaunchConfigurationName": {
+              "Ref": "LaunchConfigurationWeb"
+            },
+            "VPCZoneIdentifier": ["subnet-1", "subnet-2"]
+          }
+        },
+        "LaunchConfigurationWeb": {
+          "Type": "AWS::AutoScaling::LaunchConfiguration",
+          "Properties": {
+            "ImageId": "ami-12345678",
+            "InstanceType": "t3.medium",
+            "SecurityGroups": ["sg-12345"]
+          }
+        },
+        "AutoScalingGroupApp": {
+          "Type": "AWS::AutoScaling::AutoScalingGroup",
+          "Properties": {
+            "MinSize": "2",
+            "MaxSize": "6",
+            "DesiredCapacity": "4",
+            "LaunchConfigurationName": {
+              "Ref": "LaunchConfigurationApp"
+            },
+            "VPCZoneIdentifier": ["subnet-3", "subnet-4"]
+          }
+        },
+        "LaunchConfigurationApp": {
+          "Type": "AWS::AutoScaling::LaunchConfiguration",
+          "Properties": {
+            "ImageId": "ami-87654321",
+            "InstanceType": "t3.medium",
+            "SecurityGroups": ["sg-54321"]
+          }
+        },
+        "RDSInstancePrimary": {
+          "Type": "AWS::RDS::DBInstance",
+          "Properties": {
+            "DBInstanceIdentifier": "PrimaryRDSInstance",
+            "AllocatedStorage": "100",
+            "DBInstanceClass": "db.m5.large",
+            "Engine": "oracle-se2",
+            "MultiAZ": true,
+            "MasterUsername": "admin",
+            "MasterUserPassword": "password"
+          }
+        },
+        "EFSFileSystem": {
+          "Type": "AWS::EFS::FileSystem",
+          "Properties": {
+            "Encrypted": true,
+            "LifecyclePolicies": [
+              {
+                "TransitionToIA": "AFTER_30_DAYS"
+              }
+            ]
+          }
+        },
+        "EFSAccessPoint": {
+          "Type": "AWS::EFS::AccessPoint",
+          "Properties": {
+            "FileSystemId": {
+              "Ref": "EFSFileSystem"
+            },
+            "RootDirectory": {
+              "CreationInfo": {
+                "OwnerGid": "1000",
+                "OwnerUid": "1000",
+                "Permissions": "0755"
+              },
+              "Path": "/efs-path"
+            }
+          }
+        }
+      }
+    }
+  

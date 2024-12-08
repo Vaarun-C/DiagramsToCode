@@ -1,0 +1,120 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for recognized AWS services",
+    "Resources": {
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "content-management-bucket"
+            }
+        },
+        "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Enabled": true,
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::GetAtt": [
+                                    "S3Bucket",
+                                    "DomainName"
+                                ]
+                            },
+                            "Id": "S3Origin"
+                        }
+                    ],
+                    "DefaultCacheBehavior": {
+                        "TargetOriginId": "S3Origin",
+                        "ViewerProtocolPolicy": "redirect-to-https"
+                    }
+                }
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Runtime": "python3.9",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "import json\nimport boto3\n\ndef handler(event, context):\n    print('S3 Notification Triggered')\n    cloudfront = boto3.client('cloudfront')\n    cloudfront.create_invalidation(\n        DistributionId='example-distribution-id',\n        InvalidationBatch={\n            'Paths': {'Quantity': 1, 'Items': ['/*']},\n            'CallerReference': 'unique-caller-reference'\n        }\n    )"
+                },
+                "Environment": {
+                    "Variables": {
+                        "DISTRIBUTION_ID": "example-distribution-id"
+                    }
+                }
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "S3AndCloudFrontAccess",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:*",
+                                        "cloudfront:CreateInvalidation"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "EC2Instance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": "t2.micro",
+                "KeyName": "example-key-pair",
+                "ImageId": "ami-12345678",
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/xvda",
+                        "Ebs": {
+                            "VolumeSize": 8,
+                            "VolumeType": "gp2"
+                        }
+                    }
+                ],
+                "SecurityGroupIds": [
+                    "sg-12345"
+                ],
+                "SubnetId": "subnet-12345"
+            }
+        },
+        "EBSVolume": {
+            "Type": "AWS::EC2::Volume",
+            "Properties": {
+                "Size": 20,
+                "VolumeType": "gp2",
+                "AvailabilityZone": "us-east-1a"
+            }
+        }
+    }
+}

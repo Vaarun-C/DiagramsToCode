@@ -1,0 +1,127 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template for HPC architecture.",
+    "Resources": {
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true
+            }
+        },
+        "PublicSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.1.0/24",
+                "MapPublicIpOnLaunch": true
+            }
+        },
+        "PrivateSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": "10.0.2.0/24"
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "hpc-storage-bucket"
+            }
+        },
+        "FSxForLustre": {
+            "Type": "AWS::FSx::FileSystem",
+            "Properties": {
+                "FileSystemType": "LUSTRE",
+                "SubnetIds": [
+                    {
+                        "Ref": "PrivateSubnet"
+                    }
+                ],
+                "StorageCapacity": 1200
+            }
+        },
+        "EBSVolume": {
+            "Type": "AWS::EC2::Volume",
+            "Properties": {
+                "AvailabilityZone": {
+                    "Fn::GetAtt": [
+                        "PrivateSubnet",
+                        "AvailabilityZone"
+                    ]
+                },
+                "Size": 100,
+                "VolumeType": "gp2"
+            }
+        },
+        "HPCCluster": {
+            "Type": "AWS::ParallelCluster::Cluster",
+            "Properties": {
+                "ClusterConfiguration": {
+                    "SubnetId": {
+                        "Ref": "PrivateSubnet"
+                    },
+                    "HeadNode": {
+                        "InstanceType": "c5.large",
+                        "SubnetId": {
+                            "Ref": "PrivateSubnet"
+                        }
+                    },
+                    "ComputeNodes": [
+                        {
+                            "InstanceType": "c5.xlarge",
+                            "SubnetId": {
+                                "Ref": "PrivateSubnet"
+                            },
+                            "Count": 2
+                        }
+                    ]
+                }
+            }
+        },
+        "CloudFormationStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": "https://s3.amazonaws.com/templates/hpc-cluster.yaml"
+            }
+        },
+        "CloudWatchLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+                "LogGroupName": "/aws/hpc/cluster",
+                "RetentionInDays": 30
+            }
+        },
+        "AutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "LaunchConfigurationName": {
+                    "Ref": "LaunchConfig"
+                },
+                "MinSize": "1",
+                "MaxSize": "4",
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "PrivateSubnet"
+                    }
+                ]
+            }
+        },
+        "LaunchConfig": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "ImageId": "ami-12345678",
+                "InstanceType": "c5.large",
+                "SecurityGroups": [
+                    "sg-12345"
+                ]
+            }
+        }
+    }
+}

@@ -45,7 +45,7 @@ class ServiceResponseError(Exception):
 # Configuration
 class ServiceConfig:
     ICON_SERVICE_URL = "http://0.0.0.0:8000/getawsicons"
-    LLM_SERVICE_URL = "http://0.0.0.0:8001/getllmsuggestion"
+    LLM_SERVICE_URL = "http://0.0.0.0:8001/getsuggestions"
     TIMEOUT = 30.0  # seconds
     MAX_RETRIES = 3
     MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
