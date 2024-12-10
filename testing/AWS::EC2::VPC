@@ -1,7 +1,0 @@
-{
-    "Parameters": "  VPCCidrBlockFor$$1:\n    Description: The CIDR block for the VPC\n    Type: String\n    Default: 10.0.0.0/16\n    AllowedPattern: '^(([0-9]{1,3})\\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'\n    ConstraintDescription: Must be a valid CIDR block.",
-    "Resources": "  $$1:\n    Type: 'AWS::EC2::VPC'\n    Properties:\n      CidrBlock: !Ref VPCCidrBlockFor$$1\n      EnableDnsSupport: true\n      EnableDnsHostnames: true\n      Tags:\n        - Key: Name\n          Value: $$1",
-    "Type": "AWS::EC2::VPC",
-    "Dependencies": [],
-    "Outputs": "  VPCId:\n    Description: The ID of the created VPC for $$1\n    Value: !Ref $$1"
-}
