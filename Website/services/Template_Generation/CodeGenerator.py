@@ -127,7 +127,7 @@ class template_generator:
 
     def createName(self, type_name:str, graph:Graph) -> str:
         graph.type_dict[type_name] = graph.type_dict.get(type_name,0) + 1
-        name = 'My'+type_name.split("::")[-1] + str(graph.type_dict[type_name])
+        name = 'My'+''.join(type_name.split("::")[-2:]) + str(graph.type_dict[type_name])
         return name
 
     def create_template(self, file_name: str, detected_classes_types: list[str]) -> dict:
