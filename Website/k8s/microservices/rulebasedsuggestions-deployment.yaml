@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rulebasedsuggestions
+  namespace: diagrams2code
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rulebasedsuggestions
+  template:
+    metadata:
+      labels:
+        app: rulebasedsuggestions
+    spec:
+      containers:
+        - name: rulebasedsuggestions
+          image: capthestone/website-rulebasedsuggestion:latest
+          envFrom:
+            - configMapRef:
+                name: kafka-config

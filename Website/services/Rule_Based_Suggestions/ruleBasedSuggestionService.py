@@ -1,9 +1,11 @@
 from kafka import KafkaConsumer, KafkaProducer
 import json
+import os
 import logging
 
 # Kafka configuration
-KAFKA_BROKER = "localhost:9092"
+KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL", "localhost:9092")
+print(KAFKA_BROKER_URL)
 DETECTED_SERVICES_TOPIC = "detected-services-topic"
 DETECTED_PLUS_SUGGESTIONS_TOPIC = "final-services-topic"
 DLQ_TOPIC = "service-suggestions-dead-letter-queue"
@@ -135,7 +137,7 @@ logger = logging.getLogger("ServiceSuggestionsConsumer")
 # Initialize Kafka Consumer
 consumer = KafkaConsumer(
     DETECTED_SERVICES_TOPIC,
-    bootstrap_servers=[KAFKA_BROKER],
+    bootstrap_servers=[KAFKA_BROKER_URL],
     value_deserializer=lambda x: json.loads(x.decode("utf-8")),
     group_id="service-suggestions-group",
     auto_offset_reset="earliest",
@@ -143,7 +145,7 @@ consumer = KafkaConsumer(
 
 # Initialize Kafka Producer
 producer = KafkaProducer(
-    bootstrap_servers=[KAFKA_BROKER],
+    bootstrap_servers=[KAFKA_BROKER_URL],
     value_serializer=lambda x: json.dumps(x).encode("utf-8"),
 )
 
@@ -195,7 +197,7 @@ def main():
             # Send the result to the target topic
             producer.send(DETECTED_PLUS_SUGGESTIONS_TOPIC, result)
             logger.info(f"Sent suggestions to topic '{DETECTED_PLUS_SUGGESTIONS_TOPIC}': {result}")
-
+            consumer.commit()
         except Exception as e:
             logger.error(f"Error processing message: {e}")
             handle_dead_letter(message.value)
