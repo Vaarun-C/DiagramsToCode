@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+  namespace: diagrams2code
+data:
+  KAFKA_BROKER_URL: "kafka-service.diagrams2code.svc.cluster.local:9092"

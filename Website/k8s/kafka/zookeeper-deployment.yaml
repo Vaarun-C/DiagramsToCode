@@ -4,7 +4,7 @@ metadata:
   labels:
     app: zookeeper
   name: zookeeper
-  namespace: kafka
+  namespace: diagrams2code
 spec:
   replicas: 1
   selector:

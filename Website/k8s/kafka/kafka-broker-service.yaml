@@ -4,9 +4,11 @@ metadata:
   labels:
     app: kafka-broker
   name: kafka-service
-  namespace: kafka
+  namespace: diagrams2code
 spec:
+  type: LoadBalancer
   ports:
-  - port: 9092
+    - port: 9092
+      targetPort: 9092
   selector:
     app: kafka-broker

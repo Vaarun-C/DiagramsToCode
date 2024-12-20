@@ -1,10 +1,9 @@
-from fastapi import FastAPI, File, Form, UploadFile, BackgroundTasks, HTTPException, WebSocket
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from kafka import KafkaProducer
-import uuid
 import base64
 import json
 import redis
-import asyncio
+import os
 from fastapi.middleware.cors import CORSMiddleware
 import time
 
@@ -20,19 +19,25 @@ app.add_middleware(
 
 # Kafka Configuration
 IMAGE_TOPIC = "image_topic"
-kafka_servers = ["localhost:9092"]
-background_tasks = BackgroundTasks()
-REDIS_PORT = 6380
+KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL", "localhost:9092")
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")
 
 # Initialize Kafka Producer
 producer = KafkaProducer(
-    bootstrap_servers=kafka_servers,
+    bootstrap_servers=[KAFKA_BROKER_URL],
     value_serializer=lambda v: json.dumps(v).encode("utf-8"),
     key_serializer=lambda k: k.encode("utf-8")
 )
 
 # Redis setup for tracking requests
-redis_client = redis.StrictRedis(host="localhost", port=REDIS_PORT, decode_responses=True)
+redis_client = redis.StrictRedis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    password=REDIS_PASSWORD,
+    decode_responses=True
+)
 
 @app.post("/generateawstemplate")
 async def process_image(

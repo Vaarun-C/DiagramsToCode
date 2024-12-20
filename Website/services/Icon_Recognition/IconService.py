@@ -3,6 +3,7 @@ from PIL import Image, UnidentifiedImageError
 import io
 import logging
 import json
+import os
 from YOLOModel import yolomodel
 import base64
 from kafka.errors import KafkaError
@@ -13,7 +14,8 @@ logger = logging.getLogger("IconDetectionConsumer")
 model = yolomodel()
 
 # Kafka configuration
-KAFKA_BROKER = "localhost:9092"
+KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL", "localhost:9092")
+print(KAFKA_BROKER_URL)
 IMAGE_TOPIC = "image_topic"
 DETECTED_SERVICES_TOPIC = "detected-services-topic"
 DLQ_TOPIC_NAME = "icon-dead-letter-queue"
@@ -21,7 +23,7 @@ DLQ_TOPIC_NAME = "icon-dead-letter-queue"
 # Initialize Kafka Consumer
 consumer = KafkaConsumer(
     IMAGE_TOPIC,
-    bootstrap_servers=[KAFKA_BROKER],
+    bootstrap_servers=[KAFKA_BROKER_URL],
     value_deserializer=lambda x: json.loads(x.decode('utf-8')),
     group_id="icon-detection-group",
     auto_offset_reset="earliest",  # Start from the beginning if no offsets are committed
@@ -30,7 +32,7 @@ consumer = KafkaConsumer(
 
 # Initialize Kafka Producer
 producer = KafkaProducer(
-    bootstrap_servers=[KAFKA_BROKER],
+    bootstrap_servers=[KAFKA_BROKER_URL],
     value_serializer=lambda x: json.dumps(x).encode('utf-8')
 )
 
@@ -79,7 +81,6 @@ def main():
 
             # Process the image and get detections
             detections = process_image(io.BytesIO(image_data).getvalue())
-            consumer.commit()
 
             # Publish results to the Detected Services Topic
             result = {
@@ -89,6 +90,7 @@ def main():
             }
             producer.send(DETECTED_SERVICES_TOPIC, result)
             logger.info(f"Sent detections to topic '{DETECTED_SERVICES_TOPIC}': {result}")
+            consumer.commit()
         except Exception as e:
             logger.error(f"Unexpected error during message processing: {e}")
             handle_dead_letter(payload)

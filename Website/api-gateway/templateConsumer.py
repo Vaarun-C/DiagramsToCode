@@ -1,20 +1,29 @@
 from kafka import KafkaConsumer
 import redis
 import json
+import os
 
 # Kafka configuration
 TEMPLATE_TOPIC = "template-topic"
-KAFKA_BROKER = "localhost:9092"
-REDIS_PORT = 6380 # Second instance of redis
+KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL", "localhost:9092")
+# KAFKA_BROKER = "localhost:9092"
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")
 
 consumer = KafkaConsumer(
     TEMPLATE_TOPIC,
-    bootstrap_servers=KAFKA_BROKER,
+    bootstrap_servers=[KAFKA_BROKER_URL],
     value_deserializer=lambda m: json.loads(m.decode("utf-8")),
 )
 
 # Redis setup
-redis_client = redis.StrictRedis(host="localhost", port=REDIS_PORT, decode_responses=True)
+redis_client = redis.StrictRedis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    password=REDIS_PASSWORD,
+    decode_responses=True
+)
 
 for message in consumer:
     result = message.value
