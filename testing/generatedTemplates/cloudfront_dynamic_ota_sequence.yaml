@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for cloudfront_dynamic_ota_sequence.png
+Conditions: 
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+
+
+Parameters: 
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  ApplicationNameForMyApplication1:
+    Type: String
+    Description: Name of the Elastic Beanstalk application for MyApplication1
+
+  EnvironmentNameForMyEnvironment1:
+    Type: String
+    Description: Name of the Elastic Beanstalk environment for MyEnvironment1
+  SolutionStackNameForMyEnvironment1:
+    Type: String
+    Description: Solution stack name for MyEnvironment1
+    Default: 64bit Amazon Linux 2 v3.5.4 running Python 3.8
+
+
+
+Resources: 
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyApplication1:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      ApplicationName: !Ref ApplicationNameForMyApplication1
+      Description: Elastic Beanstalk Application for MyApplication1
+  MyRestApi1:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: MyRestApi1
+      Description: API for my Lambda function MyRestApi1
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyEnvironment1:
+    Type: AWS::ElasticBeanstalk::Environment
+    Properties:
+      ApplicationName: !Ref MyApplication1
+      EnvironmentName: !Ref EnvironmentNameForMyEnvironment1
+      SolutionStackName: !Ref SolutionStackNameForMyEnvironment1
+      OptionSettings:
+        - Namespace: aws:autoscaling:launchconfiguration
+          OptionName: InstanceType
+          Value: t2.micro
+        - Namespace: aws:elasticbeanstalk:environment
+          OptionName: EnvironmentType
+          Value: LoadBalanced
+
+  MyDistribution1:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultCacheBehavior:
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: MyRestApi1
+          ForwardedValues:
+            QueryString: false
+          MinTTL: 0
+          DefaultTTL: 300
+          MaxTTL: 1200
+        Origins:
+          - Id: MyRestApi1
+            DomainName: !Sub "${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: /prod
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+
+  MyResource1:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyMethodForCloudfront1:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MyRestApi1
+      ResourceId: !Ref MyResource1
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationHttpMethod: GET
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: '{"message": "Hello from API Gateway!"}'
+      MethodResponses:
+        - StatusCode: 200
+
+Outputs: 
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+
+  ApiUrlForMyRestApi1:
+    Description: URL for the API Gateway for MyRestApi1
+    Value: !Sub "https://${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com/prod/hello"
+  EnvironmentURLForMyEnvironment1:
+    Description: URL of the Elastic Beanstalk Environment for MyEnvironment1
+    Value: !GetAtt MyEnvironment1.EndpointURL
+
+  CloudFrontDomainNameForMyDistribution1:
+    Description: Domain name of the CloudFront distribution for MyDistribution1
+    Value: !GetAtt MyDistribution1.DomainName
+

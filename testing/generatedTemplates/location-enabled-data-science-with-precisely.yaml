@@ -1,0 +1,503 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for location-enabled-data-science-with-precisely.png
+Conditions: 
+
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+  VersioningEnabledForMyBucket2: !Equals [!Ref EnableVersioningForMyBucket2, true]
+
+
+
+
+
+
+Parameters: 
+  InstanceIdForMyDashboard1:
+    Type: String
+    Description: "The ID of the EC2 instance to monitor for MyDashboard1"
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  BucketNameForMyBucket2:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket2:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+
+  ExecutionRoleNameForMyRoleForSageMakerExecution1:
+    Type: String
+    Default: "MyRoleForSageMakerExecution1"
+    Description: "The name of the IAM role for the SageMaker Notebook Instance for MyRoleForSageMakerExecution1."
+
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  TopicNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1Topic"
+    Description: "The name of the SNS topic for MyTopic1."
+  DisplayNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1DisplayName"
+    Description: "The display name for the SNS topic for MyTopic1."
+
+
+  NotebookInstanceNameForMyNotebookInstance1:
+    Type: String
+    Default: "MyNotebookInstance1"
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance1."
+  NotebookInstanceTypeForMyNotebookInstance1:
+    Type: String
+    Default: "ml.t2.medium"
+    AllowedValues:
+      - "ml.t2.medium"
+      - "ml.m5.large"
+      - "ml.m5.xlarge"
+      - "ml.c5.large"
+      - "ml.c5.xlarge"
+    Description: "The instance type for the SageMaker Notebook Instance for MyNotebookInstance1."
+  RootAccessForMyNotebookInstance1:
+    Type: String
+    Default: "Disabled"
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Description: "Whether the SageMaker Notebook Instance has root access for MyNotebookInstance1."
+
+  TargetGroupNameForMyTargetGroup1:
+    Type: String
+    Default: MyTargetGroup1
+    Description: Name for the Target Group for MyTargetGroup1
+
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+  AlarmThresholdForMyAlarm1:
+    Type: Number
+    Default: 70
+    Description: "The CPU utilization percentage threshold to trigger the alarm for MyAlarm1"
+
+
+  InstanceTypeForMyInstance1:
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t3.micro
+      - t3.small
+      - t3.medium
+    Description: EC2 instance type for MyInstance1.
+  AMIIdForMyInstance1:
+    Type: AWS::EC2::Image::Id
+    Default: ami-0c02fb55956c7d316
+    Description: AMI ID for the EC2 instance for MyInstance1.
+  KeyPairNameForMyInstance1:
+    Type: String
+    Description: Name of an existing EC2 KeyPair for SSH access for MyInstance1.
+
+  ClusterNameForMyCluster1:
+    Type: String
+    Default: MyCluster1
+    Description: "The name of the EMR cluster."
+  InstanceTypeForMyCluster1:
+    Type: String
+    Default: "m5.xlarge"
+    Description: "EC2 instance type for EMR core and task nodes."
+  NumberOfCoreNodesForMyCluster1:
+    Type: Number
+    Default: 2
+    Description: "Number of core nodes in the cluster."
+
+Resources: 
+  MyDashboard1:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: 'MyDashboard1'
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/EC2", "CPUUtilization", "InstanceId", "${InstanceIdForMyDashboard1}" ]
+                ],
+                "period": 300,
+                "stat": "Average",
+                "region": "${AWS::Region}",
+                "title": "EC2 Instance CPU for MyDashboard1"
+              }
+            }
+          ]
+        }
+
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyBucket2:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket2
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket2 
+          - Enabled 
+          - Suspended
+  MyRestApi1:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: MyRestApi1
+      Description: API for my Lambda function MyRestApi1
+  MyRoleForLambda1:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecutionForMyRoleForLambda1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+  MyRoleForEMRService1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "elasticmapreduce.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceRole"
+  MyRoleForSageMakerExecution1:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref ExecutionRoleNameForMyRoleForSageMakerExecution1
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "SageMakerNotebookPolicyForMyRoleForSageMakerExecution1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - sagemaker:*
+                Resource: "*"
+
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MyTopic1:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Ref TopicNameForMyTopic1
+      DisplayName: !Ref DisplayNameForMyTopic1
+
+  MyRoleForEMRInstance1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "ec2.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceforEC2Role"
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyBucketPolicy2:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket2
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket2.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyResource1:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyFunction1:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction1
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyNotebookInstance1:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: !Ref NotebookInstanceNameForMyNotebookInstance1
+      InstanceType: !Ref NotebookInstanceTypeForMyNotebookInstance1
+      RoleArn: !GetAtt MyRoleForSageMakerExecution1.Arn
+      RootAccess: !Ref RootAccessForMyNotebookInstance1
+      VolumeSizeInGB: 10 # Adjust the volume size as needed
+      DirectInternetAccess: "Enabled"
+
+  MyTargetGroup1:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Ref TargetGroupNameForMyTargetGroup1
+      Port: 80
+      Protocol: TCP
+      VpcId: !Ref MyVPC1
+      TargetType: ip
+
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyAlarm1:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: HighCPUAlarmMyAlarm1
+      AlarmDescription: Alarm if CPU exceeds the specified threshold for MyAlarm1
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref AlarmThresholdForMyAlarm1
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceIdForMyDashboard1
+      AlarmActions:
+        - !Ref MyTopic1
+
+  MyInstanceProfile1:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref MyRoleForEMRInstance1
+
+  MyMethodForLambda1:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource1
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction1.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction1
+      Principal: apigateway.amazonaws.com
+  MyInstance1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceTypeForMyInstance1
+      ImageId: !Ref AMIIdForMyInstance1
+      KeyName: !Ref KeyPairNameForMyInstance1
+      SubnetId: !Ref MySubnet1
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          echo "Hello, World!" > /var/www/html/index.html
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+
+  MyCluster1:
+    Type: AWS::EMR::Cluster
+    Properties:
+      Name: !Ref ClusterNameForMyCluster1
+      ReleaseLabel: "emr-6.13.0" # Adjust as per the required version
+      Applications:
+        - Name: "Hadoop"
+        - Name: "Spark"
+      Instances:
+        MasterInstanceGroup:
+          InstanceCount: 1
+          InstanceType: !Ref InstanceTypeForMyCluster1
+          Name: "MasterNode"
+        CoreInstanceGroup:
+          InstanceCount: !Ref NumberOfCoreNodesForMyCluster1
+          InstanceType: !Ref InstanceTypeForMyCluster1
+          Name: "CoreNode"
+        Ec2SubnetId: !Ref MySubnet1
+      JobFlowRole: !Ref MyInstanceProfile1
+      ServiceRole: !Ref MyRoleForEMRService1
+      Configurations:
+        - Classification: "spark"
+          ConfigurationProperties:
+            "maximizeResourceAllocation": "true"
+
+Outputs: 
+  DashboardURLForMyDashboard1:
+    Description: 'URL of the CloudWatch Dashboard for MyDashboard1'
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=MyDashboard1'
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  S3BucketNameForMyBucket2:
+    Description: The name of the created S3 bucket for MyBucket2
+    Value: !Ref MyBucket2
+  S3BucketArnForMyBucket2:
+    Description: The ARN of the created S3 bucket for MyBucket2
+    Value: !GetAtt MyBucket2.Arn
+  ApiUrlForMyRestApi1:
+    Description: URL for the API Gateway for MyRestApi1
+    Value: !Sub "https://${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com/prod/hello"
+
+  ExecutionRoleArnForMyRoleForSageMakerExecution1:
+    Description: "The ARN of the SageMaker Notebook execution role for MyRoleForSageMakerExecution1."
+    Value: !GetAtt MyRoleForSageMakerExecution1.Arn
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+  TopicArnForMyTopic1:
+    Description: "The ARN of the SNS topic for MyTopic1."
+    Value: !Ref MyTopic1
+  TopicNameOutputForMyTopic1:
+    Description: "The name of the SNS topic for MyTopic1."
+    Value: !Ref TopicNameForMyTopic1
+
+  LambdaFunctionArnForMyFunction1:
+    Description: The ARN of the Lambda function for MyFunction1
+    Value: !GetAtt MyFunction1.Arn
+  NotebookInstanceNameForMyNotebookInstance1:
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance1."
+    Value: !Ref MyNotebookInstance1
+  NotebookInstanceUrlForMyNotebookInstance1:
+    Description: "The URL to access the SageMaker Notebook Instance."
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceNameForMyNotebookInstance1}"
+
+
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+  AlarmNameForMyAlarm1:
+    Description: 'Name of the CloudWatch Alarm for MyAlarm1'
+    Value: !Ref MyAlarm1
+
+
+  InstancePublicIpForMyInstance1:
+    Description: Public IP address of the EC2 instance for MyInstance1
+    Value: !GetAtt MyInstance1.PublicIp
+  InstanceIdForMyInstance1:
+    Description: ID of the EC2 instance for MyInstance1
+    Value: !Ref MyInstance1
+
+  ClusterIdForMyCluster1:
+    Description: "EMR Cluster ID for MyCluster1"
+    Value: !Ref MyCluster1
+  ClusterEndpointForMyCluster1:
+    Description: "Cluster Master Public DNS for MyCluster1"
+    Value: !GetAtt MyCluster1.MasterPublicDNS
+

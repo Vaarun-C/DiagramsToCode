@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for Screenshot-2023-06-02-at-10.06.21-AM-1024x850.png
+Conditions: 
+
+Parameters: 
+
+Resources: 
+  MyKey1:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: 'KMS key for CloudTrail log encryption for MyKey1'
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: kms:*
+            Resource: '*'
+          - Sid: Allow CloudTrail to encrypt logs
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: 
+              - kms:GenerateDataKey*
+              - kms:Decrypt
+            Resource: '*'
+
+Outputs: 
+  CloudTrailKMSKeyArnForMyKey1:
+    Description: 'The ARN of the KMS key used for encrypting CloudTrail logs for MyKey1'
+    Value: !GetAtt MyKey1.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-KMSKeyArn'

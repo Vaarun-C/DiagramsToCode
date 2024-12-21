@@ -1,0 +1,238 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for ac-architecture-cdk-pipelines-data-lake.bfabed2b2d9f88249cda92fdf41cd55666cd111a.png
+Conditions: 
+
+
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+  HasEmailSubscriptionForMySubscription1: !Not [!Equals [!Ref EmailAddressForMySubscription1, ""]]
+
+
+
+
+Parameters: 
+  DatabaseNameForMyDatabase1:
+    Type: String
+    Default: MyDatabase1
+    Description: Name of the Glue database for MyDatabase1
+
+  TopicNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1Topic"
+    Description: "The name of the SNS topic for MyTopic1."
+  DisplayNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1DisplayName"
+    Description: "The display name for the SNS topic for MyTopic1."
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  EmailAddressForMySubscription1:
+    Type: String
+    Default: ""
+    Description: "The email address to subscribe to the topic for MySubscription1. Leave blank if no email subscription is required."
+
+
+  CrawlerScheduleForMyCrawler1:
+    Type: String
+    Default: "cron(0 12 * * ? *)"
+    Description: Cron expression for crawler schedule for MyCrawler1
+
+  JobTimeoutForMyJob1:
+    Type: Number
+    Default: 2880
+    Description: Job timeout in minutes for MyJob1
+
+Resources: 
+  MyDatabase1:
+    Type: "AWS::Glue::Database"
+    Properties:
+      CatalogId: !Ref "AWS::AccountId"
+      DatabaseInput:
+        Name: !Ref DatabaseNameForMyDatabase1
+        Description: "Glue database for storing table metadata for MyDatabase1."
+
+  MyTopic1:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Ref TopicNameForMyTopic1
+      DisplayName: !Ref DisplayNameForMyTopic1
+
+  MyRestApi1:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: MyRestApi1
+      Description: API for my Lambda function MyRestApi1
+  MyRoleForLambda1:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecutionForMyRoleForLambda1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MySubscription1:
+    Type: "AWS::SNS::Subscription"
+    Condition: HasEmailSubscriptionForMySubscription1
+    Properties:
+      Protocol: "email"
+      Endpoint: !Ref EmailAddressForMySubscription1
+      TopicArn: !Ref MyTopic1
+
+  MyResource1:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyFunction1:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction1
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyRoleForGlueService1:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "glue.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: "GlueServicePolicyForMyRoleForGlueService1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:ListBucket"
+                Resource: 
+                  - !Sub "arn:aws:s3:::${MyBucket1}"
+                  - !Sub "arn:aws:s3:::${MyBucket1}/*"
+              - Effect: "Allow"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "arn:aws:logs:*:*:*"
+
+  MyMethodForLambda1:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource1
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction1.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction1
+      Principal: apigateway.amazonaws.com
+  MyCrawler1:
+    Type: "AWS::Glue::Crawler"
+    Properties:
+      Role: !GetAtt MyRoleForGlueService1.Arn
+      DatabaseName: !Ref MyDatabase1
+      Name: !Sub "${DatabaseNameForMyDatabase1}-crawler"
+      Description: "Crawler to populate the Glue database."
+      Targets:
+        S3Targets:
+          - Path: !Sub "s3://${MyBucket1}/data/"
+      Schedule: 
+        ScheduleExpression: !Ref CrawlerScheduleForMyCrawler1
+
+  MyJob1:
+    Type: "AWS::Glue::Job"
+    Properties:
+      Role: !GetAtt MyBucket1.Arn
+      Command:
+        Name: "glueetl"
+        ScriptLocation: !Sub "s3://${MyBucket1}/scripts/MyJob1-script.py"
+        PythonVersion: "3"
+      DefaultArguments:
+        "--TempDir": !Sub "s3://${MyBucket1}/temp/"
+        "--job-bookmark-option": "job-bookmark-enable"
+      MaxRetries: 1
+      Timeout: !Ref JobTimeoutForMyJob1
+
+Outputs: 
+  GlueDatabaseName:
+    Description: "The name of the Glue database for MyDatabase1"
+    Value: !Ref MyDatabase1
+  TopicArnForMyTopic1:
+    Description: "The ARN of the SNS topic for MyTopic1."
+    Value: !Ref MyTopic1
+  TopicNameOutputForMyTopic1:
+    Description: "The name of the SNS topic for MyTopic1."
+    Value: !Ref TopicNameForMyTopic1
+  ApiUrlForMyRestApi1:
+    Description: URL for the API Gateway for MyRestApi1
+    Value: !Sub "https://${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com/prod/hello"
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+
+  LambdaFunctionArnForMyFunction1:
+    Description: The ARN of the Lambda function for MyFunction1
+    Value: !GetAtt MyFunction1.Arn
+
+  GlueCrawlerNameForMyCrawler1:
+    Description: "The name of the Glue crawler for MyCrawler1"
+    Value: !Ref MyCrawler1
+
+  GlueJobNameForMyJob1:
+    Description: "The name of the Glue job for MyJob1"
+    Value: !Ref MyJob1
+

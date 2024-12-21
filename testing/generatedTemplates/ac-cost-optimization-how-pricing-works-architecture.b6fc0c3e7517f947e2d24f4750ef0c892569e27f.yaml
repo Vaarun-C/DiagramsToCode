@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for ac-cost-optimization-how-pricing-works-architecture.b6fc0c3e7517f947e2d24f4750ef0c892569e27f.png
+Conditions: 
+
+
+
+
+Parameters: 
+  TargetGroupNameForMyTargetGroup1:
+    Type: String
+    Default: MyTargetGroup1
+    Description: Name for the Target Group for MyTargetGroup1
+
+  HostedZoneIdForMyRecordSet1:
+    Type: String
+    Description: The Route 53 Hosted Zone ID for your domain for MyRecordSet1
+
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  DomainNameForMyDomainName1:
+    Type: String
+    Description: The domain name to use for the API for MyDomainName1
+
+
+Resources: 
+  MyTargetGroup1:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Ref TargetGroupNameForMyTargetGroup1
+      Port: 80
+      Protocol: TCP
+      VpcId: !Ref MyVPC1
+      TargetType: ip
+
+  MyRecordSet1:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneIdForMyRecordSet1
+      Name: !Ref DomainNameForMyDomainName1
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt MyDomainName1.RegionalDomainName
+        HostedZoneId: !GetAtt MyDomainName1.RegionalHostedZoneId
+
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MyDomainName1:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref DomainNameForMyDomainName1
+      RegionalCertificateArn: !Ref MyCertificate1
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  MyCertificate1:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainNameForMyDomainName1
+      ValidationMethod: DNS
+
+Outputs: 
+
+
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+
+

@@ -1,0 +1,110 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for 9fde7f01-17ab-4207-8a59-a12daf85a382.png
+Conditions: 
+
+  IsMultiNodeForMyCluster1: !Not [!Equals [!Ref NumberOfNodesForMyCluster1, 1]]
+
+Parameters: 
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+
+  ClusterIdentifierForMyCluster1:
+    Type: String
+    Description: The identifier of the Redshift cluster for MyCluster1
+    Default: MyCluster1
+  DatabaseNameForMyCluster1:
+    Type: String
+    Description: The name of the first database to be created when the cluster is created for MyCluster1
+    Default: dev
+  MasterUsernameForMyCluster1:
+    Type: String
+    Description: Username for the master user for MyCluster1
+    Default: admin
+    MinLength: 1
+    MaxLength: 128
+  NodeTypeForMyCluster1:
+    Type: String
+    Description: The node type to be provisioned for MyCluster1
+    Default: dc2.large
+    AllowedValues:
+      - dc2.large
+      - dc2.8xlarge
+      - ra3.xlplus
+      - ra3.4xlarge
+      - ra3.16xlarge
+  NumberOfNodesForMyCluster1:
+    Type: Number
+    Description: Number of compute nodes in the cluster for MyCluster1
+    Default: 2
+    MinValue: 1
+    MaxValue: 100
+
+Resources: 
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyClusterSubnetGroup1:
+    Type: AWS::Redshift::ClusterSubnetGroup
+    Properties:
+      Description: Subnet group for Redshift cluster for MyClusterSubnetGroup1
+      SubnetIds: 
+        - !Ref MySubnet1
+
+  MyCluster1:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterIdentifier: !Ref ClusterIdentifierForMyCluster1
+      DBName: !Ref DatabaseNameForMyCluster1
+      MasterUsername: !Ref MasterUsernameForMyCluster1
+      NodeType: !Ref NodeTypeForMyCluster1
+      NumberOfNodes: !Ref NumberOfNodesForMyCluster1
+      ClusterType: !If [IsMultiNodeForMyCluster1, 'multi-node', 'single-node']
+      ClusterSubnetGroupName: !Ref MyClusterSubnetGroup1
+      PubliclyAccessible: false
+      Encrypted: true
+      Port: 5439
+      IamRoles: []
+      ManageMasterPassword: true  # AWS will manage the password
+
+Outputs: 
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+
+  RedshiftClusterEndpointForMyCluster1:
+    Description: Endpoint for Redshift cluster for MyCluster1
+    Value: !Sub '${MyCluster1.Endpoint.Address}:${MyCluster1.Endpoint.Port}'
+

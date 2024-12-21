@@ -1,0 +1,457 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for fraud-ring-detection-using-Neo4j-and-graphs.png
+Conditions: 
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+
+
+
+
+
+Parameters: 
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  DatabaseNameForMyDatabase1:
+    Type: String
+    Default: MyDatabase1
+    Description: Name of the Glue database for MyDatabase1
+
+  StreamNameForMyStream1:
+    Type: String
+    Default: "MyStream1"
+    Description: "The name of the Kinesis Data Stream for MyStream1."
+  ShardCountForMyStream1:
+    Type: Number
+    Default: 1
+    Description: "The number of shards for the Kinesis Data Stream for MyStream1."
+  RetentionHoursForMyStream1:
+    Type: Number
+    Default: 24
+    AllowedValues:
+      - 24
+      - 48
+      - 72
+      - 168
+      - 8760
+    Description: "Retention period for data in the stream (in hours) for MyStream1."
+
+  ExecutionRoleNameForMyRoleForSageMakerExecution1:
+    Type: String
+    Default: "MyRoleForSageMakerExecution1"
+    Description: "The name of the IAM role for the SageMaker Notebook Instance for MyRoleForSageMakerExecution1."
+
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+
+  NotebookInstanceNameForMyNotebookInstance1:
+    Type: String
+    Default: "MyNotebookInstance1"
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance1."
+  NotebookInstanceTypeForMyNotebookInstance1:
+    Type: String
+    Default: "ml.t2.medium"
+    AllowedValues:
+      - "ml.t2.medium"
+      - "ml.m5.large"
+      - "ml.m5.xlarge"
+      - "ml.c5.large"
+      - "ml.c5.xlarge"
+    Description: "The instance type for the SageMaker Notebook Instance for MyNotebookInstance1."
+  RootAccessForMyNotebookInstance1:
+    Type: String
+    Default: "Disabled"
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Description: "Whether the SageMaker Notebook Instance has root access for MyNotebookInstance1."
+
+  NotebookInstanceNameForMyNotebookInstance2:
+    Type: String
+    Default: "MyNotebookInstance2"
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance2."
+  NotebookInstanceTypeForMyNotebookInstance2:
+    Type: String
+    Default: "ml.t2.medium"
+    AllowedValues:
+      - "ml.t2.medium"
+      - "ml.m5.large"
+      - "ml.m5.xlarge"
+      - "ml.c5.large"
+      - "ml.c5.xlarge"
+    Description: "The instance type for the SageMaker Notebook Instance for MyNotebookInstance2."
+  RootAccessForMyNotebookInstance2:
+    Type: String
+    Default: "Disabled"
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Description: "Whether the SageMaker Notebook Instance has root access for MyNotebookInstance2."
+
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+  CrawlerScheduleForMyCrawler1:
+    Type: String
+    Default: "cron(0 12 * * ? *)"
+    Description: Cron expression for crawler schedule for MyCrawler1
+
+  JobTimeoutForMyJob1:
+    Type: Number
+    Default: 2880
+    Description: Job timeout in minutes for MyJob1
+
+  ClusterNameForMyCluster1:
+    Type: String
+    Default: "MyCluster1"
+    Description: "The name of the MSK cluster for MyCluster1."
+  BrokerInstanceTypeForMyCluster1:
+    Type: String
+    Default: "kafka.m5.large"
+    Description: "The instance type for the Kafka brokers for MyCluster1."
+  NumberOfBrokerNodesForMyCluster1:
+    Type: Number
+    Default: 3
+    Description: "The number of broker nodes in the cluster for MyCluster1."
+
+Resources: 
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyDatabase1:
+    Type: "AWS::Glue::Database"
+    Properties:
+      CatalogId: !Ref "AWS::AccountId"
+      DatabaseInput:
+        Name: !Ref DatabaseNameForMyDatabase1
+        Description: "Glue database for storing table metadata for MyDatabase1."
+
+  MyStream1:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: !Ref StreamNameForMyStream1
+      ShardCount: !Ref ShardCountForMyStream1
+      RetentionPeriodHours: !Ref RetentionHoursForMyStream1
+      StreamEncryption:
+        EncryptionType: "KMS"
+        KeyId: "alias/aws/kinesis"  # Default KMS key provided by AWS
+
+  MyRestApi1:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: MyRestApi1
+      Description: API for my Lambda function MyRestApi1
+  MyRoleForLambda1:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecutionForMyRoleForLambda1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+  MyRoleForSageMakerExecution1:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref ExecutionRoleNameForMyRoleForSageMakerExecution1
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "SageMakerNotebookPolicyForMyRoleForSageMakerExecution1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - sagemaker:*
+                Resource: "*"
+
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyRoleForGlueService1:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "glue.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: "GlueServicePolicyForMyRoleForGlueService1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:ListBucket"
+                Resource: 
+                  - !Sub "arn:aws:s3:::${MyBucket1}"
+                  - !Sub "arn:aws:s3:::${MyBucket1}/*"
+              - Effect: "Allow"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "arn:aws:logs:*:*:*"
+
+  MyResource1:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyFunction1:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction1
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyNotebookInstance1:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: !Ref NotebookInstanceNameForMyNotebookInstance1
+      InstanceType: !Ref NotebookInstanceTypeForMyNotebookInstance1
+      RoleArn: !GetAtt MyRoleForSageMakerExecution1.Arn
+      RootAccess: !Ref RootAccessForMyNotebookInstance1
+      VolumeSizeInGB: 10 # Adjust the volume size as needed
+      DirectInternetAccess: "Enabled"
+
+  MyNotebookInstance2:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: !Ref NotebookInstanceNameForMyNotebookInstance2
+      InstanceType: !Ref NotebookInstanceTypeForMyNotebookInstance2
+      RoleArn: !GetAtt MyRoleForSageMakerExecution1.Arn
+      RootAccess: !Ref RootAccessForMyNotebookInstance2
+      VolumeSizeInGB: 10 # Adjust the volume size as needed
+      DirectInternetAccess: "Enabled"
+
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyCrawler1:
+    Type: "AWS::Glue::Crawler"
+    Properties:
+      Role: !GetAtt MyRoleForGlueService1.Arn
+      DatabaseName: !Ref MyDatabase1
+      Name: !Sub "${DatabaseNameForMyDatabase1}-crawler"
+      Description: "Crawler to populate the Glue database."
+      Targets:
+        S3Targets:
+          - Path: !Sub "s3://${MyBucket1}/data/"
+      Schedule: 
+        ScheduleExpression: !Ref CrawlerScheduleForMyCrawler1
+
+  MyJob1:
+    Type: "AWS::Glue::Job"
+    Properties:
+      Role: !GetAtt MyBucket1.Arn
+      Command:
+        Name: "glueetl"
+        ScriptLocation: !Sub "s3://${MyBucket1}/scripts/MyJob1-script.py"
+        PythonVersion: "3"
+      DefaultArguments:
+        "--TempDir": !Sub "s3://${MyBucket1}/temp/"
+        "--job-bookmark-option": "job-bookmark-enable"
+      MaxRetries: 1
+      Timeout: !Ref JobTimeoutForMyJob1
+
+  MyMethodForLambda1:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource1
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction1.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction1
+      Principal: apigateway.amazonaws.com
+  MyCluster1:
+    Type: AWS::MSK::Cluster
+    Properties:
+      ClusterName: !Ref ClusterNameForMyCluster1
+      KafkaVersion: "3.4.0" # Choose a supported Kafka version
+      NumberOfBrokerNodes: !Ref NumberOfBrokerNodesForMyCluster1
+      BrokerNodeGroupInfo:
+        BrokerAZDistribution: "DEFAULT"
+        ClientSubnets: !Ref MySubnet1
+        InstanceType: !Ref BrokerInstanceTypeForMyCluster1
+      EncryptionInfo:
+        EncryptionAtRest:
+          DataVolumeKMSKeyId: "alias/aws/kafka" # Default AWS-managed KMS key
+        EncryptionInTransit:
+          ClientBroker: "TLS"
+          InCluster: true
+      LoggingInfo:
+        BrokerLogs:
+          CloudWatchLogs:
+            Enabled: true
+            LogGroup: !Sub "/aws/msk/${ClusterNameForMyCluster1}"
+          S3:
+            Enabled: false
+          Firehose:
+            Enabled: false
+
+Outputs: 
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  GlueDatabaseName:
+    Description: "The name of the Glue database for MyDatabase1"
+    Value: !Ref MyDatabase1
+  StreamArnForMyStream1:
+    Description: "The ARN of the Kinesis Data Stream For MyStream1"
+    Value: !GetAtt MyStream1.Arn
+  StreamNameForMyStream1:
+    Description: "The name of the Kinesis Data Stream For MyStream1"
+    Value: !Ref MyStream1
+
+  ApiUrlForMyRestApi1:
+    Description: URL for the API Gateway for MyRestApi1
+    Value: !Sub "https://${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com/prod/hello"
+  ExecutionRoleArnForMyRoleForSageMakerExecution1:
+    Description: "The ARN of the SageMaker Notebook execution role for MyRoleForSageMakerExecution1."
+    Value: !GetAtt MyRoleForSageMakerExecution1.Arn
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+
+  LambdaFunctionArnForMyFunction1:
+    Description: The ARN of the Lambda function for MyFunction1
+    Value: !GetAtt MyFunction1.Arn
+  NotebookInstanceNameForMyNotebookInstance1:
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance1."
+    Value: !Ref MyNotebookInstance1
+  NotebookInstanceUrlForMyNotebookInstance1:
+    Description: "The URL to access the SageMaker Notebook Instance."
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceNameForMyNotebookInstance1}"
+
+  NotebookInstanceNameForMyNotebookInstance2:
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance2."
+    Value: !Ref MyNotebookInstance2
+  NotebookInstanceUrlForMyNotebookInstance2:
+    Description: "The URL to access the SageMaker Notebook Instance."
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceNameForMyNotebookInstance2}"
+
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+  GlueCrawlerNameForMyCrawler1:
+    Description: "The name of the Glue crawler for MyCrawler1"
+    Value: !Ref MyCrawler1
+
+  GlueJobNameForMyJob1:
+    Description: "The name of the Glue job for MyJob1"
+    Value: !Ref MyJob1
+
+  ClusterArnForMyCluster1:
+    Description: "The ARN of the MSK Cluster for MyCluster1"
+    Value: !GetAtt MyCluster1.Arn
+

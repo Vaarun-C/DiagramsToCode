@@ -1,0 +1,211 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for RTBCodekitArchitecture.png
+Conditions: 
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+  VersioningEnabledForMyBucket2: !Equals [!Ref EnableVersioningForMyBucket2, true]
+
+
+
+
+
+
+
+
+
+Parameters: 
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  BucketNameForMyBucket2:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket2:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+
+  KendraIndexNameForMyIndex1:
+    Type: String
+    Default: "MyIndex1"
+    Description: "The name of the Amazon Kendra index for MyIndex1."
+
+  KendraIndexNameForMyIndex2:
+    Type: String
+    Default: "MyIndex2"
+    Description: "The name of the Amazon Kendra index for MyIndex2."
+
+  KendraIndexNameForMyIndex3:
+    Type: String
+    Default: "MyIndex3"
+    Description: "The name of the Amazon Kendra index for MyIndex3."
+
+  KendraIndexNameForMyIndex4:
+    Type: String
+    Default: "MyIndex4"
+    Description: "The name of the Amazon Kendra index for MyIndex4."
+
+
+
+
+
+Resources: 
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyBucket2:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket2
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket2 
+          - Enabled 
+          - Suspended
+  MyRoleForKendraExecution1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: kendra.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "KendraDataSourceAccessPolicyForMyRoleForKendraExecution1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                Resource:
+                  - !Sub "arn:aws:s3:::${MyBucket1}"
+                  - !Sub "arn:aws:s3:::${MyBucket1}/*"
+
+  MyIndex1:
+    Type: AWS::Kendra::Index
+    Properties:
+      Name: !Ref KendraIndexNameForMyIndex1
+      Edition: ENTERPRISE_EDITION
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+
+  MyIndex2:
+    Type: AWS::Kendra::Index
+    Properties:
+      Name: !Ref KendraIndexNameForMyIndex2
+      Edition: ENTERPRISE_EDITION
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+
+  MyIndex3:
+    Type: AWS::Kendra::Index
+    Properties:
+      Name: !Ref KendraIndexNameForMyIndex3
+      Edition: ENTERPRISE_EDITION
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+
+  MyIndex4:
+    Type: AWS::Kendra::Index
+    Properties:
+      Name: !Ref KendraIndexNameForMyIndex4
+      Edition: ENTERPRISE_EDITION
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+
+  MyDataSource1:
+    Type: AWS::Kendra::DataSource
+    Properties:
+      Name: "S3DataSourceForMyDataSource1"
+      IndexId: !Ref MyIndex1
+      Type: S3
+      DataSourceConfiguration:
+        S3Configuration:
+          BucketName: !Ref MyBucket1
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+      Schedule: "cron(0 12 * * ? *)" # Optional: Daily sync at 12:00 UTC
+
+  MyDataSource2:
+    Type: AWS::Kendra::DataSource
+    Properties:
+      Name: "S3DataSourceForMyDataSource2"
+      IndexId: !Ref MyIndex2
+      Type: S3
+      DataSourceConfiguration:
+        S3Configuration:
+          BucketName: !Ref MyBucket1
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+      Schedule: "cron(0 12 * * ? *)" # Optional: Daily sync at 12:00 UTC
+
+  MyDataSource3:
+    Type: AWS::Kendra::DataSource
+    Properties:
+      Name: "S3DataSourceForMyDataSource3"
+      IndexId: !Ref MyIndex3
+      Type: S3
+      DataSourceConfiguration:
+        S3Configuration:
+          BucketName: !Ref MyBucket2
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+      Schedule: "cron(0 12 * * ? *)" # Optional: Daily sync at 12:00 UTC
+
+  MyDataSource4:
+    Type: AWS::Kendra::DataSource
+    Properties:
+      Name: "S3DataSourceForMyDataSource4"
+      IndexId: !Ref MyIndex4
+      Type: S3
+      DataSourceConfiguration:
+        S3Configuration:
+          BucketName: !Ref MyBucket2
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+      Schedule: "cron(0 12 * * ? *)" # Optional: Daily sync at 12:00 UTC
+
+Outputs: 
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  S3BucketNameForMyBucket2:
+    Description: The name of the created S3 bucket for MyBucket2
+    Value: !Ref MyBucket2
+  S3BucketArnForMyBucket2:
+    Description: The ARN of the created S3 bucket for MyBucket2
+    Value: !GetAtt MyBucket2.Arn
+  KendraExecutionRoleArnForMyRoleForKendraExecution1:
+    Description: "The ARN of the IAM role used by Kendra."
+    Value: !GetAtt MyRoleForKendraExecution1.Arn
+
+  KendraIndexIdForMyIndex1:
+    Description: "The ID of the Kendra index for MyIndex1."
+    Value: !Ref MyIndex1
+
+  KendraIndexIdForMyIndex2:
+    Description: "The ID of the Kendra index for MyIndex2."
+    Value: !Ref MyIndex2
+
+  KendraIndexIdForMyIndex3:
+    Description: "The ID of the Kendra index for MyIndex3."
+    Value: !Ref MyIndex3
+
+  KendraIndexIdForMyIndex4:
+    Description: "The ID of the Kendra index for MyIndex4."
+    Value: !Ref MyIndex4
+
+
+
+
+

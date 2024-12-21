@@ -1,0 +1,360 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for 3-full-ml-lifecycle-with-spatial-temporal-model.png
+Conditions: 
+
+
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+
+
+
+
+Parameters: 
+  EventBusNameForMyEventBus1:
+    Type: String
+    Default: "MyEventBus1"
+    Description: "Name of the EventBridge Event Bus for MyEventBus1"
+
+  ExecutionRoleNameForMyRoleForSageMakerExecution1:
+    Type: String
+    Default: "MyRoleForSageMakerExecution1"
+    Description: "The name of the IAM role for the SageMaker Notebook Instance for MyRoleForSageMakerExecution1."
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  NotebookInstanceNameForMyNotebookInstance1:
+    Type: String
+    Default: "MyNotebookInstance1"
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance1."
+  NotebookInstanceTypeForMyNotebookInstance1:
+    Type: String
+    Default: "ml.t2.medium"
+    AllowedValues:
+      - "ml.t2.medium"
+      - "ml.m5.large"
+      - "ml.m5.xlarge"
+      - "ml.c5.large"
+      - "ml.c5.xlarge"
+    Description: "The instance type for the SageMaker Notebook Instance for MyNotebookInstance1."
+  RootAccessForMyNotebookInstance1:
+    Type: String
+    Default: "Disabled"
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Description: "Whether the SageMaker Notebook Instance has root access for MyNotebookInstance1."
+
+  NotebookInstanceNameForMyNotebookInstance2:
+    Type: String
+    Default: "MyNotebookInstance2"
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance2."
+  NotebookInstanceTypeForMyNotebookInstance2:
+    Type: String
+    Default: "ml.t2.medium"
+    AllowedValues:
+      - "ml.t2.medium"
+      - "ml.m5.large"
+      - "ml.m5.xlarge"
+      - "ml.c5.large"
+      - "ml.c5.xlarge"
+    Description: "The instance type for the SageMaker Notebook Instance for MyNotebookInstance2."
+  RootAccessForMyNotebookInstance2:
+    Type: String
+    Default: "Disabled"
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Description: "Whether the SageMaker Notebook Instance has root access for MyNotebookInstance2."
+
+  NotebookInstanceNameForMyNotebookInstance3:
+    Type: String
+    Default: "MyNotebookInstance3"
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance3."
+  NotebookInstanceTypeForMyNotebookInstance3:
+    Type: String
+    Default: "ml.t2.medium"
+    AllowedValues:
+      - "ml.t2.medium"
+      - "ml.m5.large"
+      - "ml.m5.xlarge"
+      - "ml.c5.large"
+      - "ml.c5.xlarge"
+    Description: "The instance type for the SageMaker Notebook Instance for MyNotebookInstance3."
+  RootAccessForMyNotebookInstance3:
+    Type: String
+    Default: "Disabled"
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Description: "Whether the SageMaker Notebook Instance has root access for MyNotebookInstance3."
+
+  NotebookInstanceNameForMyNotebookInstance4:
+    Type: String
+    Default: "MyNotebookInstance4"
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance4."
+  NotebookInstanceTypeForMyNotebookInstance4:
+    Type: String
+    Default: "ml.t2.medium"
+    AllowedValues:
+      - "ml.t2.medium"
+      - "ml.m5.large"
+      - "ml.m5.xlarge"
+      - "ml.c5.large"
+      - "ml.c5.xlarge"
+    Description: "The instance type for the SageMaker Notebook Instance for MyNotebookInstance4."
+  RootAccessForMyNotebookInstance4:
+    Type: String
+    Default: "Disabled"
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Description: "Whether the SageMaker Notebook Instance has root access for MyNotebookInstance4."
+
+  NotebookInstanceNameForMyNotebookInstance5:
+    Type: String
+    Default: "MyNotebookInstance5"
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance5."
+  NotebookInstanceTypeForMyNotebookInstance5:
+    Type: String
+    Default: "ml.t2.medium"
+    AllowedValues:
+      - "ml.t2.medium"
+      - "ml.m5.large"
+      - "ml.m5.xlarge"
+      - "ml.c5.large"
+      - "ml.c5.xlarge"
+    Description: "The instance type for the SageMaker Notebook Instance for MyNotebookInstance5."
+  RootAccessForMyNotebookInstance5:
+    Type: String
+    Default: "Disabled"
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Description: "Whether the SageMaker Notebook Instance has root access for MyNotebookInstance5."
+
+  RuleNameForMyRule1:
+    Type: String
+    Default: "MyRule1"
+    Description: "Name of the EventBridge Rule for MyRule1"
+
+Resources: 
+  MyEventBus1:
+    Type: "AWS::Events::EventBus"
+    Properties:
+      Name: !Ref EventBusNameForMyEventBus1
+      Tags:
+        - Key: "Environment"
+          Value: "Development"
+
+  MyRoleForSageMakerExecution1:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref ExecutionRoleNameForMyRoleForSageMakerExecution1
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "SageMakerNotebookPolicyForMyRoleForSageMakerExecution1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - sagemaker:*
+                Resource: "*"
+
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyRoleForLambda1:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecutionForMyRoleForLambda1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+  MyNotebookInstance1:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: !Ref NotebookInstanceNameForMyNotebookInstance1
+      InstanceType: !Ref NotebookInstanceTypeForMyNotebookInstance1
+      RoleArn: !GetAtt MyRoleForSageMakerExecution1.Arn
+      RootAccess: !Ref RootAccessForMyNotebookInstance1
+      VolumeSizeInGB: 10 # Adjust the volume size as needed
+      DirectInternetAccess: "Enabled"
+
+  MyNotebookInstance2:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: !Ref NotebookInstanceNameForMyNotebookInstance2
+      InstanceType: !Ref NotebookInstanceTypeForMyNotebookInstance2
+      RoleArn: !GetAtt MyRoleForSageMakerExecution1.Arn
+      RootAccess: !Ref RootAccessForMyNotebookInstance2
+      VolumeSizeInGB: 10 # Adjust the volume size as needed
+      DirectInternetAccess: "Enabled"
+
+  MyNotebookInstance3:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: !Ref NotebookInstanceNameForMyNotebookInstance3
+      InstanceType: !Ref NotebookInstanceTypeForMyNotebookInstance3
+      RoleArn: !GetAtt MyRoleForSageMakerExecution1.Arn
+      RootAccess: !Ref RootAccessForMyNotebookInstance3
+      VolumeSizeInGB: 10 # Adjust the volume size as needed
+      DirectInternetAccess: "Enabled"
+
+  MyNotebookInstance4:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: !Ref NotebookInstanceNameForMyNotebookInstance4
+      InstanceType: !Ref NotebookInstanceTypeForMyNotebookInstance4
+      RoleArn: !GetAtt MyRoleForSageMakerExecution1.Arn
+      RootAccess: !Ref RootAccessForMyNotebookInstance4
+      VolumeSizeInGB: 10 # Adjust the volume size as needed
+      DirectInternetAccess: "Enabled"
+
+  MyNotebookInstance5:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: !Ref NotebookInstanceNameForMyNotebookInstance5
+      InstanceType: !Ref NotebookInstanceTypeForMyNotebookInstance5
+      RoleArn: !GetAtt MyRoleForSageMakerExecution1.Arn
+      RootAccess: !Ref RootAccessForMyNotebookInstance5
+      VolumeSizeInGB: 10 # Adjust the volume size as needed
+      DirectInternetAccess: "Enabled"
+
+  MyFunction1:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction1
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyRule1:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: !Ref RuleNameForMyRule1
+      Description: "Rule to trigger Lambda on specific event patterns for MyRule1"
+      EventBusName: !Ref MyEventBus1
+      EventPattern:
+        source:
+          - "aws.s3"
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - "s3.amazonaws.com"
+          eventName:
+            - "PutObject"
+          resources:
+            - !Sub "arn:aws:s3:::${MyBucket1}"
+      State: "ENABLED"
+      Targets:
+        - Id: "LambdaTarget"
+          Arn: !GetAtt MyFunction1.Arn
+
+Outputs: 
+  EventBusArnForMyEventBus1:
+    Description: "ARN of the Event Bus for MyEventBus1"
+    Value: !GetAtt MyEventBus1.Arn
+    Export:
+      Name: "EventBusArn"
+  ExecutionRoleArnForMyRoleForSageMakerExecution1:
+    Description: "The ARN of the SageMaker Notebook execution role for MyRoleForSageMakerExecution1."
+    Value: !GetAtt MyRoleForSageMakerExecution1.Arn
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  NotebookInstanceNameForMyNotebookInstance1:
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance1."
+    Value: !Ref MyNotebookInstance1
+  NotebookInstanceUrlForMyNotebookInstance1:
+    Description: "The URL to access the SageMaker Notebook Instance."
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceNameForMyNotebookInstance1}"
+
+  NotebookInstanceNameForMyNotebookInstance2:
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance2."
+    Value: !Ref MyNotebookInstance2
+  NotebookInstanceUrlForMyNotebookInstance2:
+    Description: "The URL to access the SageMaker Notebook Instance."
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceNameForMyNotebookInstance2}"
+
+  NotebookInstanceNameForMyNotebookInstance3:
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance3."
+    Value: !Ref MyNotebookInstance3
+  NotebookInstanceUrlForMyNotebookInstance3:
+    Description: "The URL to access the SageMaker Notebook Instance."
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceNameForMyNotebookInstance3}"
+
+  NotebookInstanceNameForMyNotebookInstance4:
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance4."
+    Value: !Ref MyNotebookInstance4
+  NotebookInstanceUrlForMyNotebookInstance4:
+    Description: "The URL to access the SageMaker Notebook Instance."
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceNameForMyNotebookInstance4}"
+
+  NotebookInstanceNameForMyNotebookInstance5:
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance5."
+    Value: !Ref MyNotebookInstance5
+  NotebookInstanceUrlForMyNotebookInstance5:
+    Description: "The URL to access the SageMaker Notebook Instance."
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceNameForMyNotebookInstance5}"
+
+  LambdaFunctionArnForMyFunction1:
+    Description: The ARN of the Lambda function for MyFunction1
+    Value: !GetAtt MyFunction1.Arn
+

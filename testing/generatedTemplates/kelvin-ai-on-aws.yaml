@@ -1,0 +1,338 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for kelvin-ai-on-aws.png
+Conditions: 
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+
+
+  HasEmailSubscriptionForMySubscription1: !Not [!Equals [!Ref EmailAddressForMySubscription1, ""]]
+
+
+
+
+
+Parameters: 
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  TopicNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1Topic"
+    Description: "The name of the SNS topic for MyTopic1."
+  DisplayNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1DisplayName"
+    Description: "The display name for the SNS topic for MyTopic1."
+
+  ExecutionRoleNameForMyRoleForSageMakerExecution1:
+    Type: String
+    Default: "MyRoleForSageMakerExecution1"
+    Description: "The name of the IAM role for the SageMaker Notebook Instance for MyRoleForSageMakerExecution1."
+
+
+
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  EmailAddressForMySubscription1:
+    Type: String
+    Default: ""
+    Description: "The email address to subscribe to the topic for MySubscription1. Leave blank if no email subscription is required."
+
+  NotebookInstanceNameForMyNotebookInstance1:
+    Type: String
+    Default: "MyNotebookInstance1"
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance1."
+  NotebookInstanceTypeForMyNotebookInstance1:
+    Type: String
+    Default: "ml.t2.medium"
+    AllowedValues:
+      - "ml.t2.medium"
+      - "ml.m5.large"
+      - "ml.m5.xlarge"
+      - "ml.c5.large"
+      - "ml.c5.xlarge"
+    Description: "The instance type for the SageMaker Notebook Instance for MyNotebookInstance1."
+  RootAccessForMyNotebookInstance1:
+    Type: String
+    Default: "Disabled"
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Description: "Whether the SageMaker Notebook Instance has root access for MyNotebookInstance1."
+
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+  ClusterNameForMyCluster1:
+    Type: String
+    Description: Name of the EKS cluster for MyCluster1
+    Default: MyCluster1
+  KubernetesVersionForMyCluster1:
+    Type: String
+    Description: Kubernetes version for the EKS cluster for MyCluster1
+    Default: 1.27
+
+  DBInstanceIdentifierForMyDBSubnetGroup1:
+    Description: Unique identifier for the DB instance
+    Type: String
+    Default: MyDBSubnetGroup1
+
+  DBInstanceClassForMyDBInstance1:
+    Description: The compute and memory capacity of the DB instance for MyDBInstance1
+    Type: String
+    Default: db.t3.micro
+    AllowedValues:
+      - db.t3.micro
+      - db.t3.small
+      - db.t3.medium
+      - db.t3.large
+    ConstraintDescription: Must be a valid DB instance class.
+  DBEngineForMyDBInstance1:
+    Description: The database engine to use
+    Type: String
+    Default: MySQL
+    AllowedValues:
+      - MySQL
+      - aurora-postgresql
+      - sqlserver-express
+      - oracle-se2  
+    ConstraintDescription: Must be a valid database engine.
+  DBNameForMyDBInstance1:
+    Description: The name of the database to create for MyDBInstance1
+    Type: String
+    Default: mydatabaseForMyDBInstance1
+  MasterUsernameForMyDBInstance1:
+    Description: The master username for the database for MyDBInstance1
+    Type: String
+    Default: admin
+
+Resources: 
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyTopic1:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Ref TopicNameForMyTopic1
+      DisplayName: !Ref DisplayNameForMyTopic1
+
+  MyRoleForSageMakerExecution1:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref ExecutionRoleNameForMyRoleForSageMakerExecution1
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "SageMakerNotebookPolicyForMyRoleForSageMakerExecution1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - sagemaker:*
+                Resource: "*"
+
+  MyRoleForEKSCluster1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: eks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+  MyRoleForEKSNodeGroup1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MySubscription1:
+    Type: "AWS::SNS::Subscription"
+    Condition: HasEmailSubscriptionForMySubscription1
+    Properties:
+      Protocol: "email"
+      Endpoint: !Ref EmailAddressForMySubscription1
+      TopicArn: !Ref MyTopic1
+
+  MyNotebookInstance1:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: !Ref NotebookInstanceNameForMyNotebookInstance1
+      InstanceType: !Ref NotebookInstanceTypeForMyNotebookInstance1
+      RoleArn: !GetAtt MyRoleForSageMakerExecution1.Arn
+      RootAccess: !Ref RootAccessForMyNotebookInstance1
+      VolumeSizeInGB: 10 # Adjust the volume size as needed
+      DirectInternetAccess: "Enabled"
+
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyCluster1:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: !Ref ClusterNameForMyCluster1
+      Version: !Ref KubernetesVersionForMyCluster1
+      RoleArn: !GetAtt MyRoleForEKSCluster1.Arn
+      ResourcesVpcConfig:
+        SubnetIds: !Ref MySubnet1
+
+  MyDBSubnetGroup1:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: Subnet group for RDS
+      DBSubnetGroupName: !Sub "${DBInstanceIdentifierForMyDBSubnetGroup1}-subnet-group"
+      SubnetIds: !Ref MySubnet1
+  MyNodegroup1:
+    Type: AWS::EKS::Nodegroup
+    Properties:
+      ClusterName: !Ref MyCluster1
+      NodeRole: !GetAtt MyRoleForEKSNodeGroup1.Arn
+      ScalingConfig:
+        MinSize: 1
+        DesiredSize: 3
+        MaxSize: 5
+      Subnets: !Ref MySubnet1
+
+  MyDBInstance1:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceIdentifierForMyDBSubnetGroup1
+      DBInstanceClass: !Ref DBInstanceClassForMyDBInstance1
+      Engine: !Ref DBEngineForMyDBInstance1
+      DBName: !Ref DBNameForMyDBInstance1
+      MasterUsername: !Ref MasterUsernameForMyDBInstance1
+      MasterUserPassword: '{{resolve:secretsmanager:RDS-database-password:SecretString:password}}'
+      DBSubnetGroupName: !Ref MyDBSubnetGroup1
+      AllocatedStorage: '20'
+      StorageType: gp2
+
+Outputs: 
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  TopicArnForMyTopic1:
+    Description: "The ARN of the SNS topic for MyTopic1."
+    Value: !Ref MyTopic1
+  TopicNameOutputForMyTopic1:
+    Description: "The name of the SNS topic for MyTopic1."
+    Value: !Ref TopicNameForMyTopic1
+  ExecutionRoleArnForMyRoleForSageMakerExecution1:
+    Description: "The ARN of the SageMaker Notebook execution role for MyRoleForSageMakerExecution1."
+    Value: !GetAtt MyRoleForSageMakerExecution1.Arn
+
+
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+
+  NotebookInstanceNameForMyNotebookInstance1:
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance1."
+    Value: !Ref MyNotebookInstance1
+  NotebookInstanceUrlForMyNotebookInstance1:
+    Description: "The URL to access the SageMaker Notebook Instance."
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceNameForMyNotebookInstance1}"
+
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+  ClusterNameForMyCluster1:
+    Description: EKS Cluster Name for MyCluster1
+    Value: !Ref MyCluster1
+  ClusterEndpointForMyCluster1:
+    Description: EKS Cluster Endpoint for MyCluster1
+    Value: !GetAtt MyCluster1.Endpoint
+  ClusterARNForMyCluster1:
+    Description: EKS Cluster ARN for MyCluster1
+    Value: !GetAtt MyCluster1.Arn
+
+
+  DBInstanceEndpointForMyDBInstance1:
+    Description: The endpoint of the RDS database instance for MyDBInstance1
+    Value: !GetAtt MyDBInstance1.Endpoint.Address
+

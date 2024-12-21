@@ -1,0 +1,135 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for Figure5-Connectivity-Networking-1109x630.png
+Conditions: 
+
+
+
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+Parameters: 
+  TargetGroupNameForMyTargetGroup1:
+    Type: String
+    Default: MyTargetGroup1
+    Description: Name for the Target Group for MyTargetGroup1
+
+  TargetGroupNameForMyTargetGroup2:
+    Type: String
+    Default: MyTargetGroup2
+    Description: Name for the Target Group for MyTargetGroup2
+
+  HostedZoneIdForMyRecordSet1:
+    Type: String
+    Description: The Route 53 Hosted Zone ID for your domain for MyRecordSet1
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  DomainNameForMyDomainName1:
+    Type: String
+    Description: The domain name to use for the API for MyDomainName1
+
+
+Resources: 
+  MyTargetGroup1:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Ref TargetGroupNameForMyTargetGroup1
+      Port: 80
+      Protocol: TCP
+      VpcId: !Ref MyVPC1
+      TargetType: ip
+
+  MyTargetGroup2:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Ref TargetGroupNameForMyTargetGroup2
+      Port: 80
+      Protocol: TCP
+      VpcId: !Ref MyVPC1
+      TargetType: ip
+
+  MyRecordSet1:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneIdForMyRecordSet1
+      Name: !Ref DomainNameForMyDomainName1
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt MyDomainName1.RegionalDomainName
+        HostedZoneId: !GetAtt MyDomainName1.RegionalHostedZoneId
+
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MyDomainName1:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref DomainNameForMyDomainName1
+      RegionalCertificateArn: !Ref MyCertificate1
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  MyCertificate1:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainNameForMyDomainName1
+      ValidationMethod: DNS
+
+Outputs: 
+
+
+
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+
+

@@ -1,0 +1,375 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for Figure-2.1.-Multi-Region-backup-1024x992.png
+Conditions: 
+
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+  VersioningEnabledForMyBucket2: !Equals [!Ref EnableVersioningForMyBucket2, true]
+  VersioningEnabledForMyBucket3: !Equals [!Ref EnableVersioningForMyBucket3, true]
+  VersioningEnabledForMyBucket4: !Equals [!Ref EnableVersioningForMyBucket4, true]
+  IsMultiNodeForMyCluster1: !Not [!Equals [!Ref NumberOfNodesForMyCluster1, 1]]
+
+
+
+
+Parameters: 
+  HostedZoneIdForMyRecordSet1:
+    Type: String
+    Description: The Route 53 Hosted Zone ID for your domain for MyRecordSet1
+
+  DomainNameForMyDomain1:
+    Type: String
+    Default: "MyDomain1"
+    Description: "The name of the OpenSearch domain for MyDomain1."
+  InstanceTypeForMyDomain1:
+    Type: String
+    Default: "m6g.large.search"
+    Description: "The instance type for the data nodes in the OpenSearch cluster for MyDomain1."
+  InstanceCountForMyDomain1:
+    Type: Number
+    Default: 2
+    Description: "The number of data nodes in the OpenSearch cluster for MyDomain1."
+  MasterInstanceTypeForMyDomain1:
+    Type: String
+    Default: "m6g.medium.search"
+    Description: "The instance type for the dedicated master nodes for MyDomain1."
+  MasterInstanceCountForMyDomain1:
+    Type: Number
+    Default: 3
+    Description: "The number of dedicated master nodes in the OpenSearch cluster for MyDomain1."
+  VolumeSizeForMyDomain1:
+    Type: Number
+    Default: 10
+    Description: "The size (in GB) of the EBS volumes attached to each data node for MyDomain1."
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  BucketNameForMyBucket2:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket2:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  BucketNameForMyBucket3:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket3:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  BucketNameForMyBucket4:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket4:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  ClusterIdentifierForMyCluster1:
+    Type: String
+    Description: The identifier of the Redshift cluster for MyCluster1
+    Default: MyCluster1
+  DatabaseNameForMyCluster1:
+    Type: String
+    Description: The name of the first database to be created when the cluster is created for MyCluster1
+    Default: dev
+  MasterUsernameForMyCluster1:
+    Type: String
+    Description: Username for the master user for MyCluster1
+    Default: admin
+    MinLength: 1
+    MaxLength: 128
+  NodeTypeForMyCluster1:
+    Type: String
+    Description: The node type to be provisioned for MyCluster1
+    Default: dc2.large
+    AllowedValues:
+      - dc2.large
+      - dc2.8xlarge
+      - ra3.xlplus
+      - ra3.4xlarge
+      - ra3.16xlarge
+  NumberOfNodesForMyCluster1:
+    Type: Number
+    Description: Number of compute nodes in the cluster for MyCluster1
+    Default: 2
+    MinValue: 1
+    MaxValue: 100
+
+  DomainNameForMyDomainName1:
+    Type: String
+    Description: The domain name to use for the API for MyDomainName1
+
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+
+
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+Resources: 
+  MyRecordSet1:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneIdForMyRecordSet1
+      Name: !Ref DomainNameForMyDomainName1
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt MyDomainName1.RegionalDomainName
+        HostedZoneId: !GetAtt MyDomainName1.RegionalHostedZoneId
+
+  MyDomain1:
+    Type: AWS::OpenSearchService::Domain
+    Properties:
+      DomainName: !Ref DomainNameForMyDomain1
+      EngineVersion: "OpenSearch_2.9"
+      ClusterConfig:
+        InstanceType: !Ref InstanceTypeForMyDomain1
+        InstanceCount: !Ref InstanceCountForMyDomain1
+        DedicatedMasterEnabled: true
+        ZoneAwarenessEnabled: true
+        DedicatedMasterType: !Ref MasterInstanceTypeForMyDomain1
+        DedicatedMasterCount: !Ref MasterInstanceCountForMyDomain1
+      EBSOptions:
+        EBSEnabled: true
+        VolumeSize: !Ref VolumeSizeForMyDomain1
+        VolumeType: "gp3"
+      VPCOptions:
+        SubnetIds: !Ref MySubnet1
+      EncryptionAtRestOptions:
+        Enabled: true
+      NodeToNodeEncryptionOptions:
+        Enabled: true
+      DomainEndpointOptions:
+        EnforceHTTPS: true
+      AdvancedOptions:
+        "rest.action.multi.allow_explicit_index": "true"
+      LogPublishingOptions:
+        SEARCH_SLOW_LOGS:
+          CloudWatchLogsLogGroupArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/OpenSearch/${DomainNameForMyDomain1}-search-slow"
+          Enabled: true
+        INDEX_SLOW_LOGS:
+          CloudWatchLogsLogGroupArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/OpenSearch/${DomainNameForMyDomain1}-index-slow"
+          Enabled: true
+        ES_APPLICATION_LOGS:
+          CloudWatchLogsLogGroupArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/OpenSearch/${DomainNameForMyDomain1}-app-logs"
+          Enabled: true
+
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyBucket2:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket2
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket2 
+          - Enabled 
+          - Suspended
+  MyBucket3:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket3
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket3 
+          - Enabled 
+          - Suspended
+  MyBucket4:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket4
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket4 
+          - Enabled 
+          - Suspended
+  MyCluster1:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterIdentifier: !Ref ClusterIdentifierForMyCluster1
+      DBName: !Ref DatabaseNameForMyCluster1
+      MasterUsername: !Ref MasterUsernameForMyCluster1
+      NodeType: !Ref NodeTypeForMyCluster1
+      NumberOfNodes: !Ref NumberOfNodesForMyCluster1
+      ClusterType: !If [IsMultiNodeForMyCluster1, 'multi-node', 'single-node']
+      ClusterSubnetGroupName: !Ref MyClusterSubnetGroup1
+      PubliclyAccessible: false
+      Encrypted: true
+      Port: 5439
+      IamRoles: []
+      ManageMasterPassword: true  # AWS will manage the password
+
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyBucketPolicy2:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket2
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket2.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyBucketPolicy3:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket3
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket3.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyBucketPolicy4:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket4
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket4.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyDomainName1:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref DomainNameForMyDomainName1
+      RegionalCertificateArn: !Ref MyCertificate1
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyClusterSubnetGroup1:
+    Type: AWS::Redshift::ClusterSubnetGroup
+    Properties:
+      Description: Subnet group for Redshift cluster for MyClusterSubnetGroup1
+      SubnetIds: 
+        - !Ref MySubnet1
+
+  MyCertificate1:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainNameForMyDomainName1
+      ValidationMethod: DNS
+
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+Outputs: 
+
+  OpenSearchDomainArnForMyDomain1:
+    Description: "The ARN of the OpenSearch Domain"
+    Value: !GetAtt MyDomain1.Arn
+  OpenSearchDomainEndpointForMyDomain1:
+    Description: "The endpoint of the OpenSearch Domain"
+    Value: !GetAtt MyDomain1.DomainEndpoint
+
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  S3BucketNameForMyBucket2:
+    Description: The name of the created S3 bucket for MyBucket2
+    Value: !Ref MyBucket2
+  S3BucketArnForMyBucket2:
+    Description: The ARN of the created S3 bucket for MyBucket2
+    Value: !GetAtt MyBucket2.Arn
+  S3BucketNameForMyBucket3:
+    Description: The name of the created S3 bucket for MyBucket3
+    Value: !Ref MyBucket3
+  S3BucketArnForMyBucket3:
+    Description: The ARN of the created S3 bucket for MyBucket3
+    Value: !GetAtt MyBucket3.Arn
+  S3BucketNameForMyBucket4:
+    Description: The name of the created S3 bucket for MyBucket4
+    Value: !Ref MyBucket4
+  S3BucketArnForMyBucket4:
+    Description: The ARN of the created S3 bucket for MyBucket4
+    Value: !GetAtt MyBucket4.Arn
+  RedshiftClusterEndpointForMyCluster1:
+    Description: Endpoint for Redshift cluster for MyCluster1
+    Value: !Sub '${MyCluster1.Endpoint.Address}:${MyCluster1.Endpoint.Port}'
+
+
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+
+
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1

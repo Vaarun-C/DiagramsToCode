@@ -1,0 +1,454 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for electric-vehicle-charging-ocpp-handler.png
+Conditions: 
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+
+
+
+
+
+
+
+
+Parameters: 
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  HostedZoneIdForMyRecordSet1:
+    Type: String
+    Description: The Route 53 Hosted Zone ID for your domain for MyRecordSet1
+
+  ClusterNameForMyFargateCluster1:
+    Description: The name of the ECS cluster
+    Type: String
+    Default: MyFargateCluster1
+  QueueNameForMyQueue1:
+    Type: String
+    Default: "MyQueue1"
+    Description: "The name of the SQS queue for MyQueue1."
+  VisibilityTimeoutForMyQueue1:
+    Type: Number
+    Default: 30
+    MinValue: 0
+    MaxValue: 43200
+    Description: "The visibility timeout for the queue in seconds for MyQueue1."
+  MessageRetentionPeriodForMyQueue1:
+    Type: Number
+    Default: 345600  # 4 days
+    MinValue: 60
+    MaxValue: 1209600  # 14 days
+    Description: "The number of seconds for which Amazon SQS retains a message for MyQueue1."
+
+  WorkspaceNameForMyWorkspace1:
+    Type: String
+    Default: 'MyWorkspace1'
+    Description: 'Name of the Grafana Workspace for MyWorkspace1'
+  AccountAccessTypeForMyWorkspace1:
+    Type: String
+    Default: CURRENT_ACCOUNT
+    AllowedValues:
+      - CURRENT_ACCOUNT
+      - ORGANIZATION
+    Description: 'Account access type for the Grafana Workspace for MyWorkspace1'
+  AuthenticationProvidersForMyWorkspace1:
+    Type: CommaDelimitedList
+    Default: AWS_SSO
+    Description: 'Authentication providers for Grafana Workspace for MyWorkspace1'
+
+  StateMachineNameForMyStateMachine1:
+    Type: String
+    Default: "MyStateMachine1"
+    Description: "The name of the Step Functions state machine for MyStateMachine1."
+
+  ContainerImageForMyTaskDefinitionFargate1:
+    Type: String
+    Description: Docker image for the container for MyTaskDefinitionFargate1
+    Default: nginx:latest
+  ContainerPortForMyTaskDefinitionFargate1:
+    Type: Number
+    Description: Port exposed by the container for MyTaskDefinitionFargate1
+    Default: 80
+
+
+  DomainNameForMyDomainName1:
+    Type: String
+    Description: The domain name to use for the API for MyDomainName1
+
+  TopicNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1Topic"
+    Description: "The name of the SNS topic for MyTopic1."
+  DisplayNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1DisplayName"
+    Description: "The display name for the SNS topic for MyTopic1."
+
+
+  ClusterNameForMyCluster1:
+    Description: The name of the ECS cluster
+    Type: String
+    Default: MyCluster1
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+Resources: 
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyFunction1:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction1
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyRecordSet1:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneIdForMyRecordSet1
+      Name: !Ref DomainNameForMyDomainName1
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt MyDomainName1.RegionalDomainName
+        HostedZoneId: !GetAtt MyDomainName1.RegionalHostedZoneId
+
+  MyFargateCluster1:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: !Ref ClusterNameForMyFargateCluster1
+  MyQueue1:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref QueueNameForMyQueue1
+      VisibilityTimeout: !Ref VisibilityTimeoutForMyQueue1
+      MessageRetentionPeriod: !Ref MessageRetentionPeriodForMyQueue1
+
+  MyFunction2:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction2
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyWorkspace1:
+    Type: AWS::Grafana::Workspace
+    Properties:
+      AccountAccessType: !Ref AccountAccessTypeForMyWorkspace1
+      AuthenticationProviders: !Ref AuthenticationProvidersForMyWorkspace1
+      DataSources: 
+        - CLOUDWATCH
+      Description: MyWorkspace1
+      Name: !Ref WorkspaceNameForMyWorkspace1
+      PermissionType: SERVICE_MANAGED
+      PluginAdminEnabled: false
+      NotificationDestinations:
+        - !Ref MyTopic1
+
+  MyStateMachine1:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: !Ref StateMachineNameForMyStateMachine1
+      RoleArn: !GetAtt MyRoleForStepFunctionExecution1.Arn
+      DefinitionString: !Sub |
+        {
+          "Comment": "A simple AWS Step Functions example for MyStateMachine1",
+          "StartAt": "InvokeLambda",
+          "States": {
+            "InvokeLambda": {
+              "Type": "Task",
+              "Resource": "${MyFunction1.Arn}",
+              "End": true
+            }
+          }
+        }
+
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyRestApi1:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: MyRestApi1
+      Description: API for my Lambda function MyRestApi1
+  MyResource1:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyMethodForLambda1:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource1
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction1.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction1
+      Principal: apigateway.amazonaws.com
+  MyTaskDefinitionFargate1:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: fargate-task
+      Cpu: '256'
+      Memory: '512'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: fargate-app-MyTaskDefinitionFargate1
+          Image: !Ref ContainerImageForMyTaskDefinitionFargate1
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinitionFargate1
+  MyServiceFargate1:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: MyServiceFargate1
+      Cluster: !Ref MyCluster1
+      TaskDefinition: !Ref MyTaskDefinitionFargate1
+      DesiredCount: 2
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref MySubnet1
+
+  MyResource2:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyMethodForLambda2:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource2
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction2.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction2
+      Principal: apigateway.amazonaws.com
+  MyRoleForLambda1:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecutionForMyRoleForLambda1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+  MyDomainName1:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref DomainNameForMyDomainName1
+      RegionalCertificateArn: !Ref MyCertificate1
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  MyTopic1:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Ref TopicNameForMyTopic1
+      DisplayName: !Ref DisplayNameForMyTopic1
+
+  MyRoleForStepFunctionExecution1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "StepFunctionExecutionPolicyForMyRoleForStepFunctionExecution1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+  MyCluster1:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: !Ref ClusterNameForMyCluster1
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyCertificate1:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainNameForMyDomainName1
+      ValidationMethod: DNS
+
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+Outputs: 
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  LambdaFunctionArnForMyFunction1:
+    Description: The ARN of the Lambda function for MyFunction1
+    Value: !GetAtt MyFunction1.Arn
+
+  ClusterNameOutputForMyFargateCluster1:
+    Description: The name of the created ECS cluster for MyFargateCluster1
+    Value: !Ref MyFargateCluster1
+  SQSQueueNameForMyQueue1:
+    Description: "The name of the SQS queue for MyQueue1."
+    Value: !Ref MyQueue1
+  SQSQueueURLForMyQueue1:
+    Description: "The URL of the SQS queue for MyQueue1."
+    Value: !Ref MyQueue1
+  SQSQueueARNForMyQueue1:
+    Description: "The ARN of the SQS queue for MyQueue1."
+    Value: !GetAtt MyQueue1.Arn
+
+  LambdaFunctionArnForMyFunction2:
+    Description: The ARN of the Lambda function for MyFunction2
+    Value: !GetAtt MyFunction2.Arn
+  WorkspaceId:
+    Description: 'ID of the Grafana Workspace for MyWorkspace1'
+    Value: !Ref MyWorkspace1
+  WorkspaceUrl:
+    Description: 'URL of the Grafana Workspace for MyWorkspace1'
+    Value: !GetAtt MyWorkspace1.Endpoint
+  StateMachineArnForMyStateMachine1:
+    Description: "The ARN of the Step Functions state machine for MyStateMachine1."
+    Value: !Ref MyStateMachine1
+
+  ApiUrlForMyRestApi1:
+    Description: URL for the API Gateway for MyRestApi1
+    Value: !Sub "https://${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com/prod/hello"
+
+  ServiceNameForMyServiceFargate1:
+    Description: ECS Service Name for MyServiceFargate1
+    Value: !Ref MyServiceFargate1
+
+
+  TopicArnForMyTopic1:
+    Description: "The ARN of the SNS topic for MyTopic1."
+    Value: !Ref MyTopic1
+  TopicNameOutputForMyTopic1:
+    Description: "The name of the SNS topic for MyTopic1."
+    Value: !Ref TopicNameForMyTopic1
+
+  ClusterNameOutputForMyCluster1:
+    Description: The name of the created ECS cluster for MyCluster1
+    Value: !Ref MyCluster1
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1

@@ -1,0 +1,199 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for 1_4sb209LohOyh_JCo-Zonzg.png
+Conditions: 
+
+
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+
+
+
+Parameters: 
+  HostedZoneIdForMyRecordSet1:
+    Type: String
+    Description: The Route 53 Hosted Zone ID for your domain for MyRecordSet1
+
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+
+
+
+  DomainNameForMyDomainName1:
+    Type: String
+    Description: The domain name to use for the API for MyDomainName1
+
+
+Resources: 
+  MyRecordSet1:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneIdForMyRecordSet1
+      Name: !Ref DomainNameForMyDomainName1
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt MyDomainName1.RegionalDomainName
+        HostedZoneId: !GetAtt MyDomainName1.RegionalHostedZoneId
+
+  MyDistribution1:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultCacheBehavior:
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: MyRestApi1
+          ForwardedValues:
+            QueryString: false
+          MinTTL: 0
+          DefaultTTL: 300
+          MaxTTL: 1200
+        Origins:
+          - Id: MyRestApi1
+            DomainName: !Sub "${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: /prod
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyDistribution2:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultCacheBehavior:
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: MyRestApi1
+          ForwardedValues:
+            QueryString: false
+          MinTTL: 0
+          DefaultTTL: 300
+          MaxTTL: 1200
+        Origins:
+          - Id: MyRestApi1
+            DomainName: !Sub "${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: /prod
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+
+  MyMethodForCloudfront1:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MyRestApi1
+      ResourceId: !Ref MyResource1
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationHttpMethod: GET
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: '{"message": "Hello from API Gateway!"}'
+      MethodResponses:
+        - StatusCode: 200
+
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyMethodForCloudfront2:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MyRestApi1
+      ResourceId: !Ref MyResource1
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationHttpMethod: GET
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: '{"message": "Hello from API Gateway!"}'
+      MethodResponses:
+        - StatusCode: 200
+
+  MyDomainName1:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref DomainNameForMyDomainName1
+      RegionalCertificateArn: !Ref MyCertificate1
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  MyRestApi1:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: MyRestApi1
+      Description: API for my Lambda function MyRestApi1
+  MyResource1:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyCertificate1:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainNameForMyDomainName1
+      ValidationMethod: DNS
+
+Outputs: 
+
+  CloudFrontDomainNameForMyDistribution1:
+    Description: Domain name of the CloudFront distribution for MyDistribution1
+    Value: !GetAtt MyDistribution1.DomainName
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  CloudFrontDomainNameForMyDistribution2:
+    Description: Domain name of the CloudFront distribution for MyDistribution2
+    Value: !GetAtt MyDistribution2.DomainName
+
+
+
+  ApiUrlForMyRestApi1:
+    Description: URL for the API Gateway for MyRestApi1
+    Value: !Sub "https://${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com/prod/hello"
+
