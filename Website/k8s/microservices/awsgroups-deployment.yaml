@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: awsicons
+  name: awsgroups
   namespace: diagrams2code
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: awsicons
+      app: awsgroups
   template:
     metadata:
       labels:
-        app: awsicons
+        app: awsgroups
     spec:
       containers:
-        - name: awsicons
+        - name: awsgroups
           resources:
             requests:
-              memory: "400Mi"    # Match awsgroups since they run similar workloads
+              memory: "400Mi"    # Increased based on peak usage
               cpu: "200m"
             limits:
               memory: "550Mi"    # Double the request to handle spikes
               cpu: "500m"
-          image: capthestone/website-awsicons:latest
+          image: capthestone/website-awsgroups:latest
           envFrom:
             - configMapRef:
                 name: kafka-config

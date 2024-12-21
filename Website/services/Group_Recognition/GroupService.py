@@ -3,6 +3,7 @@ from PIL import Image, UnidentifiedImageError
 import io
 import logging
 import json
+import os
 from YOLOModel import yolomodel
 import base64
 import numpy as np
@@ -13,13 +14,13 @@ from YOLOModel import yolomodel
 from RectangleDetector import detectRectangles
 from kafka.errors import KafkaError
 
-# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("GroupDetectionConsumer")
 
 model = yolomodel()
 
 # Kafka configuration
-KAFKA_BROKER = "localhost:9092"
+KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL", "localhost:9092")
 IMAGE_TOPIC = "image_topic"
 DETECTED_SERVICES_TOPIC = "detected-group-topic"
 DLQ_TOPIC_NAME = "group-dead-letter-queue"
@@ -27,7 +28,7 @@ DLQ_TOPIC_NAME = "group-dead-letter-queue"
 # Initialize Kafka Consumer
 consumer = KafkaConsumer(
     IMAGE_TOPIC,
-    bootstrap_servers=[KAFKA_BROKER],
+    bootstrap_servers=[KAFKA_BROKER_URL],
     value_deserializer=lambda x: json.loads(x.decode('utf-8')),
     group_id="group-detection-group",
     auto_offset_reset="earliest",  # Start from the beginning if no offsets are committed
@@ -36,7 +37,7 @@ consumer = KafkaConsumer(
 
 # Initialize Kafka Producer
 producer = KafkaProducer(
-    bootstrap_servers=[KAFKA_BROKER],
+    bootstrap_servers=[KAFKA_BROKER_URL],
     value_serializer=lambda x: json.dumps(x).encode('utf-8')
 )
 
@@ -123,7 +124,6 @@ def main():
 
             # Process the image and get detections
             detections = process_image(io.BytesIO(image_data).getvalue())
-            consumer.commit()
 
             # Publish results to the Detected Services Topic
             result = {
@@ -133,6 +133,7 @@ def main():
             }
             print(result)
             producer.send(DETECTED_SERVICES_TOPIC, result)
+            consumer.commit()
             logger.info(f"Sent detections to topic '{DETECTED_SERVICES_TOPIC}': {result}")
         except Exception as e:
             logger.error(f"Unexpected error during message processing: {e}")

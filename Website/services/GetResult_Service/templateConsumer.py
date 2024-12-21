@@ -2,6 +2,7 @@ from kafka import KafkaConsumer
 import redis
 import json
 import os
+import logging
 
 # Kafka configuration
 TEMPLATE_TOPIC = "template-topic"
@@ -10,6 +11,10 @@ KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL", "localhost:9092")
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")
+
+# Logging setup
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("TemplateConsumer")
 
 consumer = KafkaConsumer(
     TEMPLATE_TOPIC,
@@ -28,8 +33,6 @@ redis_client = redis.StrictRedis(
 for message in consumer:
     result = message.value
     correlation_id = result.get("uuid")
-
-    print(result)
 
     if correlation_id:
         # Store the final result in Redis

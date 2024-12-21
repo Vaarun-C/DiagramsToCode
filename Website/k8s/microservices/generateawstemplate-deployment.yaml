@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rulebasedsuggestions
+  name: generateawstemplate
   namespace: diagrams2code
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: rulebasedsuggestions
+      app: generateawstemplate
   template:
     metadata:
       labels:
-        app: rulebasedsuggestions
+        app: generateawstemplate
     spec:
       containers:
-        - name: rulebasedsuggestions
+        - name: generateawstemplate
           resources:
             requests:
               memory: "64Mi"
@@ -22,7 +22,11 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "200m"
-          image: capthestone/website-rulebasedsuggestion:latest
+          image: capthestone/website-generateawstemplate:latest
           envFrom:
-            - configMapRef:
-                name: kafka-config
+          - configMapRef:
+              name: kafka-config
+          - configMapRef:
+              name: redis-config
+          - secretRef:
+              name: mongo-secret

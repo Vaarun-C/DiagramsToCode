@@ -1,11 +1,14 @@
-redis:
-  architecture: standalone
-  auth:
+architecture: standalone
+
+auth:
+  enabled: true
+
+master:
+  persistence:
     enabled: true
-    password: "password1"
-  master:
-    persistence:
-      enabled: true
-      size: 100Mi
+    size: 100Mi
   service:
     type: ClusterIP
+
+replica:
+  replicaCount: 0

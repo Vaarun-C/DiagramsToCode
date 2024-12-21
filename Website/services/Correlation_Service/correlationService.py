@@ -1,31 +1,43 @@
 import time
 import redis
+import os
 from kafka import KafkaConsumer, KafkaProducer
 import json
+import logging
 
 # Configuration
-REDIS_HOST = "localhost"
-REDIS_PORT = 6379
-KAFKA_BROKER = "localhost:9092"
+REDIS_HOST = os.getenv("REDIS_HOST2", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6380))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD2", "")
+KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL", "localhost:9092")
 DETECTED_SERVICES_TOPIC = "final-services-topic"
 DETECTED_GROUPS_TOPIC = "detected-group-topic"
 FINAL_SERVICES_TOPIC = "services-with-groups-topic"
 DLQ_TOPIC = "dead_letter_queue"
 CORRELATION_TIMEOUT = 30  # Timeout in seconds
 
-# Redis connection
-redis_client = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+# Logging setup
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("CorrelationServiceConsumer")
+
+# Redis setup for tracking requests
+redis_client = redis.StrictRedis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    password=REDIS_PASSWORD,
+    decode_responses=True
+)
 
 # Kafka setup
 consumer_services = KafkaConsumer(
     DETECTED_SERVICES_TOPIC,
     DETECTED_GROUPS_TOPIC,
-    bootstrap_servers=KAFKA_BROKER,
+    bootstrap_servers=KAFKA_BROKER_URL,
     group_id="correlation_service",
     value_deserializer=lambda m: json.loads(m.decode("utf-8")),
 )
 producer = KafkaProducer(
-    bootstrap_servers=KAFKA_BROKER,
+    bootstrap_servers=KAFKA_BROKER_URL,
     value_serializer=lambda m: json.dumps(m).encode("utf-8"),
 )
 
@@ -99,7 +111,7 @@ def main():
 
         # Process the message
         process_message(topic, value)
-
+        consumer_services.commit()
         # Check for expired keys (timeouts)
         expired_keys = redis_client.keys("*")
         for key in expired_keys:
