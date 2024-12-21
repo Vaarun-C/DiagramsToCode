@@ -1,0 +1,304 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for 626aa365-e6e6-4874-a873-1c71adbe5306.png
+Conditions: 
+
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+
+
+  IsMultiNodeForMyCluster1: !Not [!Equals [!Ref NumberOfNodesForMyCluster1, 1]]
+
+Parameters: 
+  DatabaseNameForMyDatabase1:
+    Type: String
+    Default: MyDatabase1
+    Description: Name of the Glue database for MyDatabase1
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+  CrawlerScheduleForMyCrawler1:
+    Type: String
+    Default: "cron(0 12 * * ? *)"
+    Description: Cron expression for crawler schedule for MyCrawler1
+
+  JobTimeoutForMyJob1:
+    Type: Number
+    Default: 2880
+    Description: Job timeout in minutes for MyJob1
+
+
+  ClusterIdentifierForMyCluster1:
+    Type: String
+    Description: The identifier of the Redshift cluster for MyCluster1
+    Default: MyCluster1
+  DatabaseNameForMyCluster1:
+    Type: String
+    Description: The name of the first database to be created when the cluster is created for MyCluster1
+    Default: dev
+  MasterUsernameForMyCluster1:
+    Type: String
+    Description: Username for the master user for MyCluster1
+    Default: admin
+    MinLength: 1
+    MaxLength: 128
+  NodeTypeForMyCluster1:
+    Type: String
+    Description: The node type to be provisioned for MyCluster1
+    Default: dc2.large
+    AllowedValues:
+      - dc2.large
+      - dc2.8xlarge
+      - ra3.xlplus
+      - ra3.4xlarge
+      - ra3.16xlarge
+  NumberOfNodesForMyCluster1:
+    Type: Number
+    Description: Number of compute nodes in the cluster for MyCluster1
+    Default: 2
+    MinValue: 1
+    MaxValue: 100
+
+Resources: 
+  MyDatabase1:
+    Type: "AWS::Glue::Database"
+    Properties:
+      CatalogId: !Ref "AWS::AccountId"
+      DatabaseInput:
+        Name: !Ref DatabaseNameForMyDatabase1
+        Description: "Glue database for storing table metadata for MyDatabase1."
+
+  MyRestApi1:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: MyRestApi1
+      Description: API for my Lambda function MyRestApi1
+  MyRoleForLambda1:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecutionForMyRoleForLambda1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MyResource1:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyFunction1:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction1
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyRoleForGlueService1:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "glue.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: "GlueServicePolicyForMyRoleForGlueService1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:ListBucket"
+                Resource: 
+                  - !Sub "arn:aws:s3:::${MyBucket1}"
+                  - !Sub "arn:aws:s3:::${MyBucket1}/*"
+              - Effect: "Allow"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "arn:aws:logs:*:*:*"
+
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyMethodForLambda1:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource1
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction1.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction1
+      Principal: apigateway.amazonaws.com
+  MyCrawler1:
+    Type: "AWS::Glue::Crawler"
+    Properties:
+      Role: !GetAtt MyRoleForGlueService1.Arn
+      DatabaseName: !Ref MyDatabase1
+      Name: !Sub "${DatabaseNameForMyDatabase1}-crawler"
+      Description: "Crawler to populate the Glue database."
+      Targets:
+        S3Targets:
+          - Path: !Sub "s3://${MyBucket1}/data/"
+      Schedule: 
+        ScheduleExpression: !Ref CrawlerScheduleForMyCrawler1
+
+  MyJob1:
+    Type: "AWS::Glue::Job"
+    Properties:
+      Role: !GetAtt MyBucket1.Arn
+      Command:
+        Name: "glueetl"
+        ScriptLocation: !Sub "s3://${MyBucket1}/scripts/MyJob1-script.py"
+        PythonVersion: "3"
+      DefaultArguments:
+        "--TempDir": !Sub "s3://${MyBucket1}/temp/"
+        "--job-bookmark-option": "job-bookmark-enable"
+      MaxRetries: 1
+      Timeout: !Ref JobTimeoutForMyJob1
+
+  MyClusterSubnetGroup1:
+    Type: AWS::Redshift::ClusterSubnetGroup
+    Properties:
+      Description: Subnet group for Redshift cluster for MyClusterSubnetGroup1
+      SubnetIds: 
+        - !Ref MySubnet1
+
+  MyCluster1:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterIdentifier: !Ref ClusterIdentifierForMyCluster1
+      DBName: !Ref DatabaseNameForMyCluster1
+      MasterUsername: !Ref MasterUsernameForMyCluster1
+      NodeType: !Ref NodeTypeForMyCluster1
+      NumberOfNodes: !Ref NumberOfNodesForMyCluster1
+      ClusterType: !If [IsMultiNodeForMyCluster1, 'multi-node', 'single-node']
+      ClusterSubnetGroupName: !Ref MyClusterSubnetGroup1
+      PubliclyAccessible: false
+      Encrypted: true
+      Port: 5439
+      IamRoles: []
+      ManageMasterPassword: true  # AWS will manage the password
+
+Outputs: 
+  GlueDatabaseName:
+    Description: "The name of the Glue database for MyDatabase1"
+    Value: !Ref MyDatabase1
+  ApiUrlForMyRestApi1:
+    Description: URL for the API Gateway for MyRestApi1
+    Value: !Sub "https://${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com/prod/hello"
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+  LambdaFunctionArnForMyFunction1:
+    Description: The ARN of the Lambda function for MyFunction1
+    Value: !GetAtt MyFunction1.Arn
+
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+  GlueCrawlerNameForMyCrawler1:
+    Description: "The name of the Glue crawler for MyCrawler1"
+    Value: !Ref MyCrawler1
+
+  GlueJobNameForMyJob1:
+    Description: "The name of the Glue job for MyJob1"
+    Value: !Ref MyJob1
+
+
+  RedshiftClusterEndpointForMyCluster1:
+    Description: Endpoint for Redshift cluster for MyCluster1
+    Value: !Sub '${MyCluster1.Endpoint.Address}:${MyCluster1.Endpoint.Port}'
+

@@ -1,0 +1,419 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for e9975d3a-f75b-41a2-8c08-5b82539adf8c.png
+Conditions: 
+
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+  IsMultiNodeForMyCluster1: !Not [!Equals [!Ref NumberOfNodesForMyCluster1, 1]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+Parameters: 
+  DatabaseNameForMyDatabase1:
+    Type: String
+    Default: MyDatabase1
+    Description: Name of the Glue database for MyDatabase1
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  ClusterIdentifierForMyCluster1:
+    Type: String
+    Description: The identifier of the Redshift cluster for MyCluster1
+    Default: MyCluster1
+  DatabaseNameForMyCluster1:
+    Type: String
+    Description: The name of the first database to be created when the cluster is created for MyCluster1
+    Default: dev
+  MasterUsernameForMyCluster1:
+    Type: String
+    Description: Username for the master user for MyCluster1
+    Default: admin
+    MinLength: 1
+    MaxLength: 128
+  NodeTypeForMyCluster1:
+    Type: String
+    Description: The node type to be provisioned for MyCluster1
+    Default: dc2.large
+    AllowedValues:
+      - dc2.large
+      - dc2.8xlarge
+      - ra3.xlplus
+      - ra3.4xlarge
+      - ra3.16xlarge
+  NumberOfNodesForMyCluster1:
+    Type: Number
+    Description: Number of compute nodes in the cluster for MyCluster1
+    Default: 2
+    MinValue: 1
+    MaxValue: 100
+
+  HostedZoneIdForMyRecordSet1:
+    Type: String
+    Description: The Route 53 Hosted Zone ID for your domain for MyRecordSet1
+
+  DBInstanceClassForMyDBInstance1:
+    Description: The compute and memory capacity of the DB instance for MyDBInstance1
+    Type: String
+    Default: db.t3.micro
+    AllowedValues:
+      - db.t3.micro
+      - db.t3.small
+      - db.t3.medium
+      - db.t3.large
+    ConstraintDescription: Must be a valid DB instance class.
+  DBEngineForMyDBInstance1:
+    Description: The database engine to use
+    Type: String
+    Default: MySQL
+    AllowedValues:
+      - MySQL
+      - aurora-postgresql
+      - sqlserver-express
+      - oracle-se2  
+    ConstraintDescription: Must be a valid database engine.
+  DBNameForMyDBInstance1:
+    Description: The name of the database to create for MyDBInstance1
+    Type: String
+    Default: mydatabaseForMyDBInstance1
+  MasterUsernameForMyDBInstance1:
+    Description: The master username for the database for MyDBInstance1
+    Type: String
+    Default: admin
+
+  ClusterNameForMyCluster1:
+    Type: String
+    Description: Name of the EKS cluster for MyCluster1
+    Default: MyCluster1
+  KubernetesVersionForMyCluster1:
+    Type: String
+    Description: Kubernetes version for the EKS cluster for MyCluster1
+    Default: 1.27
+
+  CrawlerScheduleForMyCrawler1:
+    Type: String
+    Default: "cron(0 12 * * ? *)"
+    Description: Cron expression for crawler schedule for MyCrawler1
+
+  JobTimeoutForMyJob1:
+    Type: Number
+    Default: 2880
+    Description: Job timeout in minutes for MyJob1
+
+
+
+  DomainNameForMyDomainName1:
+    Type: String
+    Description: The domain name to use for the API for MyDomainName1
+
+  DBInstanceIdentifierForMyDBSubnetGroup1:
+    Description: Unique identifier for the DB instance
+    Type: String
+    Default: MyDBSubnetGroup1
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+
+
+
+
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+Resources: 
+  MyDatabase1:
+    Type: "AWS::Glue::Database"
+    Properties:
+      CatalogId: !Ref "AWS::AccountId"
+      DatabaseInput:
+        Name: !Ref DatabaseNameForMyDatabase1
+        Description: "Glue database for storing table metadata for MyDatabase1."
+
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyCluster1:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterIdentifier: !Ref ClusterIdentifierForMyCluster1
+      DBName: !Ref DatabaseNameForMyCluster1
+      MasterUsername: !Ref MasterUsernameForMyCluster1
+      NodeType: !Ref NodeTypeForMyCluster1
+      NumberOfNodes: !Ref NumberOfNodesForMyCluster1
+      ClusterType: !If [IsMultiNodeForMyCluster1, 'multi-node', 'single-node']
+      ClusterSubnetGroupName: !Ref MyClusterSubnetGroup1
+      PubliclyAccessible: false
+      Encrypted: true
+      Port: 5439
+      IamRoles: []
+      ManageMasterPassword: true  # AWS will manage the password
+
+  MyRecordSet1:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneIdForMyRecordSet1
+      Name: !Ref DomainNameForMyDomainName1
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt MyDomainName1.RegionalDomainName
+        HostedZoneId: !GetAtt MyDomainName1.RegionalHostedZoneId
+
+  MyDBInstance1:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceIdentifierForMyDBSubnetGroup1
+      DBInstanceClass: !Ref DBInstanceClassForMyDBInstance1
+      Engine: !Ref DBEngineForMyDBInstance1
+      DBName: !Ref DBNameForMyDBInstance1
+      MasterUsername: !Ref MasterUsernameForMyDBInstance1
+      MasterUserPassword: '{{resolve:secretsmanager:RDS-database-password:SecretString:password}}'
+      DBSubnetGroupName: !Ref MyDBSubnetGroup1
+      AllocatedStorage: '20'
+      StorageType: gp2
+
+  MyCluster1:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: !Ref ClusterNameForMyCluster1
+      Version: !Ref KubernetesVersionForMyCluster1
+      RoleArn: !GetAtt MyRoleForEKSCluster1.Arn
+      ResourcesVpcConfig:
+        SubnetIds: !Ref MySubnet1
+
+  MyCrawler1:
+    Type: "AWS::Glue::Crawler"
+    Properties:
+      Role: !GetAtt MyRoleForGlueService1.Arn
+      DatabaseName: !Ref MyDatabase1
+      Name: !Sub "${DatabaseNameForMyDatabase1}-crawler"
+      Description: "Crawler to populate the Glue database."
+      Targets:
+        S3Targets:
+          - Path: !Sub "s3://${MyBucket1}/data/"
+      Schedule: 
+        ScheduleExpression: !Ref CrawlerScheduleForMyCrawler1
+
+  MyJob1:
+    Type: "AWS::Glue::Job"
+    Properties:
+      Role: !GetAtt MyBucket1.Arn
+      Command:
+        Name: "glueetl"
+        ScriptLocation: !Sub "s3://${MyBucket1}/scripts/MyJob1-script.py"
+        PythonVersion: "3"
+      DefaultArguments:
+        "--TempDir": !Sub "s3://${MyBucket1}/temp/"
+        "--job-bookmark-option": "job-bookmark-enable"
+      MaxRetries: 1
+      Timeout: !Ref JobTimeoutForMyJob1
+
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyNodegroup1:
+    Type: AWS::EKS::Nodegroup
+    Properties:
+      ClusterName: !Ref MyCluster1
+      NodeRole: !GetAtt MyRoleForEKSNodeGroup1.Arn
+      ScalingConfig:
+        MinSize: 1
+        DesiredSize: 3
+        MaxSize: 5
+      Subnets: !Ref MySubnet1
+
+  MyClusterSubnetGroup1:
+    Type: AWS::Redshift::ClusterSubnetGroup
+    Properties:
+      Description: Subnet group for Redshift cluster for MyClusterSubnetGroup1
+      SubnetIds: 
+        - !Ref MySubnet1
+
+  MyDomainName1:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref DomainNameForMyDomainName1
+      RegionalCertificateArn: !Ref MyCertificate1
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  MyDBSubnetGroup1:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: Subnet group for RDS
+      DBSubnetGroupName: !Sub "${DBInstanceIdentifierForMyDBSubnetGroup1}-subnet-group"
+      SubnetIds: !Ref MySubnet1
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyRoleForEKSCluster1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: eks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+  MyRoleForGlueService1:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "glue.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: "GlueServicePolicyForMyRoleForGlueService1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:ListBucket"
+                Resource: 
+                  - !Sub "arn:aws:s3:::${MyBucket1}"
+                  - !Sub "arn:aws:s3:::${MyBucket1}/*"
+              - Effect: "Allow"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "arn:aws:logs:*:*:*"
+
+  MyRoleForEKSNodeGroup1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+  MyCertificate1:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainNameForMyDomainName1
+      ValidationMethod: DNS
+
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+Outputs: 
+  GlueDatabaseName:
+    Description: "The name of the Glue database for MyDatabase1"
+    Value: !Ref MyDatabase1
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  RedshiftClusterEndpointForMyCluster1:
+    Description: Endpoint for Redshift cluster for MyCluster1
+    Value: !Sub '${MyCluster1.Endpoint.Address}:${MyCluster1.Endpoint.Port}'
+
+
+  DBInstanceEndpointForMyDBInstance1:
+    Description: The endpoint of the RDS database instance for MyDBInstance1
+    Value: !GetAtt MyDBInstance1.Endpoint.Address
+
+  ClusterNameForMyCluster1:
+    Description: EKS Cluster Name for MyCluster1
+    Value: !Ref MyCluster1
+  ClusterEndpointForMyCluster1:
+    Description: EKS Cluster Endpoint for MyCluster1
+    Value: !GetAtt MyCluster1.Endpoint
+  ClusterARNForMyCluster1:
+    Description: EKS Cluster ARN for MyCluster1
+    Value: !GetAtt MyCluster1.Arn
+
+  GlueCrawlerNameForMyCrawler1:
+    Description: "The name of the Glue crawler for MyCrawler1"
+    Value: !Ref MyCrawler1
+
+  GlueJobNameForMyJob1:
+    Description: "The name of the Glue job for MyJob1"
+    Value: !Ref MyJob1
+
+
+
+
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+
+
+
+
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1

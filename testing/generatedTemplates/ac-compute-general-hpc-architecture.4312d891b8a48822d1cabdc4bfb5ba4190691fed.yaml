@@ -1,0 +1,292 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for ac-compute-general-hpc-architecture.4312d891b8a48822d1cabdc4bfb5ba4190691fed.png
+Conditions: 
+
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+  UseProvidedAMI: !Not [!Equals [!Ref ImageIdForMyLaunchTemplate1, '']]
+
+
+
+
+
+Parameters: 
+  InstanceIdForMyDashboard1:
+    Type: String
+    Description: "The ID of the EC2 instance to monitor for MyDashboard1"
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  ImageIdForMyLaunchTemplate1:
+    Type: AWS::EC2::Image::Id
+    Description: 'AMI ID for the instances for MyLaunchTemplate1'
+    Default: ''
+  KeyNameForMyLaunchTemplate1:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: 'EC2 Key Pair for SSH access for MyLaunchTemplate1'
+  EnvironmentForMyLaunchTemplate1:
+    Type: String
+    Default: 'Development'
+    AllowedValues: 
+      - 'Development'
+      - 'Staging'
+      - 'Production'
+    Description: 'Environment type for the resources for MyLaunchTemplate1'
+  InstanceTypeForMyLaunchTemplate1:
+    Type: String
+    Default: 't2.micro'
+    Description: 'EC2 instance type for the launch template for MyLaunchTemplate1'
+    AllowedValues: 
+      - 't2.micro'
+      - 't2.small'
+      - 't2.medium'
+      - 't3.micro'
+      - 't3.small'
+      - 't3.medium'
+
+  TopicNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1Topic"
+    Description: "The name of the SNS topic for MyTopic1."
+  DisplayNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1DisplayName"
+    Description: "The display name for the SNS topic for MyTopic1."
+
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AlarmThresholdForMyAlarm1:
+    Type: Number
+    Default: 70
+    Description: "The CPU utilization percentage threshold to trigger the alarm for MyAlarm1"
+
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+  MinSizeForMyAutoScalingGroup1:
+    Type: Number
+    Default: 1
+    MinValue: 0
+    MaxValue: 10
+    Description: 'Minimum size of the Auto Scaling group for MyAutoScalingGroup1'
+  MaxSizeForMyAutoScalingGroup1:
+    Type: Number
+    Default: 3
+    MinValue: 1
+    MaxValue: 10
+    Description: 'Maximum size of the Auto Scaling group for MyAutoScalingGroup1'
+  DesiredCapacityForMyAutoScalingGroup1:
+    Type: Number
+    Default: 2
+    MinValue: 1
+    MaxValue: 10
+    Description: 'Desired capacity of the Auto Scaling group for MyAutoScalingGroup1'
+
+
+Resources: 
+  MyDashboard1:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: 'MyDashboard1'
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/EC2", "CPUUtilization", "InstanceId", "${InstanceIdForMyDashboard1}" ]
+                ],
+                "period": 300,
+                "stat": "Average",
+                "region": "${AWS::Region}",
+                "title": "EC2 Instance CPU for MyDashboard1"
+              }
+            }
+          ]
+        }
+
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyLaunchTemplate1:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        ImageId: !If 
+          - UseProvidedAMI
+          - !Ref ImageIdForMyLaunchTemplate1
+          - !Ref AWS::NoValue
+        InstanceType: !Ref InstanceTypeForMyLaunchTemplate1
+        KeyName: !Ref KeyNameForMyLaunchTemplate1
+        UserData:
+          Fn::Base64: |
+            #!/bin/bash
+            yum update -y
+            yum install -y aws-cli amazon-cloudwatch-agent
+            /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:/AmazonCloudWatch/DefaultConfig
+        MetadataOptions:
+          HttpTokens: required
+          HttpEndpoint: enabled
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: 30
+              VolumeType: gp3
+              Encrypted: true
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub '${AWS::StackName}-instance'
+              - Key: Environment
+                Value: !Ref EnvironmentForMyLaunchTemplate1
+  MyTopic1:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Ref TopicNameForMyTopic1
+      DisplayName: !Ref DisplayNameForMyTopic1
+
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyAlarm1:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: HighCPUAlarmMyAlarm1
+      AlarmDescription: Alarm if CPU exceeds the specified threshold for MyAlarm1
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref AlarmThresholdForMyAlarm1
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceIdForMyDashboard1
+      AlarmActions:
+        - !Ref MyTopic1
+
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyAutoScalingGroup1:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref MyLaunchTemplate1
+        Version: !GetAtt MyLaunchTemplate1.LatestVersionNumber
+      MinSize: !Ref MinSizeForMyAutoScalingGroup1
+      MaxSize: !Ref MaxSizeForMyAutoScalingGroup1
+      DesiredCapacity: !Ref DesiredCapacityForMyAutoScalingGroup1
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 300
+      VPCZoneIdentifier: 
+        - !Ref MySubnet1
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-asg'
+          PropagateAtLaunch: true
+        - Key: Environment
+          Value: !Ref EnvironmentForMyLaunchTemplate1
+          PropagateAtLaunch: true
+
+  MyScalingPolicy1:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref MyAutoScalingGroup1
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: 70.0
+
+Outputs: 
+  DashboardURLForMyDashboard1:
+    Description: 'URL of the CloudWatch Dashboard for MyDashboard1'
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=MyDashboard1'
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+
+  TopicArnForMyTopic1:
+    Description: "The ARN of the SNS topic for MyTopic1."
+    Value: !Ref MyTopic1
+  TopicNameOutputForMyTopic1:
+    Description: "The name of the SNS topic for MyTopic1."
+    Value: !Ref TopicNameForMyTopic1
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+  AlarmNameForMyAlarm1:
+    Description: 'Name of the CloudWatch Alarm for MyAlarm1'
+    Value: !Ref MyAlarm1
+
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+  AutoScalingGroupNameForMyAutoScalingGroup1:
+    Description: 'Auto Scaling Group Name for MyAutoScalingGroup1'
+    Value: !Ref MyAutoScalingGroup1
+    Export:
+      Name: !Sub '${AWS::StackName}-asg-name'
+
+

@@ -1,0 +1,326 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for 272a7fb2-ecbc-41f7-a556-d555e4e39a59.png
+Conditions: 
+
+
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+
+
+
+
+Parameters: 
+  DatabaseNameForMyDatabase1:
+    Type: String
+    Default: MyDatabase1
+    Description: Name of the Glue database for MyDatabase1
+
+  EventBusNameForMyEventBus1:
+    Type: String
+    Default: "MyEventBus1"
+    Description: "Name of the EventBridge Event Bus for MyEventBus1"
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+
+
+  RuleNameForMyRule1:
+    Type: String
+    Default: "MyRule1"
+    Description: "Name of the EventBridge Rule for MyRule1"
+
+  EnvironmentForMyTrail1:
+    Type: String
+    Default: dev
+    AllowedValues: 
+      - dev
+      - staging
+      - prod
+    Description: 'Environment name for resource tagging for MyTrail1'
+
+  CrawlerScheduleForMyCrawler1:
+    Type: String
+    Default: "cron(0 12 * * ? *)"
+    Description: Cron expression for crawler schedule for MyCrawler1
+
+  JobTimeoutForMyJob1:
+    Type: Number
+    Default: 2880
+    Description: Job timeout in minutes for MyJob1
+
+Resources: 
+  MyDatabase1:
+    Type: "AWS::Glue::Database"
+    Properties:
+      CatalogId: !Ref "AWS::AccountId"
+      DatabaseInput:
+        Name: !Ref DatabaseNameForMyDatabase1
+        Description: "Glue database for storing table metadata for MyDatabase1."
+
+  MyEventBus1:
+    Type: "AWS::Events::EventBus"
+    Properties:
+      Name: !Ref EventBusNameForMyEventBus1
+      Tags:
+        - Key: "Environment"
+          Value: "Development"
+
+  MyRestApi1:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: MyRestApi1
+      Description: API for my Lambda function MyRestApi1
+  MyRoleForLambda1:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecutionForMyRoleForLambda1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyKey1:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: 'KMS key for CloudTrail log encryption for MyKey1'
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: kms:*
+            Resource: '*'
+          - Sid: Allow CloudTrail to encrypt logs
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: 
+              - kms:GenerateDataKey*
+              - kms:Decrypt
+            Resource: '*'
+
+  MyResource1:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyFunction1:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction1
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyRoleForGlueService1:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "glue.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: "GlueServicePolicyForMyRoleForGlueService1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:ListBucket"
+                Resource: 
+                  - !Sub "arn:aws:s3:::${MyBucket1}"
+                  - !Sub "arn:aws:s3:::${MyBucket1}/*"
+              - Effect: "Allow"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "arn:aws:logs:*:*:*"
+
+  MyMethodForLambda1:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource1
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction1.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction1
+      Principal: apigateway.amazonaws.com
+  MyRule1:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: !Ref RuleNameForMyRule1
+      Description: "Rule to trigger Lambda on specific event patterns for MyRule1"
+      EventBusName: !Ref MyEventBus1
+      EventPattern:
+        source:
+          - "aws.s3"
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - "s3.amazonaws.com"
+          eventName:
+            - "PutObject"
+          resources:
+            - !Sub "arn:aws:s3:::${MyBucket1}"
+      State: "ENABLED"
+      Targets:
+        - Id: "LambdaTarget"
+          Arn: !GetAtt MyFunction1.Arn
+
+  MyTrail1:
+    Type: AWS::CloudTrail::Trail
+    DependsOn: 
+      - MyBucketPolicy1
+    Properties:
+      TrailName: !Sub '${EnvironmentForMyTrail1}-cloudtrail'
+      S3BucketName: !Ref MyBucket1
+      IsMultiRegionTrail: true
+      EnableLogFileValidation: true
+      IncludeGlobalServiceEvents: true
+      IsLogging: true
+      KMSKeyId: !GetAtt MyKey1.Arn
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentForMyTrail1
+
+  MyCrawler1:
+    Type: "AWS::Glue::Crawler"
+    Properties:
+      Role: !GetAtt MyRoleForGlueService1.Arn
+      DatabaseName: !Ref MyDatabase1
+      Name: !Sub "${DatabaseNameForMyDatabase1}-crawler"
+      Description: "Crawler to populate the Glue database."
+      Targets:
+        S3Targets:
+          - Path: !Sub "s3://${MyBucket1}/data/"
+      Schedule: 
+        ScheduleExpression: !Ref CrawlerScheduleForMyCrawler1
+
+  MyJob1:
+    Type: "AWS::Glue::Job"
+    Properties:
+      Role: !GetAtt MyBucket1.Arn
+      Command:
+        Name: "glueetl"
+        ScriptLocation: !Sub "s3://${MyBucket1}/scripts/MyJob1-script.py"
+        PythonVersion: "3"
+      DefaultArguments:
+        "--TempDir": !Sub "s3://${MyBucket1}/temp/"
+        "--job-bookmark-option": "job-bookmark-enable"
+      MaxRetries: 1
+      Timeout: !Ref JobTimeoutForMyJob1
+
+Outputs: 
+  GlueDatabaseName:
+    Description: "The name of the Glue database for MyDatabase1"
+    Value: !Ref MyDatabase1
+  EventBusArnForMyEventBus1:
+    Description: "ARN of the Event Bus for MyEventBus1"
+    Value: !GetAtt MyEventBus1.Arn
+    Export:
+      Name: "EventBusArn"
+  ApiUrlForMyRestApi1:
+    Description: URL for the API Gateway for MyRestApi1
+    Value: !Sub "https://${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com/prod/hello"
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  CloudTrailKMSKeyArnForMyKey1:
+    Description: 'The ARN of the KMS key used for encrypting CloudTrail logs for MyKey1'
+    Value: !GetAtt MyKey1.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-KMSKeyArn'
+  LambdaFunctionArnForMyFunction1:
+    Description: The ARN of the Lambda function for MyFunction1
+    Value: !GetAtt MyFunction1.Arn
+
+
+  CloudTrailArnForMyTrail1:
+    Description: 'The ARN of the CloudTrail for MyTrail1'
+    Value: !GetAtt MyTrail1.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-CloudTrailArn'
+
+  GlueCrawlerNameForMyCrawler1:
+    Description: "The name of the Glue crawler for MyCrawler1"
+    Value: !Ref MyCrawler1
+
+  GlueJobNameForMyJob1:
+    Description: "The name of the Glue job for MyJob1"
+    Value: !Ref MyJob1
+

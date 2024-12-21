@@ -1,0 +1,280 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for Reference-Architecture.png
+Conditions: 
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+
+Parameters: 
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  ClusterNameForMyCluster1:
+    Description: The name of the ECS cluster
+    Type: String
+    Default: MyCluster1
+  TaskDefinitionNameForMyTaskDefinition1:
+    Description: The name of the ECS task definition
+    Type: String
+    Default: MyTaskDefinition1
+  ContainerNameForMyTaskDefinition1:
+    Description: The name of the container
+    Type: String
+    Default: MyContainerForMyTaskDefinition1
+  ContainerImageForMyTaskDefinition1:
+    Description: The Docker image to use for the container
+    Type: String
+    Default: amazon/amazon-ecs-sample
+  ContainerPortForMyTaskDefinition1:
+    Description: The port on which the container listens
+    Type: Number
+    Default: 80
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+  InstanceTypeForMyInstance1:
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t3.micro
+      - t3.small
+      - t3.medium
+    Description: EC2 instance type for MyInstance1.
+  AMIIdForMyInstance1:
+    Type: AWS::EC2::Image::Id
+    Default: ami-0c02fb55956c7d316
+    Description: AMI ID for the EC2 instance for MyInstance1.
+  KeyPairNameForMyInstance1:
+    Type: String
+    Description: Name of an existing EC2 KeyPair for SSH access for MyInstance1.
+
+  InstanceTypeForMyInstance2:
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t3.micro
+      - t3.small
+      - t3.medium
+    Description: EC2 instance type for MyInstance2.
+  AMIIdForMyInstance2:
+    Type: AWS::EC2::Image::Id
+    Default: ami-0c02fb55956c7d316
+    Description: AMI ID for the EC2 instance for MyInstance2.
+  KeyPairNameForMyInstance2:
+    Type: String
+    Description: Name of an existing EC2 KeyPair for SSH access for MyInstance2.
+
+  InstanceTypeForMyInstance3:
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t3.micro
+      - t3.small
+      - t3.medium
+    Description: EC2 instance type for MyInstance3.
+  AMIIdForMyInstance3:
+    Type: AWS::EC2::Image::Id
+    Default: ami-0c02fb55956c7d316
+    Description: AMI ID for the EC2 instance for MyInstance3.
+  KeyPairNameForMyInstance3:
+    Type: String
+    Description: Name of an existing EC2 KeyPair for SSH access for MyInstance3.
+
+  ServiceNameForMyService1:
+    Description: The name of the ECS service
+    Type: String
+    Default: MyService1
+  DesiredCountForMyService1:
+    Description: The desired number of tasks to run in the service
+    Type: Number
+    Default: 1
+Resources: 
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyCluster1:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: !Ref ClusterNameForMyCluster1
+  MyTaskDefinition1:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskDefinitionNameForMyTaskDefinition1
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Ref ContainerNameForMyTaskDefinition1
+          Image: !Ref ContainerImageForMyTaskDefinition1
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinition1
+          Memory: 512  # Adjust as needed
+          Cpu: 256  # Adjust as needed
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyInstance1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceTypeForMyInstance1
+      ImageId: !Ref AMIIdForMyInstance1
+      KeyName: !Ref KeyPairNameForMyInstance1
+      SubnetId: !Ref MySubnet1
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          echo "Hello, World!" > /var/www/html/index.html
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+
+  MyInstance2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceTypeForMyInstance2
+      ImageId: !Ref AMIIdForMyInstance2
+      KeyName: !Ref KeyPairNameForMyInstance2
+      SubnetId: !Ref MySubnet1
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          echo "Hello, World!" > /var/www/html/index.html
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+
+  MyInstance3:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceTypeForMyInstance3
+      ImageId: !Ref AMIIdForMyInstance3
+      KeyName: !Ref KeyPairNameForMyInstance3
+      SubnetId: !Ref MySubnet1
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          echo "Hello, World!" > /var/www/html/index.html
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+
+  MyService1:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      ServiceName: !Ref ServiceNameForMyService1
+      Cluster: !Ref MyCluster1
+      DesiredCount: !Ref DesiredCountForMyService1
+      TaskDefinition: !Ref MyTaskDefinition1
+      LaunchType: EC2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: !Ref MySubnet1
+          AssignPublicIp: ENABLED  # Change to DISABLED if not needed
+Outputs: 
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  ClusterNameOutputForMyCluster1:
+    Description: The name of the created ECS cluster for MyCluster1
+    Value: !Ref MyCluster1
+  ClusterNameOutputForMyTaskDefinition1:
+    Description: The name of the created ECS cluster for MyTaskDefinition1
+    Value: !Ref MyTaskDefinition1
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+  InstancePublicIpForMyInstance1:
+    Description: Public IP address of the EC2 instance for MyInstance1
+    Value: !GetAtt MyInstance1.PublicIp
+  InstanceIdForMyInstance1:
+    Description: ID of the EC2 instance for MyInstance1
+    Value: !Ref MyInstance1
+
+  InstancePublicIpForMyInstance2:
+    Description: Public IP address of the EC2 instance for MyInstance2
+    Value: !GetAtt MyInstance2.PublicIp
+  InstanceIdForMyInstance2:
+    Description: ID of the EC2 instance for MyInstance2
+    Value: !Ref MyInstance2
+
+  InstancePublicIpForMyInstance3:
+    Description: Public IP address of the EC2 instance for MyInstance3
+    Value: !GetAtt MyInstance3.PublicIp
+  InstanceIdForMyInstance3:
+    Description: ID of the EC2 instance for MyInstance3
+    Value: !Ref MyInstance3
+
+  ServiceNameOutputForMyService1:
+    Description: The name of the created ECS service for MyService1
+    Value: !Ref MyService1

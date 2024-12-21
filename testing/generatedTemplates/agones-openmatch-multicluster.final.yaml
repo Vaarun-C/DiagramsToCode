@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for agones-openmatch-multicluster.final.png
+Conditions: 
+
+
+
+Parameters: 
+  InstanceIdForMyDashboard1:
+    Type: String
+    Description: "The ID of the EC2 instance to monitor for MyDashboard1"
+
+  TopicNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1Topic"
+    Description: "The name of the SNS topic for MyTopic1."
+  DisplayNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1DisplayName"
+    Description: "The display name for the SNS topic for MyTopic1."
+
+  AlarmThresholdForMyAlarm1:
+    Type: Number
+    Default: 70
+    Description: "The CPU utilization percentage threshold to trigger the alarm for MyAlarm1"
+
+Resources: 
+  MyDashboard1:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: 'MyDashboard1'
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/EC2", "CPUUtilization", "InstanceId", "${InstanceIdForMyDashboard1}" ]
+                ],
+                "period": 300,
+                "stat": "Average",
+                "region": "${AWS::Region}",
+                "title": "EC2 Instance CPU for MyDashboard1"
+              }
+            }
+          ]
+        }
+
+  MyTopic1:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Ref TopicNameForMyTopic1
+      DisplayName: !Ref DisplayNameForMyTopic1
+
+  MyAlarm1:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: HighCPUAlarmMyAlarm1
+      AlarmDescription: Alarm if CPU exceeds the specified threshold for MyAlarm1
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref AlarmThresholdForMyAlarm1
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceIdForMyDashboard1
+      AlarmActions:
+        - !Ref MyTopic1
+
+Outputs: 
+  DashboardURLForMyDashboard1:
+    Description: 'URL of the CloudWatch Dashboard for MyDashboard1'
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=MyDashboard1'
+  TopicArnForMyTopic1:
+    Description: "The ARN of the SNS topic for MyTopic1."
+    Value: !Ref MyTopic1
+  TopicNameOutputForMyTopic1:
+    Description: "The name of the SNS topic for MyTopic1."
+    Value: !Ref TopicNameForMyTopic1
+  AlarmNameForMyAlarm1:
+    Description: 'Name of the CloudWatch Alarm for MyAlarm1'
+    Value: !Ref MyAlarm1
+

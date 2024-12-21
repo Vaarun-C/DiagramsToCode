@@ -1,0 +1,476 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for 3-improved-customer-experience.png
+Conditions: 
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+  VersioningEnabledForMyBucket2: !Equals [!Ref EnableVersioningForMyBucket2, true]
+
+
+
+
+
+
+
+
+Parameters: 
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+
+  InstanceIdForMyDashboard1:
+    Type: String
+    Description: "The ID of the EC2 instance to monitor for MyDashboard1"
+
+  BucketNameForMyBucket2:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket2:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  ExecutionRoleNameForMyRoleForSageMakerExecution1:
+    Type: String
+    Default: "MyRoleForSageMakerExecution1"
+    Description: "The name of the IAM role for the SageMaker Notebook Instance for MyRoleForSageMakerExecution1."
+
+
+  TopicNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1Topic"
+    Description: "The name of the SNS topic for MyTopic1."
+  DisplayNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1DisplayName"
+    Description: "The display name for the SNS topic for MyTopic1."
+
+  NotebookInstanceNameForMyNotebookInstance1:
+    Type: String
+    Default: "MyNotebookInstance1"
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance1."
+  NotebookInstanceTypeForMyNotebookInstance1:
+    Type: String
+    Default: "ml.t2.medium"
+    AllowedValues:
+      - "ml.t2.medium"
+      - "ml.m5.large"
+      - "ml.m5.xlarge"
+      - "ml.c5.large"
+      - "ml.c5.xlarge"
+    Description: "The instance type for the SageMaker Notebook Instance for MyNotebookInstance1."
+  RootAccessForMyNotebookInstance1:
+    Type: String
+    Default: "Disabled"
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Description: "Whether the SageMaker Notebook Instance has root access for MyNotebookInstance1."
+
+  BotNameForMyBot1:
+    Type: String
+    Default: "MyBot1"
+    Description: "The name of the Amazon Lex bot for MyBot1."
+  LocaleForMyBot1:
+    Type: String
+    Default: "en_US"
+    AllowedValues: 
+      - en_US
+      - en_GB
+      - de_DE
+      - es_US
+      - fr_FR
+    Description: "The locale for the Lex Bot (e.g., en_US for US English) for MyBot1."
+
+  AlarmThresholdForMyAlarm1:
+    Type: Number
+    Default: 70
+    Description: "The CPU utilization percentage threshold to trigger the alarm for MyAlarm1"
+
+  EnvironmentForMyTrail1:
+    Type: String
+    Default: dev
+    AllowedValues: 
+      - dev
+      - staging
+      - prod
+    Description: 'Environment name for resource tagging for MyTrail1'
+
+  BotAliasNameForMyBotAlias1:
+    Type: String
+    Default: "MyBotAlias1"
+    Description: "The alias name for the Amazon Lex bot for MyBotAlias1."
+
+Resources: 
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyKey1:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: 'KMS key for CloudTrail log encryption for MyKey1'
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: kms:*
+            Resource: '*'
+          - Sid: Allow CloudTrail to encrypt logs
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: 
+              - kms:GenerateDataKey*
+              - kms:Decrypt
+            Resource: '*'
+
+  MyDashboard1:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: 'MyDashboard1'
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/EC2", "CPUUtilization", "InstanceId", "${InstanceIdForMyDashboard1}" ]
+                ],
+                "period": 300,
+                "stat": "Average",
+                "region": "${AWS::Region}",
+                "title": "EC2 Instance CPU for MyDashboard1"
+              }
+            }
+          ]
+        }
+
+  MyBucket2:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket2
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket2 
+          - Enabled 
+          - Suspended
+  MyRestApi1:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: MyRestApi1
+      Description: API for my Lambda function MyRestApi1
+  MyRoleForSageMakerExecution1:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref ExecutionRoleNameForMyRoleForSageMakerExecution1
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "SageMakerNotebookPolicyForMyRoleForSageMakerExecution1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - sagemaker:*
+                Resource: "*"
+
+  MyRoleForLexExecution1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lex.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "LexBasicPolicyForMyRoleForLexExecution1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+  MyRoleForLambda1:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecutionForMyRoleForLambda1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+  MyTopic1:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Ref TopicNameForMyTopic1
+      DisplayName: !Ref DisplayNameForMyTopic1
+
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyBucketPolicy2:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket2
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket2.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyResource1:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyNotebookInstance1:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: !Ref NotebookInstanceNameForMyNotebookInstance1
+      InstanceType: !Ref NotebookInstanceTypeForMyNotebookInstance1
+      RoleArn: !GetAtt MyRoleForSageMakerExecution1.Arn
+      RootAccess: !Ref RootAccessForMyNotebookInstance1
+      VolumeSizeInGB: 10 # Adjust the volume size as needed
+      DirectInternetAccess: "Enabled"
+
+  MyBot1:
+    Type: AWS::Lex::Bot
+    Properties:
+      Name: !Ref BotNameForMyBot1
+      RoleArn: !GetAtt MyRoleForLexExecution1.Arn
+      DataPrivacy:
+        ChildDirected: false
+      IdleSessionTTLInSeconds: 300
+      BotLocales:
+        - LocaleId: !Ref LocaleForMyBot1
+          Description: !Sub "Sample bot for ${LocaleForMyBot1}"
+          VoiceSettings:
+            VoiceId: "Joanna"
+          NluConfidenceThreshold: 0.8
+          Intents:
+            - Name: "SampleIntent"
+              SampleUtterances:
+                - Utterance: "What is the weather like in {Location}?"
+                - Utterance: "Tell me the forecast for {Location}"
+              Slots:
+                - Name: "Location"
+                  SlotTypeName: "AMAZON.City"
+                  ValueElicitationSetting:
+                    SlotConstraint: Required
+                    PromptSpecification:
+                      MaxRetries: 2
+                      MessageGroupsList:
+                        - Message:
+                            PlainTextMessage:
+                              Value: "Which city are you asking about?"
+
+  MyFunction1:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction1
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyAlarm1:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: HighCPUAlarmMyAlarm1
+      AlarmDescription: Alarm if CPU exceeds the specified threshold for MyAlarm1
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref AlarmThresholdForMyAlarm1
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceIdForMyDashboard1
+      AlarmActions:
+        - !Ref MyTopic1
+
+  MyTrail1:
+    Type: AWS::CloudTrail::Trail
+    DependsOn: 
+      - MyBucketPolicy1
+    Properties:
+      TrailName: !Sub '${EnvironmentForMyTrail1}-cloudtrail'
+      S3BucketName: !Ref MyBucket1
+      IsMultiRegionTrail: true
+      EnableLogFileValidation: true
+      IncludeGlobalServiceEvents: true
+      IsLogging: true
+      KMSKeyId: !GetAtt MyKey1.Arn
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentForMyTrail1
+
+  LexBotAliasForMyBotAlias1:
+    Type: AWS::Lex::BotAlias
+    Properties:
+      BotAliasName: !Ref BotAliasNameForMyBotAlias1
+      BotId: !Ref MyBot1
+      BotVersion: DRAFT
+
+  MyMethodForLambda1:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource1
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction1.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction1
+      Principal: apigateway.amazonaws.com
+Outputs: 
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  CloudTrailKMSKeyArnForMyKey1:
+    Description: 'The ARN of the KMS key used for encrypting CloudTrail logs for MyKey1'
+    Value: !GetAtt MyKey1.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-KMSKeyArn'
+  DashboardURLForMyDashboard1:
+    Description: 'URL of the CloudWatch Dashboard for MyDashboard1'
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=MyDashboard1'
+  S3BucketNameForMyBucket2:
+    Description: The name of the created S3 bucket for MyBucket2
+    Value: !Ref MyBucket2
+  S3BucketArnForMyBucket2:
+    Description: The ARN of the created S3 bucket for MyBucket2
+    Value: !GetAtt MyBucket2.Arn
+  ApiUrlForMyRestApi1:
+    Description: URL for the API Gateway for MyRestApi1
+    Value: !Sub "https://${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com/prod/hello"
+  ExecutionRoleArnForMyRoleForSageMakerExecution1:
+    Description: "The ARN of the SageMaker Notebook execution role for MyRoleForSageMakerExecution1."
+    Value: !GetAtt MyRoleForSageMakerExecution1.Arn
+
+  TopicArnForMyTopic1:
+    Description: "The ARN of the SNS topic for MyTopic1."
+    Value: !Ref MyTopic1
+  TopicNameOutputForMyTopic1:
+    Description: "The name of the SNS topic for MyTopic1."
+    Value: !Ref TopicNameForMyTopic1
+  NotebookInstanceNameForMyNotebookInstance1:
+    Description: "The name of the SageMaker Notebook Instance for MyNotebookInstance1."
+    Value: !Ref MyNotebookInstance1
+  NotebookInstanceUrlForMyNotebookInstance1:
+    Description: "The URL to access the SageMaker Notebook Instance."
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceNameForMyNotebookInstance1}"
+
+  LexBotIdForMyBot1:
+    Description: "The ID of the Lex Bot for MyBot1."
+    Value: !Ref MyBot1
+
+  LambdaFunctionArnForMyFunction1:
+    Description: The ARN of the Lambda function for MyFunction1
+    Value: !GetAtt MyFunction1.Arn
+  AlarmNameForMyAlarm1:
+    Description: 'Name of the CloudWatch Alarm for MyAlarm1'
+    Value: !Ref MyAlarm1
+
+  CloudTrailArnForMyTrail1:
+    Description: 'The ARN of the CloudTrail for MyTrail1'
+    Value: !GetAtt MyTrail1.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-CloudTrailArn'
+
+  LexBotAliasIdForMyBotAlias1:
+    Description: "The ID of the Lex Bot Alias for MyBotAlias1."
+    Value: !Ref LexBotAliasForMyBotAlias1
+

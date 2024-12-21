@@ -1,0 +1,257 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for batch-protein-folding-arch.png
+Conditions: 
+
+
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+
+
+
+
+Parameters: 
+
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+
+
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+  KendraIndexNameForMyIndex1:
+    Type: String
+    Default: "MyIndex1"
+    Description: "The name of the Amazon Kendra index for MyIndex1."
+
+  EnvironmentForMyComputeEnvironment1:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment name for resource tagging for MyComputeEnvironment1
+  MaxvCpusForMyComputeEnvironment1:
+    Type: Number
+    Default: 16
+    Description: Maximum vCPUs for the compute environment for MyComputeEnvironment1
+  DesiredvCpusForMyComputeEnvironment1:
+    Type: Number
+    Default: 4
+    Description: Desired vCPUs for the compute environment for MyComputeEnvironment1
+
+
+
+Resources: 
+  MyRoleForBatchInstance1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+
+  MyRoleForBatchService1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: batch.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MyJobDefinition1:
+    Type: AWS::Batch::JobDefinition
+    Properties:
+      JobDefinitionName: !Sub ${AWS::StackName}-job-definition
+      Type: container
+      PlatformCapabilities:
+        - EC2
+      ContainerProperties:
+        Image: public.ecr.aws/amazonlinux/amazonlinux:2
+        Command:
+          - "echo"
+          - "Hello World"
+        ResourceRequirements:
+          - Type: VCPU
+            Value: "1"
+          - Type: MEMORY
+            Value: "2048"
+        ExecutionRoleArn: !GetAtt MyRoleForBatchService1.Arn
+      RetryStrategy:
+        Attempts: 3
+      Timeout:
+        AttemptDurationSeconds: 300
+
+  MyRoleForKendraExecution1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: kendra.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "KendraDataSourceAccessPolicyForMyRoleForKendraExecution1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                Resource:
+                  - !Sub "arn:aws:s3:::${MyBucket1}"
+                  - !Sub "arn:aws:s3:::${MyBucket1}/*"
+
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyIndex1:
+    Type: AWS::Kendra::Index
+    Properties:
+      Name: !Ref KendraIndexNameForMyIndex1
+      Edition: ENTERPRISE_EDITION
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+
+  MyComputeEnvironment1:
+    Type: AWS::Batch::ComputeEnvironment
+    Properties:
+      ComputeEnvironmentName: !Sub ${AWS::StackName}-compute-env
+      Type: MANAGED
+      State: ENABLED
+      ComputeResources:
+        Type: EC2
+        MaxvCpus: !Ref MaxvCpusForMyComputeEnvironment1
+        DesiredvCpus: !Ref DesiredvCpusForMyComputeEnvironment1
+        MinvCpus: 0
+        InstanceTypes:
+          - optimal
+        Subnets:
+          - !Ref MySubnet1
+        InstanceRole: !Ref MyRoleForBatchInstance1
+        AllocationStrategy: SPOT_CAPACITY_OPTIMIZED
+        BidPercentage: 60
+      ServiceRole: !GetAtt MyRoleForBatchService1.Arn
+      Tags:
+        Environment: !Ref EnvironmentForMyComputeEnvironment1
+
+  MyDataSource1:
+    Type: AWS::Kendra::DataSource
+    Properties:
+      Name: "S3DataSourceForMyDataSource1"
+      IndexId: !Ref MyIndex1
+      Type: S3
+      DataSourceConfiguration:
+        S3Configuration:
+          BucketName: !Ref MyBucket1
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+      Schedule: "cron(0 12 * * ? *)" # Optional: Daily sync at 12:00 UTC
+
+  MyJobQueue1:
+    Type: AWS::Batch::JobQueue
+    Properties:
+      JobQueueName: !Sub ${AWS::StackName}-job-queue
+      Priority: 1
+      State: ENABLED
+      ComputeEnvironmentOrder:
+        - Order: 1
+          ComputeEnvironment: !Ref MyComputeEnvironment1
+      Tags:
+        Environment: !Ref EnvironmentForMyComputeEnvironment1
+
+Outputs: 
+
+
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+  JobDefinitionArnForMyJobDefinition1:
+    Description: ARN of Batch Job Definition for MyJobDefinition1
+    Value: !Ref MyJobDefinition1
+    Export:
+      Name: !Sub ${AWS::StackName}-job-definition-arn
+
+  KendraExecutionRoleArnForMyRoleForKendraExecution1:
+    Description: "The ARN of the IAM role used by Kendra."
+    Value: !GetAtt MyRoleForKendraExecution1.Arn
+
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+  KendraIndexIdForMyIndex1:
+    Description: "The ID of the Kendra index for MyIndex1."
+    Value: !Ref MyIndex1
+
+  ComputeEnvironmentArnForMyComputeEnvironment1:
+    Description: ARN of Batch Compute Environment for MyComputeEnvironment1
+    Value: !Ref MyComputeEnvironment1
+    Export:
+      Name: !Sub ${AWS::StackName}-compute-env-arn
+
+
+  JobQueueArnForMyJobQueue1:
+    Description: ARN of Batch Job Queue for MyJobQueue1
+    Value: !Ref MyJobQueue1
+    Export:
+      Name: !Sub ${AWS::StackName}-job-queue-arn
+

@@ -1,0 +1,6 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for Figure-1.-A-proxy-solution-to-the-Amazon-Cognito-regional-endpoint-1024x523.png
+Conditions: 
+Parameters: 
+Resources: 
+Outputs: 

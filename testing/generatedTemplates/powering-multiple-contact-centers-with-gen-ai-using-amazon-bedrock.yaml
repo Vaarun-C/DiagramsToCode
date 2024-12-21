@@ -1,0 +1,934 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for powering-multiple-contact-centers-with-gen-ai-using-amazon-bedrock.png
+Conditions: 
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+
+
+
+  VersioningEnabledForMyBucket2: !Equals [!Ref EnableVersioningForMyBucket2, true]
+
+  HasEmailSubscriptionForMySubscription1: !Not [!Equals [!Ref EmailAddressForMySubscription1, ""]]
+
+
+
+  HasEmailSubscriptionForMySubscription2: !Not [!Equals [!Ref EmailAddressForMySubscription2, ""]]
+
+  HasEmailSubscriptionForMySubscription3: !Not [!Equals [!Ref EmailAddressForMySubscription3, ""]]
+
+
+
+
+
+
+
+
+
+
+Parameters: 
+  StreamNameForMyStream1:
+    Type: String
+    Default: "MyStream1"
+    Description: "The name of the Kinesis Data Stream for MyStream1."
+  ShardCountForMyStream1:
+    Type: Number
+    Default: 1
+    Description: "The number of shards for the Kinesis Data Stream for MyStream1."
+  RetentionHoursForMyStream1:
+    Type: Number
+    Default: 24
+    AllowedValues:
+      - 24
+      - 48
+      - 72
+      - 168
+      - 8760
+    Description: "Retention period for data in the stream (in hours) for MyStream1."
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  ClusterNameForMyFargateCluster1:
+    Description: The name of the ECS cluster
+    Type: String
+    Default: MyFargateCluster1
+  StreamNameForMyStream2:
+    Type: String
+    Default: "MyStream2"
+    Description: "The name of the Kinesis Data Stream for MyStream2."
+  ShardCountForMyStream2:
+    Type: Number
+    Default: 1
+    Description: "The number of shards for the Kinesis Data Stream for MyStream2."
+  RetentionHoursForMyStream2:
+    Type: Number
+    Default: 24
+    AllowedValues:
+      - 24
+      - 48
+      - 72
+      - 168
+      - 8760
+    Description: "Retention period for data in the stream (in hours) for MyStream2."
+
+  TopicNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1Topic"
+    Description: "The name of the SNS topic for MyTopic1."
+  DisplayNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1DisplayName"
+    Description: "The display name for the SNS topic for MyTopic1."
+
+  TopicNameForMyTopic2:
+    Type: String
+    Default: "MyTopic2Topic"
+    Description: "The name of the SNS topic for MyTopic2."
+  DisplayNameForMyTopic2:
+    Type: String
+    Default: "MyTopic2DisplayName"
+    Description: "The display name for the SNS topic for MyTopic2."
+
+  TopicNameForMyTopic3:
+    Type: String
+    Default: "MyTopic3Topic"
+    Description: "The name of the SNS topic for MyTopic3."
+  DisplayNameForMyTopic3:
+    Type: String
+    Default: "MyTopic3DisplayName"
+    Description: "The display name for the SNS topic for MyTopic3."
+
+  ContainerImageForMyTaskDefinitionFargate1:
+    Type: String
+    Description: Docker image for the container for MyTaskDefinitionFargate1
+    Default: nginx:latest
+  ContainerPortForMyTaskDefinitionFargate1:
+    Type: Number
+    Description: Port exposed by the container for MyTaskDefinitionFargate1
+    Default: 80
+
+
+  ClusterNameForMyCluster1:
+    Description: The name of the ECS cluster
+    Type: String
+    Default: MyCluster1
+  BucketNameForMyBucket2:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket2:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+
+  EmailAddressForMySubscription1:
+    Type: String
+    Default: ""
+    Description: "The email address to subscribe to the topic for MySubscription1. Leave blank if no email subscription is required."
+
+
+
+  EmailAddressForMySubscription2:
+    Type: String
+    Default: ""
+    Description: "The email address to subscribe to the topic for MySubscription2. Leave blank if no email subscription is required."
+
+  EmailAddressForMySubscription3:
+    Type: String
+    Default: ""
+    Description: "The email address to subscribe to the topic for MySubscription3. Leave blank if no email subscription is required."
+
+  BotNameForMyBot1:
+    Type: String
+    Default: "MyBot1"
+    Description: "The name of the Amazon Lex bot for MyBot1."
+  LocaleForMyBot1:
+    Type: String
+    Default: "en_US"
+    AllowedValues: 
+      - en_US
+      - en_GB
+      - de_DE
+      - es_US
+      - fr_FR
+    Description: "The locale for the Lex Bot (e.g., en_US for US English) for MyBot1."
+
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+  KendraIndexNameForMyIndex1:
+    Type: String
+    Default: "MyIndex1"
+    Description: "The name of the Amazon Kendra index for MyIndex1."
+
+  KendraIndexNameForMyIndex2:
+    Type: String
+    Default: "MyIndex2"
+    Description: "The name of the Amazon Kendra index for MyIndex2."
+
+
+
+  BotAliasNameForMyBotAlias1:
+    Type: String
+    Default: "MyBotAlias1"
+    Description: "The alias name for the Amazon Lex bot for MyBotAlias1."
+
+
+
+
+Resources: 
+  MyStream1:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: !Ref StreamNameForMyStream1
+      ShardCount: !Ref ShardCountForMyStream1
+      RetentionPeriodHours: !Ref RetentionHoursForMyStream1
+      StreamEncryption:
+        EncryptionType: "KMS"
+        KeyId: "alias/aws/kinesis"  # Default KMS key provided by AWS
+
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyFargateCluster1:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: !Ref ClusterNameForMyFargateCluster1
+  MyStream2:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: !Ref StreamNameForMyStream2
+      ShardCount: !Ref ShardCountForMyStream2
+      RetentionPeriodHours: !Ref RetentionHoursForMyStream2
+      StreamEncryption:
+        EncryptionType: "KMS"
+        KeyId: "alias/aws/kinesis"  # Default KMS key provided by AWS
+
+  MyTopic1:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Ref TopicNameForMyTopic1
+      DisplayName: !Ref DisplayNameForMyTopic1
+
+  MyRestApi1:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: MyRestApi1
+      Description: API for my Lambda function MyRestApi1
+  MyTopic2:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Ref TopicNameForMyTopic2
+      DisplayName: !Ref DisplayNameForMyTopic2
+
+  MyTopic3:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Ref TopicNameForMyTopic3
+      DisplayName: !Ref DisplayNameForMyTopic3
+
+  MyTaskDefinitionFargate1:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: fargate-task
+      Cpu: '256'
+      Memory: '512'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: fargate-app-MyTaskDefinitionFargate1
+          Image: !Ref ContainerImageForMyTaskDefinitionFargate1
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinitionFargate1
+  MyRoleForLexExecution1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lex.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "LexBasicPolicyForMyRoleForLexExecution1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+  MyRoleForLambda1:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecutionForMyRoleForLambda1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+  MyCluster1:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: !Ref ClusterNameForMyCluster1
+  MyBucket2:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket2
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket2 
+          - Enabled 
+          - Suspended
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyRoleForKendraExecution1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: kendra.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "KendraDataSourceAccessPolicyForMyRoleForKendraExecution1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                Resource:
+                  - !Sub "arn:aws:s3:::${MyBucket1}"
+                  - !Sub "arn:aws:s3:::${MyBucket1}/*"
+
+  MySubscription1:
+    Type: "AWS::SNS::Subscription"
+    Condition: HasEmailSubscriptionForMySubscription1
+    Properties:
+      Protocol: "email"
+      Endpoint: !Ref EmailAddressForMySubscription1
+      TopicArn: !Ref MyTopic1
+
+  MyDistribution1:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultCacheBehavior:
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: MyRestApi1
+          ForwardedValues:
+            QueryString: false
+          MinTTL: 0
+          DefaultTTL: 300
+          MaxTTL: 1200
+        Origins:
+          - Id: MyRestApi1
+            DomainName: !Sub "${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: /prod
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+
+  MyDistribution2:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultCacheBehavior:
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: MyRestApi1
+          ForwardedValues:
+            QueryString: false
+          MinTTL: 0
+          DefaultTTL: 300
+          MaxTTL: 1200
+        Origins:
+          - Id: MyRestApi1
+            DomainName: !Sub "${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: /prod
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+
+  MyResource1:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyResource2:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyResource3:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyResource4:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyResource5:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyResource6:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MySubscription2:
+    Type: "AWS::SNS::Subscription"
+    Condition: HasEmailSubscriptionForMySubscription2
+    Properties:
+      Protocol: "email"
+      Endpoint: !Ref EmailAddressForMySubscription2
+      TopicArn: !Ref MyTopic2
+
+  MySubscription3:
+    Type: "AWS::SNS::Subscription"
+    Condition: HasEmailSubscriptionForMySubscription3
+    Properties:
+      Protocol: "email"
+      Endpoint: !Ref EmailAddressForMySubscription3
+      TopicArn: !Ref MyTopic3
+
+  MyBot1:
+    Type: AWS::Lex::Bot
+    Properties:
+      Name: !Ref BotNameForMyBot1
+      RoleArn: !GetAtt MyRoleForLexExecution1.Arn
+      DataPrivacy:
+        ChildDirected: false
+      IdleSessionTTLInSeconds: 300
+      BotLocales:
+        - LocaleId: !Ref LocaleForMyBot1
+          Description: !Sub "Sample bot for ${LocaleForMyBot1}"
+          VoiceSettings:
+            VoiceId: "Joanna"
+          NluConfidenceThreshold: 0.8
+          Intents:
+            - Name: "SampleIntent"
+              SampleUtterances:
+                - Utterance: "What is the weather like in {Location}?"
+                - Utterance: "Tell me the forecast for {Location}"
+              Slots:
+                - Name: "Location"
+                  SlotTypeName: "AMAZON.City"
+                  ValueElicitationSetting:
+                    SlotConstraint: Required
+                    PromptSpecification:
+                      MaxRetries: 2
+                      MessageGroupsList:
+                        - Message:
+                            PlainTextMessage:
+                              Value: "Which city are you asking about?"
+
+  MyFunction1:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction1
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyFunction2:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction2
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyFunction3:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction3
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyFunction4:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction4
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyFunction5:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction5
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyFunction6:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction6
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyIndex1:
+    Type: AWS::Kendra::Index
+    Properties:
+      Name: !Ref KendraIndexNameForMyIndex1
+      Edition: ENTERPRISE_EDITION
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+
+  MyIndex2:
+    Type: AWS::Kendra::Index
+    Properties:
+      Name: !Ref KendraIndexNameForMyIndex2
+      Edition: ENTERPRISE_EDITION
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+
+  MyMethodForCloudfront1:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MyRestApi1
+      ResourceId: !Ref MyResource1
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationHttpMethod: GET
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: '{"message": "Hello from API Gateway!"}'
+      MethodResponses:
+        - StatusCode: 200
+
+  MyMethodForCloudfront2:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MyRestApi1
+      ResourceId: !Ref MyResource2
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationHttpMethod: GET
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: '{"message": "Hello from API Gateway!"}'
+      MethodResponses:
+        - StatusCode: 200
+
+  LexBotAliasForMyBotAlias1:
+    Type: AWS::Lex::BotAlias
+    Properties:
+      BotAliasName: !Ref BotAliasNameForMyBotAlias1
+      BotId: !Ref MyBot1
+      BotVersion: DRAFT
+
+  MyMethodForLambda1:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource1
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction1.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction1
+      Principal: apigateway.amazonaws.com
+  MyMethodForLambda2:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource2
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction2.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction2
+      Principal: apigateway.amazonaws.com
+  MyMethodForLambda3:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource3
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction3.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission3:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction3
+      Principal: apigateway.amazonaws.com
+  MyMethodForLambda4:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource4
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction4.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission4:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction4
+      Principal: apigateway.amazonaws.com
+  MyMethodForLambda5:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource5
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction5.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission5:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction5
+      Principal: apigateway.amazonaws.com
+  MyMethodForLambda6:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource6
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction6.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission6:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction6
+      Principal: apigateway.amazonaws.com
+  MyServiceFargate1:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: MyServiceFargate1
+      Cluster: !Ref MyCluster1
+      TaskDefinition: !Ref MyTaskDefinitionFargate1
+      DesiredCount: 2
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref MySubnet1
+
+  MyDataSource1:
+    Type: AWS::Kendra::DataSource
+    Properties:
+      Name: "S3DataSourceForMyDataSource1"
+      IndexId: !Ref MyIndex1
+      Type: S3
+      DataSourceConfiguration:
+        S3Configuration:
+          BucketName: !Ref MyBucket1
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+      Schedule: "cron(0 12 * * ? *)" # Optional: Daily sync at 12:00 UTC
+
+  MyDataSource2:
+    Type: AWS::Kendra::DataSource
+    Properties:
+      Name: "S3DataSourceForMyDataSource2"
+      IndexId: !Ref MyIndex2
+      Type: S3
+      DataSourceConfiguration:
+        S3Configuration:
+          BucketName: !Ref MyBucket2
+      RoleArn: !GetAtt MyRoleForKendraExecution1.Arn
+      Schedule: "cron(0 12 * * ? *)" # Optional: Daily sync at 12:00 UTC
+
+Outputs: 
+  StreamArnForMyStream1:
+    Description: "The ARN of the Kinesis Data Stream For MyStream1"
+    Value: !GetAtt MyStream1.Arn
+  StreamNameForMyStream1:
+    Description: "The name of the Kinesis Data Stream For MyStream1"
+    Value: !Ref MyStream1
+
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  ClusterNameOutputForMyFargateCluster1:
+    Description: The name of the created ECS cluster for MyFargateCluster1
+    Value: !Ref MyFargateCluster1
+  StreamArnForMyStream2:
+    Description: "The ARN of the Kinesis Data Stream For MyStream2"
+    Value: !GetAtt MyStream2.Arn
+  StreamNameForMyStream2:
+    Description: "The name of the Kinesis Data Stream For MyStream2"
+    Value: !Ref MyStream2
+
+  TopicArnForMyTopic1:
+    Description: "The ARN of the SNS topic for MyTopic1."
+    Value: !Ref MyTopic1
+  TopicNameOutputForMyTopic1:
+    Description: "The name of the SNS topic for MyTopic1."
+    Value: !Ref TopicNameForMyTopic1
+  ApiUrlForMyRestApi1:
+    Description: URL for the API Gateway for MyRestApi1
+    Value: !Sub "https://${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com/prod/hello"
+  TopicArnForMyTopic2:
+    Description: "The ARN of the SNS topic for MyTopic2."
+    Value: !Ref MyTopic2
+  TopicNameOutputForMyTopic2:
+    Description: "The name of the SNS topic for MyTopic2."
+    Value: !Ref TopicNameForMyTopic2
+  TopicArnForMyTopic3:
+    Description: "The ARN of the SNS topic for MyTopic3."
+    Value: !Ref MyTopic3
+  TopicNameOutputForMyTopic3:
+    Description: "The name of the SNS topic for MyTopic3."
+    Value: !Ref TopicNameForMyTopic3
+
+
+  ClusterNameOutputForMyCluster1:
+    Description: The name of the created ECS cluster for MyCluster1
+    Value: !Ref MyCluster1
+  S3BucketNameForMyBucket2:
+    Description: The name of the created S3 bucket for MyBucket2
+    Value: !Ref MyBucket2
+  S3BucketArnForMyBucket2:
+    Description: The ARN of the created S3 bucket for MyBucket2
+    Value: !GetAtt MyBucket2.Arn
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+  KendraExecutionRoleArnForMyRoleForKendraExecution1:
+    Description: "The ARN of the IAM role used by Kendra."
+    Value: !GetAtt MyRoleForKendraExecution1.Arn
+
+
+  CloudFrontDomainNameForMyDistribution1:
+    Description: Domain name of the CloudFront distribution for MyDistribution1
+    Value: !GetAtt MyDistribution1.DomainName
+  CloudFrontDomainNameForMyDistribution2:
+    Description: Domain name of the CloudFront distribution for MyDistribution2
+    Value: !GetAtt MyDistribution2.DomainName
+
+
+  LexBotIdForMyBot1:
+    Description: "The ID of the Lex Bot for MyBot1."
+    Value: !Ref MyBot1
+
+  LambdaFunctionArnForMyFunction1:
+    Description: The ARN of the Lambda function for MyFunction1
+    Value: !GetAtt MyFunction1.Arn
+  LambdaFunctionArnForMyFunction2:
+    Description: The ARN of the Lambda function for MyFunction2
+    Value: !GetAtt MyFunction2.Arn
+  LambdaFunctionArnForMyFunction3:
+    Description: The ARN of the Lambda function for MyFunction3
+    Value: !GetAtt MyFunction3.Arn
+  LambdaFunctionArnForMyFunction4:
+    Description: The ARN of the Lambda function for MyFunction4
+    Value: !GetAtt MyFunction4.Arn
+  LambdaFunctionArnForMyFunction5:
+    Description: The ARN of the Lambda function for MyFunction5
+    Value: !GetAtt MyFunction5.Arn
+  LambdaFunctionArnForMyFunction6:
+    Description: The ARN of the Lambda function for MyFunction6
+    Value: !GetAtt MyFunction6.Arn
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+  KendraIndexIdForMyIndex1:
+    Description: "The ID of the Kendra index for MyIndex1."
+    Value: !Ref MyIndex1
+
+  KendraIndexIdForMyIndex2:
+    Description: "The ID of the Kendra index for MyIndex2."
+    Value: !Ref MyIndex2
+
+
+
+  LexBotAliasIdForMyBotAlias1:
+    Description: "The ID of the Lex Bot Alias for MyBotAlias1."
+    Value: !Ref LexBotAliasForMyBotAlias1
+
+  ServiceNameForMyServiceFargate1:
+    Description: ECS Service Name for MyServiceFargate1
+    Value: !Ref MyServiceFargate1
+
+
+

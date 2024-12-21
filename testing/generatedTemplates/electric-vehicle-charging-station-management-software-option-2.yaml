@@ -1,0 +1,794 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for electric-vehicle-charging-station-management-software-option-2.png
+Conditions: 
+
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+  VersioningEnabledForMyBucket2: !Equals [!Ref EnableVersioningForMyBucket2, true]
+
+
+
+
+
+
+
+
+
+
+
+
+Parameters: 
+  QueueNameForMyQueue1:
+    Type: String
+    Default: "MyQueue1"
+    Description: "The name of the SQS queue for MyQueue1."
+  VisibilityTimeoutForMyQueue1:
+    Type: Number
+    Default: 30
+    MinValue: 0
+    MaxValue: 43200
+    Description: "The visibility timeout for the queue in seconds for MyQueue1."
+  MessageRetentionPeriodForMyQueue1:
+    Type: Number
+    Default: 345600  # 4 days
+    MinValue: 60
+    MaxValue: 1209600  # 14 days
+    Description: "The number of seconds for which Amazon SQS retains a message for MyQueue1."
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  QueueNameForMyQueue2:
+    Type: String
+    Default: "MyQueue2"
+    Description: "The name of the SQS queue for MyQueue2."
+  VisibilityTimeoutForMyQueue2:
+    Type: Number
+    Default: 30
+    MinValue: 0
+    MaxValue: 43200
+    Description: "The visibility timeout for the queue in seconds for MyQueue2."
+  MessageRetentionPeriodForMyQueue2:
+    Type: Number
+    Default: 345600  # 4 days
+    MinValue: 60
+    MaxValue: 1209600  # 14 days
+    Description: "The number of seconds for which Amazon SQS retains a message for MyQueue2."
+
+  QueueNameForMyQueue3:
+    Type: String
+    Default: "MyQueue3"
+    Description: "The name of the SQS queue for MyQueue3."
+  VisibilityTimeoutForMyQueue3:
+    Type: Number
+    Default: 30
+    MinValue: 0
+    MaxValue: 43200
+    Description: "The visibility timeout for the queue in seconds for MyQueue3."
+  MessageRetentionPeriodForMyQueue3:
+    Type: Number
+    Default: 345600  # 4 days
+    MinValue: 60
+    MaxValue: 1209600  # 14 days
+    Description: "The number of seconds for which Amazon SQS retains a message for MyQueue3."
+
+  ClusterNameForMyFargateCluster1:
+    Description: The name of the ECS cluster
+    Type: String
+    Default: MyFargateCluster1
+  BucketNameForMyBucket2:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket2:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  InstanceIdForMyDashboard1:
+    Type: String
+    Description: "The ID of the EC2 instance to monitor for MyDashboard1"
+
+  QueueNameForMyQueue4:
+    Type: String
+    Default: "MyQueue4"
+    Description: "The name of the SQS queue for MyQueue4."
+  VisibilityTimeoutForMyQueue4:
+    Type: Number
+    Default: 30
+    MinValue: 0
+    MaxValue: 43200
+    Description: "The visibility timeout for the queue in seconds for MyQueue4."
+  MessageRetentionPeriodForMyQueue4:
+    Type: Number
+    Default: 345600  # 4 days
+    MinValue: 60
+    MaxValue: 1209600  # 14 days
+    Description: "The number of seconds for which Amazon SQS retains a message for MyQueue4."
+
+  ContainerImageForMyTaskDefinitionFargate1:
+    Type: String
+    Description: Docker image for the container for MyTaskDefinitionFargate1
+    Default: nginx:latest
+  ContainerPortForMyTaskDefinitionFargate1:
+    Type: Number
+    Description: Port exposed by the container for MyTaskDefinitionFargate1
+    Default: 80
+
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+
+  ClusterNameForMyCluster1:
+    Description: The name of the ECS cluster
+    Type: String
+    Default: MyCluster1
+  TopicNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1Topic"
+    Description: "The name of the SNS topic for MyTopic1."
+  DisplayNameForMyTopic1:
+    Type: String
+    Default: "MyTopic1DisplayName"
+    Description: "The display name for the SNS topic for MyTopic1."
+
+
+  TargetGroupNameForMyTargetGroup1:
+    Type: String
+    Default: MyTargetGroup1
+    Description: Name for the Target Group for MyTargetGroup1
+
+  TargetGroupNameForMyTargetGroup2:
+    Type: String
+    Default: MyTargetGroup2
+    Description: Name for the Target Group for MyTargetGroup2
+
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+  AlarmThresholdForMyAlarm1:
+    Type: Number
+    Default: 70
+    Description: "The CPU utilization percentage threshold to trigger the alarm for MyAlarm1"
+
+
+  StateMachineNameForMyStateMachine1:
+    Type: String
+    Default: "MyStateMachine1"
+    Description: "The name of the Step Functions state machine for MyStateMachine1."
+
+
+Resources: 
+  MyQueue1:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref QueueNameForMyQueue1
+      VisibilityTimeout: !Ref VisibilityTimeoutForMyQueue1
+      MessageRetentionPeriod: !Ref MessageRetentionPeriodForMyQueue1
+
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyQueue2:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref QueueNameForMyQueue2
+      VisibilityTimeout: !Ref VisibilityTimeoutForMyQueue2
+      MessageRetentionPeriod: !Ref MessageRetentionPeriodForMyQueue2
+
+  MyQueue3:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref QueueNameForMyQueue3
+      VisibilityTimeout: !Ref VisibilityTimeoutForMyQueue3
+      MessageRetentionPeriod: !Ref MessageRetentionPeriodForMyQueue3
+
+  MyFargateCluster1:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: !Ref ClusterNameForMyFargateCluster1
+  MyBucket2:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket2
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket2 
+          - Enabled 
+          - Suspended
+  MyDashboard1:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: 'MyDashboard1'
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/EC2", "CPUUtilization", "InstanceId", "${InstanceIdForMyDashboard1}" ]
+                ],
+                "period": 300,
+                "stat": "Average",
+                "region": "${AWS::Region}",
+                "title": "EC2 Instance CPU for MyDashboard1"
+              }
+            }
+          ]
+        }
+
+  MyQueue4:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref QueueNameForMyQueue4
+      VisibilityTimeout: !Ref VisibilityTimeoutForMyQueue4
+      MessageRetentionPeriod: !Ref MessageRetentionPeriodForMyQueue4
+
+  MyRestApi1:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: MyRestApi1
+      Description: API for my Lambda function MyRestApi1
+  MyTaskDefinitionFargate1:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: fargate-task
+      Cpu: '256'
+      Memory: '512'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: fargate-app-MyTaskDefinitionFargate1
+          Image: !Ref ContainerImageForMyTaskDefinitionFargate1
+          PortMappings:
+            - ContainerPort: !Ref ContainerPortForMyTaskDefinitionFargate1
+  MyRoleForLambda1:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecutionForMyRoleForLambda1
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MyRoleForStepFunctionExecution1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: "StepFunctionExecutionPolicyForMyRoleForStepFunctionExecution1"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+  MyCluster1:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: !Ref ClusterNameForMyCluster1
+  MyTopic1:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Ref TopicNameForMyTopic1
+      DisplayName: !Ref DisplayNameForMyTopic1
+
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyBucketPolicy2:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket2
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket2.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MyDistribution1:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultCacheBehavior:
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: MyRestApi1
+          ForwardedValues:
+            QueryString: false
+          MinTTL: 0
+          DefaultTTL: 300
+          MaxTTL: 1200
+        Origins:
+          - Id: MyRestApi1
+            DomainName: !Sub "${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: /prod
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+
+  MyResource1:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyResource2:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyResource3:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyResource4:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyResource5:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt MyRestApi1.RootResourceId
+      RestApiId: !Ref MyRestApi1
+      PathPart: hello
+  MyFunction1:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction1
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyFunction2:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction2
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyFunction3:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction3
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyFunction4:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction4
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyFunction5:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySimpleFunctionForMyFunction5
+      Handler: index.handler
+      Role: !GetAtt MyRoleForLambda1.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+            return {
+              'statusCode': 200,
+              'body': 'Hello, World!'
+            }
+      Runtime: python3.9
+      Timeout: 10
+  MyTargetGroup1:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Ref TargetGroupNameForMyTargetGroup1
+      Port: 80
+      Protocol: TCP
+      VpcId: !Ref MyVPC1
+      TargetType: ip
+
+  MyTargetGroup2:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Ref TargetGroupNameForMyTargetGroup2
+      Port: 80
+      Protocol: TCP
+      VpcId: !Ref MyVPC1
+      TargetType: ip
+
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyAlarm1:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: HighCPUAlarmMyAlarm1
+      AlarmDescription: Alarm if CPU exceeds the specified threshold for MyAlarm1
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref AlarmThresholdForMyAlarm1
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceIdForMyDashboard1
+      AlarmActions:
+        - !Ref MyTopic1
+
+  MyMethodForCloudfront1:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MyRestApi1
+      ResourceId: !Ref MyResource1
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationHttpMethod: GET
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: '{"message": "Hello from API Gateway!"}'
+      MethodResponses:
+        - StatusCode: 200
+
+  MyStateMachine1:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: !Ref StateMachineNameForMyStateMachine1
+      RoleArn: !GetAtt MyRoleForStepFunctionExecution1.Arn
+      DefinitionString: !Sub |
+        {
+          "Comment": "A simple AWS Step Functions example for MyStateMachine1",
+          "StartAt": "InvokeLambda",
+          "States": {
+            "InvokeLambda": {
+              "Type": "Task",
+              "Resource": "${MyFunction1.Arn}",
+              "End": true
+            }
+          }
+        }
+
+  MyMethodForLambda1:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource1
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction1.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission1:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction1
+      Principal: apigateway.amazonaws.com
+  MyMethodForLambda2:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource2
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction2.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission2:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction2
+      Principal: apigateway.amazonaws.com
+  MyMethodForLambda3:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource3
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction3.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission3:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction3
+      Principal: apigateway.amazonaws.com
+  MyMethodForLambda4:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource4
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction4.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission4:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction4
+      Principal: apigateway.amazonaws.com
+  MyMethodForLambda5:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref MyRestApi1
+      RestApiId: !Ref MyResource5
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction5.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+  MyPermission5:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyFunction5
+      Principal: apigateway.amazonaws.com
+  MyServiceFargate1:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: MyServiceFargate1
+      Cluster: !Ref MyCluster1
+      TaskDefinition: !Ref MyTaskDefinitionFargate1
+      DesiredCount: 2
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref MySubnet1
+
+Outputs: 
+  SQSQueueNameForMyQueue1:
+    Description: "The name of the SQS queue for MyQueue1."
+    Value: !Ref MyQueue1
+  SQSQueueURLForMyQueue1:
+    Description: "The URL of the SQS queue for MyQueue1."
+    Value: !Ref MyQueue1
+  SQSQueueARNForMyQueue1:
+    Description: "The ARN of the SQS queue for MyQueue1."
+    Value: !GetAtt MyQueue1.Arn
+
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  SQSQueueNameForMyQueue2:
+    Description: "The name of the SQS queue for MyQueue2."
+    Value: !Ref MyQueue2
+  SQSQueueURLForMyQueue2:
+    Description: "The URL of the SQS queue for MyQueue2."
+    Value: !Ref MyQueue2
+  SQSQueueARNForMyQueue2:
+    Description: "The ARN of the SQS queue for MyQueue2."
+    Value: !GetAtt MyQueue2.Arn
+
+  SQSQueueNameForMyQueue3:
+    Description: "The name of the SQS queue for MyQueue3."
+    Value: !Ref MyQueue3
+  SQSQueueURLForMyQueue3:
+    Description: "The URL of the SQS queue for MyQueue3."
+    Value: !Ref MyQueue3
+  SQSQueueARNForMyQueue3:
+    Description: "The ARN of the SQS queue for MyQueue3."
+    Value: !GetAtt MyQueue3.Arn
+
+  ClusterNameOutputForMyFargateCluster1:
+    Description: The name of the created ECS cluster for MyFargateCluster1
+    Value: !Ref MyFargateCluster1
+  S3BucketNameForMyBucket2:
+    Description: The name of the created S3 bucket for MyBucket2
+    Value: !Ref MyBucket2
+  S3BucketArnForMyBucket2:
+    Description: The ARN of the created S3 bucket for MyBucket2
+    Value: !GetAtt MyBucket2.Arn
+  DashboardURLForMyDashboard1:
+    Description: 'URL of the CloudWatch Dashboard for MyDashboard1'
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=MyDashboard1'
+  SQSQueueNameForMyQueue4:
+    Description: "The name of the SQS queue for MyQueue4."
+    Value: !Ref MyQueue4
+  SQSQueueURLForMyQueue4:
+    Description: "The URL of the SQS queue for MyQueue4."
+    Value: !Ref MyQueue4
+  SQSQueueARNForMyQueue4:
+    Description: "The ARN of the SQS queue for MyQueue4."
+    Value: !GetAtt MyQueue4.Arn
+
+  ApiUrlForMyRestApi1:
+    Description: URL for the API Gateway for MyRestApi1
+    Value: !Sub "https://${MyRestApi1}.execute-api.${AWS::Region}.amazonaws.com/prod/hello"
+
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+
+  ClusterNameOutputForMyCluster1:
+    Description: The name of the created ECS cluster for MyCluster1
+    Value: !Ref MyCluster1
+  TopicArnForMyTopic1:
+    Description: "The ARN of the SNS topic for MyTopic1."
+    Value: !Ref MyTopic1
+  TopicNameOutputForMyTopic1:
+    Description: "The name of the SNS topic for MyTopic1."
+    Value: !Ref TopicNameForMyTopic1
+  CloudFrontDomainNameForMyDistribution1:
+    Description: Domain name of the CloudFront distribution for MyDistribution1
+    Value: !GetAtt MyDistribution1.DomainName
+  LambdaFunctionArnForMyFunction1:
+    Description: The ARN of the Lambda function for MyFunction1
+    Value: !GetAtt MyFunction1.Arn
+  LambdaFunctionArnForMyFunction2:
+    Description: The ARN of the Lambda function for MyFunction2
+    Value: !GetAtt MyFunction2.Arn
+  LambdaFunctionArnForMyFunction3:
+    Description: The ARN of the Lambda function for MyFunction3
+    Value: !GetAtt MyFunction3.Arn
+  LambdaFunctionArnForMyFunction4:
+    Description: The ARN of the Lambda function for MyFunction4
+    Value: !GetAtt MyFunction4.Arn
+  LambdaFunctionArnForMyFunction5:
+    Description: The ARN of the Lambda function for MyFunction5
+    Value: !GetAtt MyFunction5.Arn
+
+
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+  AlarmNameForMyAlarm1:
+    Description: 'Name of the CloudWatch Alarm for MyAlarm1'
+    Value: !Ref MyAlarm1
+
+
+  StateMachineArnForMyStateMachine1:
+    Description: "The ARN of the Step Functions state machine for MyStateMachine1."
+    Value: !Ref MyStateMachine1
+
+  ServiceNameForMyServiceFargate1:
+    Description: ECS Service Name for MyServiceFargate1
+    Value: !Ref MyServiceFargate1
+

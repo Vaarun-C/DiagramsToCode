@@ -1,0 +1,250 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for ARCHBLOG-992-arch-diagram-1024x577.png
+Conditions: 
+
+
+  VersioningEnabledForMyBucket1: !Equals [!Ref EnableVersioningForMyBucket1, true]
+
+
+Parameters: 
+
+
+  BucketNameForMyBucket1:
+    Description: The name of the S3 bucket
+    Type: String
+  EnableVersioningForMyBucket1:
+    Description: Enable versioning for S3 buckets
+    Type: String
+    Default: false
+    AllowedValues: [true, false]
+  VPCCidrBlockForMyVPC1:
+    Description: The CIDR block for the VPC
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  SubnetCidrBlockForMySubnet1:
+    Description: The CIDR block for the new subnet
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: '^(([0-9]{1,3})\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])$'
+    ConstraintDescription: Must be a valid CIDR block.
+  AvailabilityZoneForMySubnet1:
+    Description: The Availability Zone for the subnet
+    Type: String
+    Default: us-east-1a  # Replace with your desired AZ
+  DBInstanceIdentifierForMyDBSubnetGroup1:
+    Description: Unique identifier for the DB instance
+    Type: String
+    Default: MyDBSubnetGroup1
+  DBInstanceClassForMyDBInstance1:
+    Description: The compute and memory capacity of the DB instance for MyDBInstance1
+    Type: String
+    Default: db.t3.micro
+    AllowedValues:
+      - db.t3.micro
+      - db.t3.small
+      - db.t3.medium
+      - db.t3.large
+    ConstraintDescription: Must be a valid DB instance class.
+  DBEngineForMyDBInstance1:
+    Description: The database engine to use
+    Type: String
+    Default: MySQL
+    AllowedValues:
+      - MySQL
+      - aurora-postgresql
+      - sqlserver-express
+      - oracle-se2  
+    ConstraintDescription: Must be a valid database engine.
+  DBNameForMyDBInstance1:
+    Description: The name of the database to create for MyDBInstance1
+    Type: String
+    Default: mydatabaseForMyDBInstance1
+  MasterUsernameForMyDBInstance1:
+    Description: The master username for the database for MyDBInstance1
+    Type: String
+    Default: admin
+
+  DBInstanceClassForMyDBInstance2:
+    Description: The compute and memory capacity of the DB instance for MyDBInstance2
+    Type: String
+    Default: db.t3.micro
+    AllowedValues:
+      - db.t3.micro
+      - db.t3.small
+      - db.t3.medium
+      - db.t3.large
+    ConstraintDescription: Must be a valid DB instance class.
+  DBEngineForMyDBInstance2:
+    Description: The database engine to use
+    Type: String
+    Default: MySQL
+    AllowedValues:
+      - MySQL
+      - aurora-postgresql
+      - sqlserver-express
+      - oracle-se2  
+    ConstraintDescription: Must be a valid database engine.
+  DBNameForMyDBInstance2:
+    Description: The name of the database to create for MyDBInstance2
+    Type: String
+    Default: mydatabaseForMyDBInstance2
+  MasterUsernameForMyDBInstance2:
+    Description: The master username for the database for MyDBInstance2
+    Type: String
+    Default: admin
+
+Resources: 
+  MyKey1:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: 'KMS key for CloudTrail log encryption for MyKey1'
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: kms:*
+            Resource: '*'
+          - Sid: Allow CloudTrail to encrypt logs
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: 
+              - kms:GenerateDataKey*
+              - kms:Decrypt
+            Resource: '*'
+
+  MyKey2:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: 'KMS key for CloudTrail log encryption for MyKey2'
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: kms:*
+            Resource: '*'
+          - Sid: Allow CloudTrail to encrypt logs
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: 
+              - kms:GenerateDataKey*
+              - kms:Decrypt
+            Resource: '*'
+
+  MyBucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketNameForMyBucket1
+      VersioningConfiguration:
+        Status: !If 
+          - VersioningEnabledForMyBucket1 
+          - Enabled 
+          - Suspended
+  MyVPC1:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlockForMyVPC1
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC1
+  MyBucketPolicy1:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyBucket1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${MyBucket1.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "true"
+            # Example condition for allowing secure transport only
+  MySubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC1
+      CidrBlock: !Ref SubnetCidrBlockForMySubnet1
+      AvailabilityZone: !Ref AvailabilityZoneForMySubnet1
+      MapPublicIpOnLaunch: true  # Set to true if you want instances to have public IPs by default
+      Tags:
+        - Key: Name
+          Value: MySubnet1
+  MyDBSubnetGroup1:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: Subnet group for RDS
+      DBSubnetGroupName: !Sub "${DBInstanceIdentifierForMyDBSubnetGroup1}-subnet-group"
+      SubnetIds: !Ref MySubnet1
+  MyDBInstance1:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceIdentifierForMyDBSubnetGroup1
+      DBInstanceClass: !Ref DBInstanceClassForMyDBInstance1
+      Engine: !Ref DBEngineForMyDBInstance1
+      DBName: !Ref DBNameForMyDBInstance1
+      MasterUsername: !Ref MasterUsernameForMyDBInstance1
+      MasterUserPassword: '{{resolve:secretsmanager:RDS-database-password:SecretString:password}}'
+      DBSubnetGroupName: !Ref MyDBSubnetGroup1
+      AllocatedStorage: '20'
+      StorageType: gp2
+
+  MyDBInstance2:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceIdentifierForMyDBSubnetGroup1
+      DBInstanceClass: !Ref DBInstanceClassForMyDBInstance2
+      Engine: !Ref DBEngineForMyDBInstance2
+      DBName: !Ref DBNameForMyDBInstance2
+      MasterUsername: !Ref MasterUsernameForMyDBInstance2
+      MasterUserPassword: '{{resolve:secretsmanager:RDS-database-password:SecretString:password}}'
+      DBSubnetGroupName: !Ref MyDBSubnetGroup1
+      AllocatedStorage: '20'
+      StorageType: gp2
+
+Outputs: 
+  CloudTrailKMSKeyArnForMyKey1:
+    Description: 'The ARN of the KMS key used for encrypting CloudTrail logs for MyKey1'
+    Value: !GetAtt MyKey1.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-KMSKeyArn'
+  CloudTrailKMSKeyArnForMyKey2:
+    Description: 'The ARN of the KMS key used for encrypting CloudTrail logs for MyKey2'
+    Value: !GetAtt MyKey2.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-KMSKeyArn'
+  S3BucketNameForMyBucket1:
+    Description: The name of the created S3 bucket for MyBucket1
+    Value: !Ref MyBucket1
+  S3BucketArnForMyBucket1:
+    Description: The ARN of the created S3 bucket for MyBucket1
+    Value: !GetAtt MyBucket1.Arn
+  VPCId:
+    Description: The ID of the created VPC for MyVPC1
+    Value: !Ref MyVPC1
+  SubnetId:
+    Description: The ID of the created subnet for MySubnet1
+    Value: !Ref MySubnet1
+  DBInstanceEndpointForMyDBInstance1:
+    Description: The endpoint of the RDS database instance for MyDBInstance1
+    Value: !GetAtt MyDBInstance1.Endpoint.Address
+
+  DBInstanceEndpointForMyDBInstance2:
+    Description: The endpoint of the RDS database instance for MyDBInstance2
+    Value: !GetAtt MyDBInstance2.Endpoint.Address
+
