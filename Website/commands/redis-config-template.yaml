@@ -7,6 +7,6 @@ data:
   REDIS_HOST: "redis1-master.diagrams2code.svc.cluster.local"
   REDIS_PORT: "6379"
   REDIS_PASSWORD: "{{REDIS1_PASSWORD}}"
-  REDIS_HOST2: "redis2-replica.diagrams2code.svc.cluster.local"
+  REDIS_HOST2: "redis2-master.diagrams2code.svc.cluster.local"
   REDIS_PORT2: "6379"
   REDIS_PASSWORD2: "{{REDIS2_PASSWORD}}"

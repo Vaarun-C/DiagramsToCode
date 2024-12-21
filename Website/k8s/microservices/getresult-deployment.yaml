@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rulebasedsuggestions
+  name: getresult
   namespace: diagrams2code
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: rulebasedsuggestions
+      app: getresult
   template:
     metadata:
       labels:
-        app: rulebasedsuggestions
+        app: getresult
     spec:
       containers:
-        - name: rulebasedsuggestions
+        - name: getresult
           resources:
             requests:
               memory: "64Mi"
@@ -22,7 +22,9 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "200m"
-          image: capthestone/website-rulebasedsuggestion:latest
+          image: capthestone/website-getresult:latest
           envFrom:
-            - configMapRef:
-                name: kafka-config
+          - configMapRef:
+              name: kafka-config
+          - configMapRef:
+              name: redis-config

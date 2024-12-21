@@ -1,11 +1,12 @@
 from kafka import KafkaConsumer, KafkaProducer
 import json
 import logging
+import os
 from CodeGenerator import template_generator
 import logging
 
 # Kafka configuration
-KAFKA_BROKER = "localhost:9092"
+KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL", "localhost:9092")
 INFO_TOPIC = "services-with-groups-topic"
 TEMPLATE_TOPIC = "template-topic"
 DLQ_TOPIC = "template-dead-letter-queue"
@@ -19,7 +20,7 @@ generator = template_generator()
 # Initialize Kafka Consumer
 consumer = KafkaConsumer(
     INFO_TOPIC,
-    bootstrap_servers=[KAFKA_BROKER],
+    bootstrap_servers=[KAFKA_BROKER_URL],
     value_deserializer=lambda x: json.loads(x.decode("utf-8")),
     group_id="template-group",
     auto_offset_reset="earliest",
@@ -27,15 +28,9 @@ consumer = KafkaConsumer(
 
 # Initialize Kafka Producer
 producer = KafkaProducer(
-    bootstrap_servers=[KAFKA_BROKER],
+    bootstrap_servers=[KAFKA_BROKER_URL],
     value_serializer=lambda x: json.dumps(x).encode("utf-8"),
 )
-
-def process_services(items):
-    """
-    Generate a CloudFormation template.
-    """
-
 
 def handle_dead_letter(message):
     """
@@ -81,6 +76,7 @@ def main():
 
             # Send the result to the target topic
             producer.send(TEMPLATE_TOPIC, result)
+            consumer.commit()
             logger.info(f"Sent suggestions to topic '{TEMPLATE_TOPIC}': {result}")
 
         except Exception as e:

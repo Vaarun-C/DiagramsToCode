@@ -30,5 +30,12 @@ spec:
         image: wurstmeister/kafka
         imagePullPolicy: IfNotPresent
         name: kafka-broker
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"      # Generous headroom for Kafka
+            cpu: "500m"
         ports:
         - containerPort: 9092

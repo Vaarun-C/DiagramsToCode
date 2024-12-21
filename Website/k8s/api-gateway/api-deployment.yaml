@@ -15,6 +15,13 @@ spec:
     spec:
       containers:
       - name: api-gateway
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
         image: capthestone/api-gateway:latest
         envFrom:
         - configMapRef:

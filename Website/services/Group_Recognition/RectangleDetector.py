@@ -113,10 +113,3 @@ def detectRectangles(image):
     # drawRects(image, rectangle_outlines_dashed)
 
     return rectangle_outlines_solid + rectangle_outlines_dashed
-
-
-
-
-#? how to run
-# image = cv2.imread('groups/test1.png', cv2.IMREAD_COLOR)
-# detectRectangles(image)
