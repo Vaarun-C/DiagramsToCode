@@ -4,7 +4,7 @@ from Node import Node
 class Graph:
     def __init__(self):
         self.nodes:dict[int,Node] = {} # ID -> Node
-        self.stored_types:dict[str,list[int]] = {} # type -> list[ID]
+        self.stored_types:dict[str,list[int]] = {} # type -> list[ID] # storing all types in the graph, for a specific type, all the nodes which have that type
         self.in_degree = defaultdict(int)
         self.type_dict = {}
 

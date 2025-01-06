@@ -6,3 +6,6 @@ class detection_object:
 
     def to_dict(self):
         return {"pos": self.box, "classType": self.classType, "confidence": self.confidenceValue}
+    
+    def __repr__(self):
+        return f"{self.box, self.classType, self.confidenceValue}"
